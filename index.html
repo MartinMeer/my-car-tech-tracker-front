@@ -9,6 +9,7 @@
 <body>
   <header>
     <div class="header-title">[Заголовок сайта]</div>
+    <a href="#" class="logout-btn">Выйти</a>
   </header>
   <div class="container">
     <nav class="sidebar">
@@ -18,13 +19,18 @@
         </a>
       </div>
       <div class="sidebar-section">
-        <div class="sidebar-section-title">Скоро!</div>
-        <a href="#next-mainten-alert">Скоро ТО!</a>
-        <a href="#next-repair-alert">Скоро ремонт!</a>
+        <div class="sidebar-section-title">Был на сервисе?</div>
+        <a href="#service-card">Запиши!</a>    
       </div>
       <div class="sidebar-section">
-        <div class="sidebar-section-title">Список</div>
+        <div class="sidebar-section-title">Тех. обслуживание</div>
+        <a href="#next-mainten-alert">Когда следующее ТО?</a>
         <a href="#next-mainten-list">Список для ТО</a>
+        
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Ремонт</div>
+        <a href="#next-repair-alert">Когда следующий ремонт?</a>
         <a href="#next-repair-list">Список для ремонта</a>
       </div>
       <div class="sidebar-section">
@@ -54,24 +60,43 @@
       </div>
     </aside>
   </div>
+  <nav class="mobile-right-menu">
+    <a href="#my-car-overview" class="mobile-car-img">
+      <div class="img-placeholder">[IMG]</div>
+    </a>
+    <a href="#oils" title="Масла и жидкости">
+      <div class="icon-placeholder">[O]</div>
+    </a>
+    <a href="#spares" title="Запчасти">
+      <div class="icon-placeholder">[S]</div>
+    </a>
+    <a href="#shops" title="Мастера">
+      <div class="icon-placeholder">[M]</div>
+    </a>
+  </nav>
   <footer>
     <div class="footer-menu-desktop">
-      <a href="#next-mainten-alert">Скоро ТО!</a>
-      <a href="#next-repair-alert">Скоро ремонт!</a>
+      <a href="#service-card">Был на сервисе? Запиши!</a>
+      <a href="#next-mainten-alert">Когда следующее ТО?</a>
       <a href="#next-mainten-list">Список для ТО</a>
+      <a href="#next-repair-alert">Когда следующий ремонт?</a>      
       <a href="#next-repair-list">Список для ремонта</a>
       <a href="#mainten-history">История ТО</a>
       <a href="#repair-history">История ремонтов</a>
     </div>
     <div class="footer-menu-mobile">
       <details>
-        <summary>Скоро!</summary>
-        <a href="#next-mainten-alert">Скоро ТО!</a>
-        <a href="#next-repair-alert">Скоро ремонт!</a>
+        <summary>Был на сервисе?</summary>
+        <a href="#service-card">Запиши!</a>
       </details>
       <details>
-        <summary>Список</summary>
-        <a href="#next-mainten-list">Список для ТО</a>
+        <summary>Тех. обслуживание</summary>
+        <a href="#next-mainten-alert">Когда следующее ТО?</a>
+        <a href="#next-mainten-list">Список для ТО</a>        
+      </details>
+      <details>
+        <summary>Ремонт</summary>
+        <a href="#next-repair-alert">Когда следующий ремонт?</a>
         <a href="#next-repair-list">Список для ремонта</a>
       </details>
       <details>
@@ -86,6 +111,11 @@
       <span>Обновлено: 2024-05-01</span>
     </div>
   </footer>
+  <div id="cookie-popup" class="cookie-popup">
+    <span>Мы используем cookies для улучшения работы сайта. Подробнее — <a href="privacy.html" target="_blank">Безопасность ваших персональных данных</a>.</span>
+    <button id="cookie-accept" class="cookie-btn">Принять</button>
+    <button id="cookie-reject" class="cookie-btn cookie-btn-reject">Отклонить</button>
+  </div>
   <script src="script.js"></script>
 </body>
 </html> 
