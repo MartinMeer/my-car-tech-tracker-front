@@ -1,6 +1,86 @@
 // Simple client-side router for hash-based navigation
 const mainContent = document.getElementById('main-content');
 
+// --- Configuration ---
+const CONFIG = {
+  useBackend: false, // Set to true when backend is ready
+  apiUrl: 'http://localhost:8080/api',
+  demoMode: true // Set to false for production
+};
+
+// --- Data Service Layer ---
+const DataService = {
+  // Maintenance operations
+  async saveMaintenance(data) {
+    if (CONFIG.useBackend) {
+      // Real backend call
+      const response = await fetch(`${CONFIG.apiUrl}/maintenance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return response.json();
+    } else {
+      // localStorage demo mode
+      const existing = JSON.parse(localStorage.getItem('maintenance') || '[]');
+      existing.push(data);
+      localStorage.setItem('maintenance', JSON.stringify(existing));
+      return { success: true, id: data.id };
+    }
+  },
+
+  async getMaintenance() {
+    if (CONFIG.useBackend) {
+      const response = await fetch(`${CONFIG.apiUrl}/maintenance`);
+      return response.json();
+    } else {
+      return JSON.parse(localStorage.getItem('maintenance') || '[]');
+    }
+  },
+
+  // Repair operations
+  async saveRepair(data) {
+    if (CONFIG.useBackend) {
+      const response = await fetch(`${CONFIG.apiUrl}/repairs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return response.json();
+    } else {
+      const existing = JSON.parse(localStorage.getItem('repairs') || '[]');
+      existing.push(data);
+      localStorage.setItem('repairs', JSON.stringify(existing));
+      return { success: true, id: data.id };
+    }
+  },
+
+  async getRepairs() {
+    if (CONFIG.useBackend) {
+      const response = await fetch(`${CONFIG.apiUrl}/repairs`);
+      return response.json();
+    } else {
+      return JSON.parse(localStorage.getItem('repairs') || '[]');
+    }
+  },
+
+  // Car operations
+  async getCars() {
+    if (CONFIG.useBackend) {
+      const response = await fetch(`${CONFIG.apiUrl}/cars`);
+      return response.json();
+    } else {
+      const stored = localStorage.getItem('cars');
+      if (stored) return JSON.parse(stored);
+      return [
+        { id: 1, name: 'Toyota Camry', img: '🚗' },
+        { id: 2, name: 'Lada Vesta', img: '🚙' },
+        { id: 3, name: 'BMW X5', img: '🚘' }
+      ];
+    }
+  }
+};
+
 const pageMap = {
   'my-car-overview': 'my-car-overview.html',
   'next-mainten-alert': 'next-mainten-alert.html',
@@ -47,6 +127,9 @@ function initializePageUI(page) {
       break;
     case 'my-car-overview':
       initializeCarOverviewUI();
+      break;
+    case 'service-card':
+      initializeServiceCardUI();
       break;
     default:
       // Other pages will be initialized here
@@ -154,7 +237,7 @@ function renderCarsList() {
   listDiv.innerHTML = '<div class="loading">Загрузка списка автомобилей...</div>';
   
   // Fetch cars from backend (placeholder)
-  fetchCarsFromBackend()
+  DataService.getCars()
     .then(cars => {
       if (cars.length === 0) {
         listDiv.innerHTML = '<p>Нет добавленных автомобилей.</p>';
@@ -428,7 +511,7 @@ function renderCarsMenu() {
   menu.innerHTML = '<div class="loading">Загрузка...</div>';
   
   // Fetch cars from backend
-  fetchCarsFromBackend()
+  DataService.getCars()
     .then(cars => {
       menu.innerHTML = cars.map(car =>
         `<div class="car-menu-item" data-car-id="${car.id}">${car.img} ${car.name}</div>`
@@ -454,7 +537,7 @@ function initializeCarOverviewUI() {
   // Get selected car ID
   const carId = localStorage.getItem('selectedCarId');
   if (!carId) return;
-  fetchCarsFromBackend().then(cars => {
+  DataService.getCars().then(cars => {
     const car = cars.find(c => c.id == carId);
     if (!car) return;
     // Fill in car details
@@ -465,6 +548,316 @@ function initializeCarOverviewUI() {
     if (vin) vin.textContent = `VIN: ${car.vin || '-'}`;
     if (mileage) mileage.textContent = `Пробег: ${car.mileage != null ? car.mileage + ' км' : '-'}`;
   });
+}
+
+// --- Service Card UI Logic ---
+let currentOperation = null;
+let sparesList = [];
+let spareCounter = 1;
+
+function initializeServiceCardUI() {
+  console.log('Service card UI initializing...');
+  loadOperations();
+  updateServiceHeader();
+  
+  // Event listeners
+  const operationDropdown = document.getElementById('operation-dropdown');
+  const customRepairBtn = document.getElementById('custom-repair-btn');
+  const addSpareBtn = document.getElementById('add-spare-btn');
+  
+  if (operationDropdown) {
+    operationDropdown.addEventListener('change', onOperationSelect);
+  }
+  if (customRepairBtn) {
+    customRepairBtn.addEventListener('click', openRepairPopup);
+  }
+  if (addSpareBtn) {
+    addSpareBtn.addEventListener('click', openSparePopup);
+  }
+  
+  // Add event listeners for dynamic cost inputs
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('cost-input')) {
+      calculateMaintTotal();
+    }
+  });
+  
+  console.log('Service card UI initialized successfully');
+}
+
+// Load operations from backend
+async function loadOperations() {
+  try {
+    console.log('Loading operations...');
+    // Replace with actual backend call
+    // const response = await fetch('/api/maintenance/operations');
+    // const operations = await response.json();
+    
+    // Mock data for demo
+    const operations = [
+      { id: 1, name: 'Замена масла' },
+      { id: 2, name: 'Замена тормозных колодок' },
+      { id: 3, name: 'Замена фильтров' },
+      { id: 4, name: 'Диагностика двигателя' },
+      { id: 5, name: 'Замена ремня ГРМ' }
+    ];
+    
+    const dropdown = document.getElementById('operation-dropdown');
+    if (!dropdown) {
+      console.error('Operation dropdown not found!');
+      return;
+    }
+    
+    operations.forEach(op => {
+      const option = document.createElement('option');
+      option.value = op.id;
+      option.textContent = op.name;
+      dropdown.appendChild(option);
+    });
+    
+    console.log('Operations loaded successfully:', operations.length);
+  } catch (error) {
+    console.error('Error loading operations:', error);
+  }
+}
+
+// Update service header with car name
+async function updateServiceHeader() {
+  try {
+    const car = await fetchSelectedCarFromBackend();
+    if (car) {
+      const header = document.getElementById('service-header');
+      header.textContent = `Забрал ${car.name} из ремонта?`;
+    } else {
+      // No car selected, show default message
+      const header = document.getElementById('service-header');
+      header.textContent = 'Забрал автомобиль из ремонта?';
+    }
+  } catch (error) {
+    console.error('Error updating service header:', error);
+    // Show default message on error
+    const header = document.getElementById('service-header');
+    header.textContent = 'Забрал автомобиль из ремонта?';
+  }
+}
+
+// Handle operation selection
+async function onOperationSelect(event) {
+  const operationId = event.target.value;
+  if (!operationId) return;
+  
+  try {
+    // Replace with actual backend call
+    // const response = await fetch(`/api/maintenance/operations/${operationId}`);
+    // currentOperation = await response.json();
+    
+    // Mock data for demo
+    currentOperation = {
+      id: operationId,
+      name: event.target.options[event.target.selectedIndex].text,
+      consumables: [
+        { id: 1, name: 'Моторное масло' },
+        { id: 2, name: 'Масляный фильтр' },
+        { id: 3, name: 'Воздушный фильтр' }
+      ]
+    };
+    
+    openMaintPopup();
+  } catch (error) {
+    console.error('Error loading operation details:', error);
+  }
+}
+
+// Open maintenance popup
+function openMaintPopup() {
+  if (!currentOperation) return;
+  
+  document.getElementById('maint-operation-name').textContent = currentOperation.name;
+  
+  // Populate consumables
+  const consumablesList = document.getElementById('consumables-list');
+  consumablesList.innerHTML = '';
+  
+  currentOperation.consumables.forEach(consumable => {
+    const consumableDiv = document.createElement('div');
+    consumableDiv.className = 'consumable-item';
+    consumableDiv.innerHTML = `
+      <span class="consumable-name">${consumable.name}</span>
+      <input type="text" class="item-input" placeholder="${consumable.name}" value="${consumable.name}">
+      <input type="number" class="cost-input" placeholder="0" min="0" step="0.01" value="0">
+    `;
+    consumablesList.appendChild(consumableDiv);
+  });
+  
+  // Reset totals
+  document.getElementById('work-cost').value = '0';
+  calculateMaintTotal();
+  
+  document.getElementById('maint-entry-popup').style.display = 'flex';
+}
+
+// Close maintenance popup
+function closeMaintPopup() {
+  document.getElementById('maint-entry-popup').style.display = 'none';
+  document.getElementById('operation-dropdown').value = '';
+  currentOperation = null;
+}
+
+// Calculate maintenance total
+function calculateMaintTotal() {
+  let total = 0;
+  
+  // Add consumables costs
+  const costInputs = document.querySelectorAll('#consumables-list .cost-input');
+  costInputs.forEach(input => {
+    total += parseFloat(input.value) || 0;
+  });
+  
+  // Add work cost
+  const workCost = parseFloat(document.getElementById('work-cost').value) || 0;
+  total += workCost;
+  
+  document.getElementById('maint-total').textContent = `${total.toFixed(2)} ₽`;
+}
+
+// Save maintenance entry
+async function saveMaintenance() {
+  try {
+    const consumables = [];
+    const consumableItems = document.querySelectorAll('#consumables-list .consumable-item');
+    
+    consumableItems.forEach(item => {
+      const name = item.querySelector('.consumable-name').textContent;
+      const itemInput = item.querySelector('.item-input').value;
+      const cost = parseFloat(item.querySelector('.cost-input').value) || 0;
+      
+      consumables.push({
+        name: name,
+        item: itemInput,
+        cost: cost
+      });
+    });
+    
+    const workCost = parseFloat(document.getElementById('work-cost').value) || 0;
+    const total = parseFloat(document.getElementById('maint-total').textContent) || 0;
+    
+    const maintenanceData = {
+      id: Date.now(), // Simple ID for demo
+      date: new Date().toISOString(),
+      operationId: currentOperation.id,
+      operationName: currentOperation.name,
+      consumables: consumables,
+      workCost: workCost,
+      totalCost: total,
+      carId: localStorage.getItem('selectedCarId')
+    };
+    
+    // Save using DataService (handles localStorage vs backend)
+    const result = await DataService.saveMaintenance(maintenanceData);
+    
+    console.log('Saving maintenance:', maintenanceData);
+    console.log('Save result:', result);
+    closeMaintPopup();
+    alert('Отчет о техобслуживании сохранен!');
+    
+  } catch (error) {
+    console.error('Error saving maintenance:', error);
+    alert('Ошибка сохранения: ' + error.message);
+  }
+}
+
+// Open repair popup
+function openRepairPopup() {
+  sparesList = [];
+  spareCounter = 1;
+  document.getElementById('spares-list').innerHTML = '';
+  document.getElementById('repair-total').textContent = '0 ₽';
+  document.getElementById('repair-entry-popup').style.display = 'flex';
+}
+
+// Close repair popup
+function closeRepairPopup() {
+  document.getElementById('repair-entry-popup').style.display = 'none';
+  sparesList = [];
+}
+
+// Open spare popup
+function openSparePopup() {
+  document.getElementById('spare-name').value = '';
+  document.getElementById('spare-cost').value = '0';
+  document.getElementById('spare-entry-popup').style.display = 'flex';
+}
+
+// Close spare popup
+function closeSparePopup() {
+  document.getElementById('spare-entry-popup').style.display = 'none';
+}
+
+// Add spare to list
+function addSpare() {
+  const name = document.getElementById('spare-name').value.trim();
+  const cost = parseFloat(document.getElementById('spare-cost').value) || 0;
+  
+  if (!name) {
+    alert('Введите название запчасти');
+    return;
+  }
+  
+  const spare = {
+    id: spareCounter++,
+    name: name,
+    cost: cost
+  };
+  
+  sparesList.push(spare);
+  
+  // Add to UI
+  const sparesListDiv = document.getElementById('spares-list');
+  const spareDiv = document.createElement('div');
+  spareDiv.className = 'spare-item';
+  spareDiv.innerHTML = `
+    <span>${spare.id}. ${spare.name}</span>
+    <span>${spare.cost.toFixed(2)} ₽</span>
+  `;
+  sparesListDiv.appendChild(spareDiv);
+  
+  // Update total
+  calculateRepairTotal();
+  
+  closeSparePopup();
+}
+
+// Calculate repair total
+function calculateRepairTotal() {
+  const total = sparesList.reduce((sum, spare) => sum + spare.cost, 0);
+  document.getElementById('repair-total').textContent = `${total.toFixed(2)} ₽`;
+}
+
+// Save repair entry
+async function saveRepair() {
+  try {
+    const total = parseFloat(document.getElementById('repair-total').textContent) || 0;
+    
+    const repairData = {
+      id: Date.now(), // Simple ID for demo
+      date: new Date().toISOString(),
+      spares: sparesList,
+      totalCost: total,
+      carId: localStorage.getItem('selectedCarId')
+    };
+    
+    // Save using DataService (handles localStorage vs backend)
+    const result = await DataService.saveRepair(repairData);
+    
+    console.log('Saving repair:', repairData);
+    console.log('Save result:', result);
+    closeRepairPopup();
+    alert('Отчет о ремонте сохранен!');
+    
+  } catch (error) {
+    console.error('Error saving repair:', error);
+    alert('Ошибка сохранения: ' + error.message);
+  }
 }
 
 // --- Backend API Placeholders (Replace with real API calls) ---
@@ -523,6 +916,27 @@ async function removeCarFromBackend(carId) {
   } else if (cars.length === 0) {
     localStorage.removeItem('currentCarId');
   }
+}
+
+async function fetchSelectedCarFromBackend() {
+  // TODO: Replace with actual API call
+  // return fetch(`/api/cars/${carId}`).then(res => res.json());
+  
+  const carId = localStorage.getItem('selectedCarId');
+  console.log('Selected car ID:', carId);
+  
+  if (!carId) {
+    console.log('No car ID found in localStorage');
+    return null;
+  }
+  
+  const cars = await fetchCarsFromBackend();
+  console.log('Available cars:', cars);
+  
+  const selectedCar = cars.find(c => c.id == carId);
+  console.log('Selected car:', selectedCar);
+  
+  return selectedCar || null;
 }
 
 // --- Event Listeners (UI Logic Only) ---
