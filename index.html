@@ -118,5 +118,17 @@
     <button id="cookie-reject" class="cookie-btn cookie-btn-reject">Отклонить</button>
   </div>
   <script src="script.js"></script>
+  <script>
+    // Make the car image a home button to my-car-overview
+    document.addEventListener('DOMContentLoaded', function() {
+      var carImgDiv = document.getElementById('current-car-img');
+      if (carImgDiv) {
+        carImgDiv.addEventListener('click', function(e) {
+          e.stopPropagation();
+          window.location.hash = '#my-car-overview';
+        });
+      }
+    });
+  </script>
 </body>
 </html> 

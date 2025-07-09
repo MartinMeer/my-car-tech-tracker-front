@@ -45,6 +45,9 @@ function initializePageUI(page) {
     case 'add-car':
       initializeAddCarUI();
       break;
+    case 'my-car-overview':
+      initializeCarOverviewUI();
+      break;
     default:
       // Other pages will be initialized here
       break;
@@ -158,19 +161,31 @@ function renderCarsList() {
         return;
       }
       listDiv.innerHTML = cars.map(car =>
-        `<div class="car-list-item" style="display:flex;align-items:center;gap:1rem;margin-bottom:0.7rem;">
+        `<div class="car-list-item" data-car-id="${car.id}" style="display:flex;align-items:center;gap:1rem;margin-bottom:0.7rem;cursor:pointer;">
           <span style="font-size:1.5rem;">${car.img}</span>
           <span>${car.name}</span>
           <button data-car-id="${car.id}" data-car-name="${car.name}" class="remove-car-btn" style="margin-left:auto;">Удалить</button>
         </div>`
       ).join('');
       
+      // Add event listeners for car selection
+      Array.from(listDiv.querySelectorAll('.car-list-item')).forEach(item => {
+        item.onclick = function(e) {
+          // Prevent click if remove button was clicked
+          if (e.target.classList.contains('remove-car-btn')) return;
+          const carId = this.getAttribute('data-car-id');
+          localStorage.setItem('selectedCarId', carId);
+          window.location.hash = '#my-car-overview';
+        };
+      });
+
+
       // Add event listeners for remove buttons
       Array.from(listDiv.querySelectorAll('.remove-car-btn')).forEach(btn => {
-        btn.onclick = function() {
+        btn.onclick = function(e) {
+          e.stopPropagation();
           const id = parseInt(this.getAttribute('data-car-id'));
           const carName = this.getAttribute('data-car-name');
-          
           showConfirmationDialog(
             `Вы уверены, что хотите удалить автомобиль "${carName}"?`,
             () => {
@@ -435,6 +450,23 @@ function renderCarsMenu() {
     });
 }
 
+function initializeCarOverviewUI() {
+  // Get selected car ID
+  const carId = localStorage.getItem('selectedCarId');
+  if (!carId) return;
+  fetchCarsFromBackend().then(cars => {
+    const car = cars.find(c => c.id == carId);
+    if (!car) return;
+    // Fill in car details
+    const title = document.getElementById('car-title');
+    const vin = document.getElementById('car-vin');
+    const mileage = document.getElementById('car-mileage');
+    if (title) title.textContent = `${car.brand || ''} ${car.model || ''} ${car.nickname || ''}`.trim() || car.name;
+    if (vin) vin.textContent = `VIN: ${car.vin || '-'}`;
+    if (mileage) mileage.textContent = `Пробег: ${car.mileage != null ? car.mileage + ' км' : '-'}`;
+  });
+}
+
 // --- Backend API Placeholders (Replace with real API calls) ---
 async function fetchCarsFromBackend() {
   // TODO: Replace with actual API call
@@ -494,9 +526,16 @@ async function removeCarFromBackend(carId) {
 }
 
 // --- Event Listeners (UI Logic Only) ---
-window.addEventListener('hashchange', () => loadPage(location.hash));
+window.addEventListener('hashchange', () => {
+  loadPage(location.hash);
+  // Hide car selection popup on navigation
+  const carSelectMenu = document.getElementById('car-select-menu');
+  if (carSelectMenu) {
+    carSelectMenu.style.display = 'none';
+  }
+});
 window.addEventListener('DOMContentLoaded', () => {
-  loadPage(location.hash || '#my-car-overview');
+  loadPage(location.hash || '#my-cars');
   
   // Initialize car selection UI
   updateCarSelectionUI();
