@@ -12,71 +12,132 @@ const CONFIG = {
 const DataService = {
   // Maintenance operations
   async saveMaintenance(data) {
-    if (CONFIG.useBackend) {
-      // Real backend call
-      const response = await fetch(`${CONFIG.apiUrl}/maintenance`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      return response.json();
-    } else {
-      // localStorage demo mode
-      const existing = JSON.parse(localStorage.getItem('maintenance') || '[]');
-      existing.push(data);
-      localStorage.setItem('maintenance', JSON.stringify(existing));
-      return { success: true, id: data.id };
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/maintenance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Ошибка сохранения ТО');
+        return response.json();
+      } else {
+        let existing = [];
+        try {
+          existing = JSON.parse(localStorage.getItem('maintenance') || '[]');
+        } catch (e) {
+          alert('Ошибка чтения localStorage для ТО. Данные будут сброшены.');
+          localStorage.removeItem('maintenance');
+        }
+        existing.push(data);
+        try {
+          localStorage.setItem('maintenance', JSON.stringify(existing));
+        } catch (e) {
+          alert('Ошибка записи в localStorage для ТО.');
+        }
+        return { success: true, id: data.id };
+      }
+    } catch (error) {
+      throw new Error('Ошибка сохранения ТО: ' + error.message);
     }
   },
 
   async getMaintenance() {
-    if (CONFIG.useBackend) {
-      const response = await fetch(`${CONFIG.apiUrl}/maintenance`);
-      return response.json();
-    } else {
-      return JSON.parse(localStorage.getItem('maintenance') || '[]');
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/maintenance`);
+        if (!response.ok) throw new Error('Ошибка загрузки ТО');
+        return response.json();
+      } else {
+        try {
+          return JSON.parse(localStorage.getItem('maintenance') || '[]');
+        } catch (e) {
+          alert('Ошибка чтения localStorage для ТО.');
+          localStorage.removeItem('maintenance');
+          return [];
+        }
+      }
+    } catch (error) {
+      throw new Error('Ошибка загрузки ТО: ' + error.message);
     }
   },
 
   // Repair operations
   async saveRepair(data) {
-    if (CONFIG.useBackend) {
-      const response = await fetch(`${CONFIG.apiUrl}/repairs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      return response.json();
-    } else {
-      const existing = JSON.parse(localStorage.getItem('repairs') || '[]');
-      existing.push(data);
-      localStorage.setItem('repairs', JSON.stringify(existing));
-      return { success: true, id: data.id };
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/repairs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Ошибка сохранения ремонта');
+        return response.json();
+      } else {
+        let existing = [];
+        try {
+          existing = JSON.parse(localStorage.getItem('repairs') || '[]');
+        } catch (e) {
+          alert('Ошибка чтения localStorage для ремонтов. Данные будут сброшены.');
+          localStorage.removeItem('repairs');
+        }
+        existing.push(data);
+        try {
+          localStorage.setItem('repairs', JSON.stringify(existing));
+        } catch (e) {
+          alert('Ошибка записи в localStorage для ремонтов.');
+        }
+        return { success: true, id: data.id };
+      }
+    } catch (error) {
+      throw new Error('Ошибка сохранения ремонта: ' + error.message);
     }
   },
 
   async getRepairs() {
-    if (CONFIG.useBackend) {
-      const response = await fetch(`${CONFIG.apiUrl}/repairs`);
-      return response.json();
-    } else {
-      return JSON.parse(localStorage.getItem('repairs') || '[]');
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/repairs`);
+        if (!response.ok) throw new Error('Ошибка загрузки ремонтов');
+        return response.json();
+      } else {
+        try {
+          return JSON.parse(localStorage.getItem('repairs') || '[]');
+        } catch (e) {
+          alert('Ошибка чтения localStorage для ремонтов.');
+          localStorage.removeItem('repairs');
+          return [];
+        }
+      }
+    } catch (error) {
+      throw new Error('Ошибка загрузки ремонтов: ' + error.message);
     }
   },
 
   // Car operations
   async getCars() {
-    if (CONFIG.useBackend) {
-      const response = await fetch(`${CONFIG.apiUrl}/cars`);
-      return response.json();
-    } else {
-      const stored = localStorage.getItem('cars');
-      if (stored) return JSON.parse(stored);
-      return [
-        { id: 1, name: 'Toyota Camry', img: '🚗' },
-        { id: 2, name: 'Lada Vesta', img: '🚙' },
-        { id: 3, name: 'BMW X5', img: '🚘' }
-      ];
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/cars`);
+        if (!response.ok) throw new Error('Ошибка загрузки автомобилей');
+        return response.json();
+      } else {
+        try {
+          const stored = localStorage.getItem('cars');
+          if (stored) return JSON.parse(stored);
+          return [
+            { id: 1, name: 'Toyota Camry', img: '🚗' },
+            { id: 2, name: 'Lada Vesta', img: '🚙' },
+            { id: 3, name: 'BMW X5', img: '🚘' }
+          ];
+        } catch (e) {
+          alert('Ошибка чтения localStorage для автомобилей.');
+          localStorage.removeItem('cars');
+          return [];
+        }
+      }
+    } catch (error) {
+      throw new Error('Ошибка загрузки автомобилей: ' + error.message);
     }
   }
 };
@@ -131,6 +192,12 @@ function initializePageUI(page) {
     case 'service-card':
       initializeServiceCardUI();
       break;
+      case 'repair-history':
+        renderRepairHistory();
+        break;  
+    case 'mainten-history':
+      renderMaintenHistory();
+      break;  
     default:
       // Other pages will be initialized here
       break;
@@ -141,6 +208,10 @@ function initializePageUI(page) {
 function showConfirmationDialog(message, onConfirm, onCancel) {
   // Create dialog overlay
   const overlay = document.createElement('div');
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'confirm-dialog-title');
+  overlay.setAttribute('tabindex', '-1');
   overlay.style.cssText = `
     position: fixed;
     top: 0;
@@ -165,9 +236,9 @@ function showConfirmationDialog(message, onConfirm, onCancel) {
     width: 90%;
     text-align: center;
   `;
-  
+  dialog.setAttribute('role', 'document');
   dialog.innerHTML = `
-    <p style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #2d3e50;">${message}</p>
+    <p id="confirm-dialog-title" style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #2d3e50;">${message}</p>
     <div style="display: flex; gap: 1rem; justify-content: center;">
       <button id="confirm-yes" style="
         background: #2d3e50;
@@ -193,14 +264,36 @@ function showConfirmationDialog(message, onConfirm, onCancel) {
   overlay.appendChild(dialog);
   document.body.appendChild(overlay);
   
+  // Focus management
+  const yesBtn = dialog.querySelector('#confirm-yes');
+  const noBtn = dialog.querySelector('#confirm-no');
+  yesBtn.focus();
+  let lastFocused = document.activeElement;
+
+  // Trap focus inside dialog
+  function trapFocus(e) {
+    const focusable = [yesBtn, noBtn];
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const idx = focusable.indexOf(document.activeElement);
+      if (e.shiftKey) {
+        focusable[(idx - 1 + focusable.length) % focusable.length].focus();
+      } else {
+        focusable[(idx + 1) % focusable.length].focus();
+      }
+    }
+  }
+  dialog.addEventListener('keydown', trapFocus);
+
   // Add event listeners
-  dialog.querySelector('#confirm-yes').onclick = () => {
+  yesBtn.onclick = () => {
     document.body.removeChild(overlay);
+    if (lastFocused) lastFocused.focus();
     if (onConfirm) onConfirm();
   };
-  
-  dialog.querySelector('#confirm-no').onclick = () => {
+  noBtn.onclick = () => {
     document.body.removeChild(overlay);
+    if (lastFocused) lastFocused.focus();
     if (onCancel) onCancel();
   };
   
@@ -208,6 +301,7 @@ function showConfirmationDialog(message, onConfirm, onCancel) {
   overlay.onclick = (e) => {
     if (e.target === overlay) {
       document.body.removeChild(overlay);
+      if (lastFocused) lastFocused.focus();
       if (onCancel) onCancel();
     }
   };
@@ -217,6 +311,7 @@ function showConfirmationDialog(message, onConfirm, onCancel) {
     if (e.key === 'Escape') {
       document.body.removeChild(overlay);
       document.removeEventListener('keydown', handleEscape);
+      if (lastFocused) lastFocused.focus();
       if (onCancel) onCancel();
     }
   };
@@ -232,11 +327,7 @@ function initializeMyCarsUI() {
 function renderCarsList() {
   const listDiv = document.getElementById('cars-list');
   if (!listDiv) return;
-  
-  // Show loading state
   listDiv.innerHTML = '<div class="loading">Загрузка списка автомобилей...</div>';
-  
-  // Fetch cars from backend (placeholder)
   DataService.getCars()
     .then(cars => {
       if (cars.length === 0) {
@@ -257,7 +348,7 @@ function renderCarsList() {
           // Prevent click if remove button was clicked
           if (e.target.classList.contains('remove-car-btn')) return;
           const carId = this.getAttribute('data-car-id');
-          localStorage.setItem('selectedCarId', carId);
+          localStorage.setItem('currentCarId', carId);
           window.location.hash = '#my-car-overview';
         };
       });
@@ -288,7 +379,7 @@ function renderCarsList() {
       });
     })
     .catch(error => {
-      listDiv.innerHTML = '<div class="error">Ошибка загрузки: ' + error.message + '</div>';
+      listDiv.innerHTML = `<div class="error" aria-live="assertive">Ошибка загрузки: ${error.message}</div>`;
     });
 }
 
@@ -535,7 +626,7 @@ function renderCarsMenu() {
 
 function initializeCarOverviewUI() {
   // Get selected car ID
-  const carId = localStorage.getItem('selectedCarId');
+  const carId = localStorage.getItem('currentCarId');
   if (!carId) return;
   DataService.getCars().then(cars => {
     const car = cars.find(c => c.id == carId);
@@ -547,7 +638,43 @@ function initializeCarOverviewUI() {
     if (title) title.textContent = `${car.brand || ''} ${car.model || ''} ${car.nickname || ''}`.trim() || car.name;
     if (vin) vin.textContent = `VIN: ${car.vin || '-'}`;
     if (mileage) mileage.textContent = `Пробег: ${car.mileage != null ? car.mileage + ' км' : '-'}`;
+    // --- Finance totals ---
+    const maintenField = document.getElementById('total-mainten-cost');
+    const repairField = document.getElementById('total-repair-cost');
+    const ownField = document.getElementById('total-own-cost');
+    if (maintenField) maintenField.textContent = '...';
+    if (repairField) repairField.textContent = '...';
+    if (ownField) ownField.textContent = '...';
+    fetchCarTotalsFromBackend(car.id)
+      .then(totals => {
+        if (maintenField) maintenField.textContent = totals.maintenance != null ? Number(totals.maintenance).toLocaleString('ru-RU') + ' ₽' : '—';
+        if (repairField) repairField.textContent = totals.repair != null ? Number(totals.repair).toLocaleString('ru-RU') + ' ₽' : '—';
+        if (ownField) ownField.textContent = totals.own != null ? Number(totals.own).toLocaleString('ru-RU') + ' ₽' : '—';
+      })
+      .catch(error => {
+        if (maintenField) maintenField.textContent = 'Ошибка';
+        if (repairField) repairField.textContent = 'Ошибка';
+        if (ownField) ownField.textContent = 'Ошибка';
+      });
   });
+}
+
+// Fetch car totals from backend (mock/demo implementation)
+async function fetchCarTotalsFromBackend(carId) {
+  // TODO: Replace with real backend API call
+  // Example: return fetch(`/api/cars/${carId}/totals`).then(res => res.json());
+  // For demo, calculate from localStorage
+  const [maintenances, repairs] = await Promise.all([
+    DataService.getMaintenance(),
+    DataService.getRepairs()
+  ]);
+  const maintTotal = maintenances.filter(m => m.carId == carId).reduce((sum, m) => sum + (Number(m.totalCost) || 0), 0);
+  const repairTotal = repairs.filter(r => r.carId == carId).reduce((sum, r) => sum + (Number(r.totalCost) || 0), 0);
+  return {
+    maintenance: maintTotal,
+    repair: repairTotal,
+    own: maintTotal + repairTotal // You can add more (e.g. insurance, spares) if needed
+  };
 }
 
 // --- Service Card UI Logic ---
@@ -673,6 +800,26 @@ function openMaintPopup() {
   if (!currentOperation) return;
   
   document.getElementById('maint-operation-name').textContent = currentOperation.name;
+  // Set default date to today
+  const dateInput = document.getElementById('maint-date');
+  if (dateInput) {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    dateInput.value = `${dd}.${mm}.${yyyy}`;
+  }
+  // Set default mileage to current car's mileage
+  const mileageInput = document.getElementById('maint-mileage');
+  if (mileageInput) {
+    getCurrentCarFromBackend().then(car => {
+      if (car && car.mileage != null) {
+        mileageInput.value = car.mileage;
+      } else {
+        mileageInput.value = '';
+      }
+    });
+  }
   
   // Populate consumables
   const consumablesList = document.getElementById('consumables-list');
@@ -723,6 +870,17 @@ function calculateMaintTotal() {
 // Save maintenance entry
 async function saveMaintenance() {
   try {
+    // Validate date and mileage
+    const date = document.getElementById('maint-date').value.trim();
+    const mileage = document.getElementById('maint-mileage').value.trim();
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+      return;
+    }
+    if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
+      alert('Пожалуйста, введите корректный пробег');
+      return;
+    }
     const consumables = [];
     const consumableItems = document.querySelectorAll('#consumables-list .consumable-item');
     
@@ -743,13 +901,14 @@ async function saveMaintenance() {
     
     const maintenanceData = {
       id: Date.now(), // Simple ID for demo
-      date: new Date().toISOString(),
+      date: date,
       operationId: currentOperation.id,
       operationName: currentOperation.name,
       consumables: consumables,
       workCost: workCost,
       totalCost: total,
-      carId: localStorage.getItem('selectedCarId')
+      carId: localStorage.getItem('currentCarId'),
+      mileage: Number(mileage)
     };
     
     // Save using DataService (handles localStorage vs backend)
@@ -772,7 +931,35 @@ function openRepairPopup() {
   spareCounter = 1;
   document.getElementById('spares-list').innerHTML = '';
   document.getElementById('repair-total').textContent = '0 ₽';
+  document.getElementById('repair-work-cost').value = '';
+// Set default date to today
+const dateInput = document.getElementById('repair-date');
+if (dateInput) {
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+  dateInput.value = `${dd}.${mm}.${yyyy}`;
+} 
+// Set default mileage to current car's mileage
+const mileageInput = document.getElementById('repair-mileage');
+if (mileageInput) {
+  getCurrentCarFromBackend().then(car => {
+    if (car && car.mileage != null) {
+      mileageInput.value = car.mileage;
+    } else {
+      mileageInput.value = '';
+    }
+  });
+}
+
   document.getElementById('repair-entry-popup').style.display = 'flex';
+  // Remove any previous event listeners to avoid duplicates
+  const workCostInput = document.getElementById('repair-work-cost');
+  if (workCostInput) {
+    workCostInput.oninput = calculateRepairTotal;
+  }
+  calculateRepairTotal();
 }
 
 // Close repair popup
@@ -829,31 +1016,50 @@ function addSpare() {
 
 // Calculate repair total
 function calculateRepairTotal() {
-  const total = sparesList.reduce((sum, spare) => sum + spare.cost, 0);
+  const sparesTotal = sparesList.reduce((sum, spare) => sum + spare.cost, 0);
+  const workCost = parseFloat(document.getElementById('repair-work-cost')?.value) || 0;
+  const total = sparesTotal + workCost;
   document.getElementById('repair-total').textContent = `${total.toFixed(2)} ₽`;
+}
+
+// Add event listener for repair-work-cost input to update total
+if (document.getElementById('repair-work-cost')) {
+  document.getElementById('repair-work-cost').addEventListener('input', calculateRepairTotal);
 }
 
 // Save repair entry
 async function saveRepair() {
   try {
+     // Validate date and mileage
+     const date = document.getElementById('repair-date').value.trim();
+     const mileage = document.getElementById('repair-mileage').value.trim();
+     if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+       alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+       return;
+     }
+     if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
+       alert('Пожалуйста, введите корректный пробег');
+       return;
+     }
     const total = parseFloat(document.getElementById('repair-total').textContent) || 0;
-    
+    const operationName = document.getElementById('repair-operation-name') ? document.getElementById('repair-operation-name').value.trim() : '';
+    const workCost = parseFloat(document.getElementById('repair-work-cost')?.value) || 0;
     const repairData = {
+      operationName: operationName,
       id: Date.now(), // Simple ID for demo
-      date: new Date().toISOString(),
+      date: date,
       spares: sparesList,
+      workCost: workCost,
       totalCost: total,
-      carId: localStorage.getItem('selectedCarId')
+      carId: localStorage.getItem('currentCarId'),
+      mileage: Number(mileage)
     };
-    
     // Save using DataService (handles localStorage vs backend)
     const result = await DataService.saveRepair(repairData);
-    
     console.log('Saving repair:', repairData);
     console.log('Save result:', result);
     closeRepairPopup();
     alert('Отчет о ремонте сохранен!');
-    
   } catch (error) {
     console.error('Error saving repair:', error);
     alert('Ошибка сохранения: ' + error.message);
@@ -922,7 +1128,7 @@ async function fetchSelectedCarFromBackend() {
   // TODO: Replace with actual API call
   // return fetch(`/api/cars/${carId}`).then(res => res.json());
   
-  const carId = localStorage.getItem('selectedCarId');
+  const carId = localStorage.getItem('currentCarId');
   console.log('Selected car ID:', carId);
   
   if (!carId) {
@@ -1017,3 +1223,127 @@ if (!isPublic && !devMode) {
     });
   }
 })(); 
+async function renderRepairHistory() {
+  const container = document.getElementById('repair-history-list');
+  if (!container) return;
+  container.innerHTML = '<div class="loading">Загрузка истории ремонтов...</div>';
+  try {
+    const [repairs, cars] = await Promise.all([
+      DataService.getRepairs(),
+      DataService.getCars()
+    ]);
+    if (!repairs || repairs.length === 0) {
+      container.innerHTML = '<div class="empty">Нет записей о ремонтах.</div>';
+      return;
+    }
+    // Group repairs by carId
+    const repairsByCar = {};
+    repairs.forEach(r => {
+      if (!repairsByCar[r.carId]) repairsByCar[r.carId] = [];
+      repairsByCar[r.carId].push(r);
+    });
+
+    let html = '';
+    cars.forEach(car => {
+      const carRepairs = repairsByCar[car.id] || [];
+      html += `
+        <div class="car-history-block" style="margin-bottom:2.5rem;">
+          <div class="car-history-header" style="font-size:1.15rem;font-weight:600;color:#2d3e50;margin-bottom:0.7rem;">
+            ${car.brand || ''} ${car.model || ''} ${car.nickname ? '(' + car.nickname + ')' : ''} <span style="color:#888;font-size:0.97rem;">[VIN: ${car.vin || '-'}]</span>
+          </div>
+      `;
+      if (carRepairs.length === 0) {
+        html += `<div class="empty" style="margin-bottom:1.5rem;">Нет записей о ремонтах для этого автомобиля.</div>`;
+      } else {
+        html += `
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Пробег</th>
+                <th>Название</th>
+                <th>Итого</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${carRepairs.map((r, i) => `
+                <tr${i % 2 === 1 ? ' class="alt-row"' : ''}>
+                  <td>${r.date || '-'}</td>
+                  <td>${r.mileage != null ? r.mileage : '-'}</td>
+                  <td>${r.operationName || '-'}</td>
+                  <td>${r.totalCost != null ? Number(r.totalCost).toLocaleString('ru-RU') + ' ₽' : '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+      html += `</div>`;
+    });
+    container.innerHTML = html;
+  } catch (error) {
+    container.innerHTML = `<div class="error">Ошибка загрузки: ${error.message}</div>`;
+  }
+}
+async function renderMaintenHistory() {
+  const container = document.getElementById('mainten-history-list');
+  if (!container) return;
+  container.innerHTML = '<div class="loading">Загрузка истории ТО...</div>';
+  try {
+    const [maintenances, cars] = await Promise.all([
+      DataService.getMaintenance(),
+      DataService.getCars()
+    ]);
+    if (!maintenances || maintenances.length === 0) {
+      container.innerHTML = '<div class="empty">Нет записей о ТО.</div>';
+      return;
+    }
+    // Group by carId
+    const maintByCar = {};
+    maintenances.forEach(m => {
+      if (!maintByCar[m.carId]) maintByCar[m.carId] = [];
+      maintByCar[m.carId].push(m);
+    });
+
+    let html = '';
+    cars.forEach(car => {
+      const carMaints = maintByCar[car.id] || [];
+      html += `
+        <div class="car-history-block" style="margin-bottom:2.5rem;">
+          <div class="car-history-header" style="font-size:1.15rem;font-weight:600;color:#2d3e50;margin-bottom:0.7rem;">
+            ${car.brand || ''} ${car.model || ''} ${car.nickname ? '(' + car.nickname + ')' : ''} <span style="color:#888;font-size:0.97rem;">[VIN: ${car.vin || '-'}]</span>
+          </div>
+      `;
+      if (carMaints.length === 0) {
+        html += `<div class="empty" style="margin-bottom:1.5rem;">Нет записей о ТО для этого автомобиля.</div>`;
+      } else {
+        html += `
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Пробег</th>
+                <th>Название</th>
+                <th>Итого</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${carMaints.map((m, i) => `
+                <tr${i % 2 === 1 ? ' class="alt-row"' : ''}>
+                  <td>${m.date || '-'}</td>
+                  <td>${m.mileage != null ? m.mileage : '-'}</td>
+                  <td>${m.operationName || '-'}</td>
+                  <td>${m.totalCost != null ? Number(m.totalCost).toLocaleString('ru-RU') + ' ₽' : '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+      html += `</div>`;
+    });
+    container.innerHTML = html;
+  } catch (error) {
+    container.innerHTML = `<div class="error">Ошибка загрузки: ${error.message}</div>`;
+  }
+}

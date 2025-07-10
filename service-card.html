@@ -23,6 +23,14 @@
     </div>
     
     <div class="popup-body">
+      <div class="input-group">
+        <label for="maint-date">Дата *</label>
+        <input type="text" id="maint-date" required pattern="\d{2}\.\d{2}\.\d{4}" placeholder="дд.мм.гггг">
+      </div>
+      <div class="input-group">
+        <label for="maint-mileage">Пробег *</label>
+        <input type="number" id="maint-mileage" required min="0" placeholder="Введите пробег">
+      </div>
       <h3>Расходники и запчасти для ТО:</h3>
       <div id="consumables-list">
         <!-- Dynamic consumables will be inserted here -->
@@ -51,19 +59,29 @@
       <h2>Записать операцию</h2>
       <button class="close-btn" onclick="closeRepairPopup()">&times;</button>
     </div>
-    
     <div class="popup-body">
+      <div class="input-group">
+        <label for="repair-date">Дата *</label>
+        <input type="text" id="repair-date" required pattern="\d{2}\.\d{2}\.\d{4}" placeholder="дд.мм.гггг">
+      </div>
+      <div class="input-group">
+        <label for="repair-mileage">Пробег *</label>
+        <input type="number" id="repair-mileage" required min="0" placeholder="Введите пробег">
+      </div>
+      <h3>Название операции</h3>
+      <input type="text" id="repair-operation-name" placeholder="Введите название операции" style="width:100%;margin-bottom:1rem;">
       <h3>Запчасти:</h3>
       <button id="add-spare-btn" class="btn btn-secondary">Добавить</button>
-      
       <div id="spares-list">
         <!-- Dynamic spares will be inserted here -->
       </div>
-      
+      <h3>Стоимость работ:</h3>
+      <div class="input-group">
+        <input type="number" id="repair-work-cost" placeholder="0" min="0" step="0.01">
+      </div>
       <h3>Итого:</h3>
       <div id="repair-total" class="total-amount">0 ₽</div>
     </div>
-    
     <div class="popup-footer">
       <button class="btn btn-primary" onclick="saveRepair()">Сохранить и закрыть</button>
       <button class="btn btn-secondary" onclick="closeRepairPopup()">Отмена</button>
