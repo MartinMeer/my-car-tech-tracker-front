@@ -1,0 +1,117 @@
+<section class="service-card">
+  <h2 id="service-header">Забрал [car-name] из ремонта?</h2>
+  <h3>Давай создадим отчет о выполненных работах</h3>
+    <div class="operation-selector">
+    <label for="operation-dropdown">Выбери операцию из списка:</label>
+    <select id="operation-dropdown">
+      <option value="">-- Выберите операцию --</option>
+    </select>
+  </div>
+
+  <div class="custom-operation">
+    <p>Если нужной операции в списке нет, нажми на кнопку "Записать операцию":</p>
+    <button id="custom-repair-btn" class="btn btn-secondary">Записать операцию</button>
+  </div>
+</section>
+
+<!-- Maintenance Entry Popup -->
+<div id="maint-entry-popup" class="popup-overlay" style="display: none;">
+  <div class="popup-content">
+    <div class="popup-header">
+      <h2 id="maint-operation-name">[operation-maint-name]</h2>
+      <button class="close-btn" onclick="closeMaintPopup()">&times;</button>
+    </div>
+    
+    <div class="popup-body">
+      <div class="input-group">
+        <label for="maint-date">Дата *</label>
+        <input type="text" id="maint-date" required pattern="\d{2}\.\d{2}\.\d{4}" placeholder="дд.мм.гггг">
+      </div>
+      <div class="input-group">
+        <label for="maint-mileage">Пробег *</label>
+        <input type="number" id="maint-mileage" required min="0" placeholder="Введите пробег">
+      </div>
+      <h3>Расходники и запчасти для ТО:</h3>
+      <div id="consumables-list">
+        <!-- Dynamic consumables will be inserted here -->
+      </div>
+      
+      <h3>Стоимость работ:</h3>
+      <div class="input-group">
+        <input type="number" id="work-cost" class="cost-input" placeholder="0" min="0" step="0.01">
+      </div>
+      
+      <h3>Итого:</h3>
+      <div id="maint-total" class="total-amount">0 ₽</div>
+    </div>
+    
+    <div class="popup-footer">
+      <button class="btn btn-primary" onclick="saveMaintenance()">Сохранить и закрыть</button>
+      <button class="btn btn-secondary" onclick="closeMaintPopup()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Repair Entry Popup -->
+<div id="repair-entry-popup" class="popup-overlay" style="display: none;">
+  <div class="popup-content">
+    <div class="popup-header">
+      <h2>Записать операцию</h2>
+      <button class="close-btn" onclick="closeRepairPopup()">&times;</button>
+    </div>
+    <div class="popup-body">
+      <div class="input-group">
+        <label for="repair-date">Дата *</label>
+        <input type="text" id="repair-date" required pattern="\d{2}\.\d{2}\.\d{4}" placeholder="дд.мм.гггг">
+      </div>
+      <div class="input-group">
+        <label for="repair-mileage">Пробег *</label>
+        <input type="number" id="repair-mileage" required min="0" placeholder="Введите пробег">
+      </div>
+      <h3>Название операции</h3>
+      <input type="text" id="repair-operation-name" placeholder="Введите название операции" style="width:100%;margin-bottom:1rem;">
+      <h3>Запчасти:</h3>
+      <button id="add-spare-btn" class="btn btn-secondary">Добавить</button>
+      <div id="spares-list">
+        <!-- Dynamic spares will be inserted here -->
+      </div>
+      <h3>Стоимость работ:</h3>
+      <div class="input-group">
+        <input type="number" id="repair-work-cost" placeholder="0" min="0" step="0.01">
+      </div>
+      <h3>Итого:</h3>
+      <div id="repair-total" class="total-amount">0 ₽</div>
+    </div>
+    <div class="popup-footer">
+      <button class="btn btn-primary" onclick="saveRepair()">Сохранить и закрыть</button>
+      <button class="btn btn-secondary" onclick="closeRepairPopup()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- Spare Entry Popup -->
+<div id="spare-entry-popup" class="popup-overlay" style="display: none;">
+  <div class="popup-content">
+    <div class="popup-header">
+      <h2>Добавить запчасть</h2>
+      <button class="close-btn" onclick="closeSparePopup()">&times;</button>
+    </div>
+    
+    <div class="popup-body">
+      <div class="input-group">
+        <label for="spare-name">Название:</label>
+        <input type="text" id="spare-name" placeholder="Введите название запчасти">
+      </div>
+      
+      <div class="input-group">
+        <label for="spare-cost">Стоимость:</label>
+        <input type="number" id="spare-cost" placeholder="0" min="0" step="0.01">
+      </div>
+    </div>
+    
+    <div class="popup-footer">
+      <button class="btn btn-primary" onclick="addSpare()">OK</button>
+      <button class="btn btn-secondary" onclick="closeSparePopup()">Отмена</button>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Car Tech Tracker</title>
+  <link rel="stylesheet" href="../src/styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-title">[Заголовок сайта]</div>
+    <a href="#" class="logout-btn">Выйти</a>
+  </header>
+  <div class="container">
+    <nav class="sidebar">
+      <div class="sidebar-top">
+        <div class="img-placeholder" id="current-car-img" style="cursor:pointer;">[IMG]</div>
+        <div id="car-select-menu" class="car-select-menu" style="display:none;"></div>
+        <a href="#my-cars" class="my-cars-link" id="my-cars-link">Мои машины</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Был на сервисе?</div>
+        <a href="#service-card">Заполни карточку!</a>    
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Тех. обслуживание</div>
+        <a href="#next-mainten-alert">Когда следующее ТО?</a>
+        <a href="#next-mainten-list">Список для ТО</a>
+        
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Ремонт</div>
+        <a href="#next-repair-alert">Когда следующий ремонт?</a>
+        <a href="#next-repair-list">Список для ремонта</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">История</div>
+        <a href="#mainten-history">История ТО</a>
+        <a href="#repair-history">История ремонтов</a>
+      </div>
+    </nav>
+    <main id="main-content">
+      <div id="current-car-name" class="current-car-name"></div>
+      <!-- Content will be loaded here -->
+    </main>
+    <aside class="right-icons">
+      <div class="icon-section">
+        <a href="#oils" title="Масла и жидкости">
+          <div class="icon-placeholder">[O]</div>
+        </a>
+      </div>
+      <div class="icon-section">
+        <a href="#spares" title="Запчасти">
+          <div class="icon-placeholder">[S]</div>
+        </a>
+      </div>
+      <div class="icon-section">
+        <a href="#shops" title="Мастера">
+          <div class="icon-placeholder">[M]</div>
+        </a>
+      </div>
+    </aside>
+  </div>
+  <nav class="mobile-right-menu">
+    <a href="#my-car-overview" class="mobile-car-img">
+      <div class="img-placeholder">[IMG]</div>
+    </a>
+    <a href="#oils" title="Масла и жидкости">
+      <div class="icon-placeholder">[O]</div>
+    </a>
+    <a href="#spares" title="Запчасти">
+      <div class="icon-placeholder">[S]</div>
+    </a>
+    <a href="#shops" title="Мастера">
+      <div class="icon-placeholder">[M]</div>
+    </a>
+  </nav>
+  <footer>
+    <div class="footer-menu-desktop">
+      <a href="#service-card">Был на сервисе? Заполни карточку!</a>
+      <a href="#next-mainten-alert">Когда следующее ТО?</a>
+      <a href="#next-mainten-list">Список для ТО</a>
+      <a href="#next-repair-alert">Когда следующий ремонт?</a>      
+      <a href="#next-repair-list">Список для ремонта</a>
+      <a href="#mainten-history">История ТО</a>
+      <a href="#repair-history">История ремонтов</a>
+    </div>
+    <div class="footer-menu-mobile">
+      <details>
+        <summary>Был на сервисе?</summary>
+        <a href="#service-card">Заполни карточку!</a>
+      </details>
+      <details>
+        <summary>Тех. обслуживание</summary>
+        <a href="#next-mainten-alert">Когда следующее ТО?</a>
+        <a href="#next-mainten-list">Список для ТО</a>        
+      </details>
+      <details>
+        <summary>Ремонт</summary>
+        <a href="#next-repair-alert">Когда следующий ремонт?</a>
+        <a href="#next-repair-list">Список для ремонта</a>
+      </details>
+      <details>
+        <summary>История</summary>
+        <a href="#mainten-history">История ТО</a>
+        <a href="#repair-history">История ремонтов</a>
+      </details>
+    </div>
+    <div class="footer-info">
+      <span>&copy;  ©2025 com.martinmeer' </span>
+      <span>your@email.com</span>
+      <span>Обновлено: 08.07.2025</span>
+    </div>
+  </footer>
+  <div id="cookie-popup" class="cookie-popup">
+    <span>Мы используем cookies для улучшения работы сайта. Подробнее — <a href="info/privacy.html" target="_blank">Безопасность ваших персональных данных</a>.</span>
+    <button id="cookie-accept" class="cookie-btn">Принять</button>
+    <button id="cookie-reject" class="cookie-btn cookie-btn-reject">Отклонить</button>
+  </div>
+  <script type="module" src="../src/main.js"></script>
+  <script>
+    // Make the car image a home button to my-car-overview
+    document.addEventListener('DOMContentLoaded', function() {
+      var carImgDiv = document.getElementById('current-car-img');
+      if (carImgDiv) {
+        carImgDiv.addEventListener('click', function(e) {
+          e.stopPropagation();
+          window.location.hash = '#my-car-overview';
+        });
+      }
+    });
+  </script>
+</body>
+</html> 
