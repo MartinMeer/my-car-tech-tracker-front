@@ -68,21 +68,20 @@ function initializePageUI(page) {
 
 // Initial page load
 window.addEventListener('DOMContentLoaded', () => {
-  loadPage(window.location.hash || '#my-car-overview', mainContent, initializePageUI);
-  
-  // Initialize car selection UI
+  loadPage(window.location.hash || '#my-cars', mainContent, initializePageUI);
+  // Always update car selection UI and dropdown
   updateCarSelectionUI();
-  
-  // Car image dropdown functionality
-  const carImgDiv = document.getElementById('current-car-img');
+  // Dropdown menu for 'Мои машины' link
+  const myCarsLink = document.getElementById('my-cars-link');
   const carSelectMenu = document.getElementById('car-select-menu');
-  if (carImgDiv && carSelectMenu) {
-    carImgDiv.onclick = function(e) {
+  if (myCarsLink && carSelectMenu) {
+    myCarsLink.onclick = function(e) {
+      e.preventDefault();
       e.stopPropagation();
       carSelectMenu.style.display = carSelectMenu.style.display === 'block' ? 'none' : 'block';
     };
     document.addEventListener('click', function(e) {
-      if (!carSelectMenu.contains(e.target) && e.target !== carImgDiv) {
+      if (!carSelectMenu.contains(e.target) && e.target !== myCarsLink) {
         carSelectMenu.style.display = 'none';
       }
     });
@@ -92,7 +91,8 @@ window.addEventListener('DOMContentLoaded', () => {
 // Hash navigation
 window.addEventListener('hashchange', () => {
   loadPage(window.location.hash, mainContent, initializePageUI);
-  
+  // Always update car selection UI and dropdown
+  updateCarSelectionUI();
   // Hide car selection popup on navigation
   const carSelectMenu = document.getElementById('car-select-menu');
   if (carSelectMenu) {

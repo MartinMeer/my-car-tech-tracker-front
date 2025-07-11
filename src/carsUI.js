@@ -16,44 +16,35 @@ function renderCarsList() {
         listDiv.innerHTML = '<p>Нет добавленных автомобилей.</p>';
         return;
       }
-      listDiv.innerHTML = cars.map(car =>
-        `<div class="car-list-item" data-car-id="${car.id}" style="display:flex;align-items:center;gap:1rem;margin-bottom:0.7rem;cursor:pointer;">
-          ${car.img && car.img.startsWith('data:image/')
-            ? `<img src="${car.img}" alt="car image" style="width:2.5rem;height:2.5rem;object-fit:cover;border-radius:0.3rem;">`
-            : `<span style="font-size:1.5rem;">${car.img || '🚗'}</span>`}
-          <span>${car.name}</span>
-          <button data-car-id="${car.id}" data-car-name="${car.name}" class="remove-car-btn" style="margin-left:auto;">Удалить</button>
-        </div>`
-      ).join('');
-      // Add event listeners for car selection
-      Array.from(listDiv.querySelectorAll('.car-list-item')).forEach(item => {
-        item.onclick = function(e) {
-          if (e.target.classList.contains('remove-car-btn')) return;
-          const carId = this.getAttribute('data-car-id');
+      listDiv.innerHTML = cars.map(car => {
+        // Compose name and nickname
+        const displayName = car.name || `${car.brand || ''} ${car.model || ''}`.trim();
+        const nickname = car.nickname ? ` "${car.nickname}"` : '';
+        // Image logic
+        let imgHtml = '';
+        if (car.img && car.img.startsWith('data:image/')) {
+          imgHtml = `<img src="${car.img}" alt="car image" style="width:256px;height:256px;object-fit:cover;border-radius:50%;box-shadow:0 2px 8px #e0e0e0;">`;
+        } else {
+          imgHtml = `<div style="width:256px;height:256px;display:flex;align-items:center;justify-content:center;background:#f4f7fb;border-radius:50%;font-size:5rem;color:#bbb;box-shadow:0 2px 8px #e0e0e0;">🚗</div>`;
+        }
+        return `
+          <div class="car-list-item" data-car-id="${car.id}" style="display:flex;flex-direction:column;align-items:center;gap:1rem;margin-bottom:2.5rem;cursor:pointer;max-width:256px;">
+            ${imgHtml}
+            <h2 class="car-list-name" style="font-size:1.25rem;font-weight:600;text-align:center;margin:0 0 0.5rem 0;cursor:pointer;">
+              <span>${displayName}${nickname}</span>
+            </h2>
+          </div>
+        `;
+      }).join('');
+      // Add event listeners for car name click
+      Array.from(listDiv.querySelectorAll('.car-list-item .car-list-name')).forEach(nameEl => {
+        nameEl.onclick = function(e) {
+          e.stopPropagation();
+          const carItem = this.closest('.car-list-item');
+          const carId = carItem.getAttribute('data-car-id');
           setCurrentCarId(carId).then(() => {
             window.location.hash = '#my-car-overview';
           });
-        };
-      });
-      // Add event listeners for remove buttons
-      Array.from(listDiv.querySelectorAll('.remove-car-btn')).forEach(btn => {
-        btn.onclick = function(e) {
-          e.stopPropagation();
-          const id = parseInt(this.getAttribute('data-car-id'));
-          const carName = this.getAttribute('data-car-name');
-          showConfirmationDialog(
-            `Вы уверены, что хотите удалить автомобиль "${carName}"?`,
-            () => {
-              // User confirmed - proceed with removal
-              removeCarFromBackend(id).then(() => {
-                renderCarsList();
-                updateCarSelectionUI();
-              }).catch(error => {
-                alert('Ошибка удаления: ' + error.message);
-              });
-            },
-            () => {}
-          );
         };
       });
     })
@@ -172,7 +163,7 @@ function renderCarsMenu() {
         item.onclick = function() {
           const carId = this.getAttribute('data-car-id');
           setCurrentCarId(carId).then(() => {
-            updateCarSelectionUI();
+            window.location.hash = '#my-car-overview';
             menu.style.display = 'none';
           });
         };
