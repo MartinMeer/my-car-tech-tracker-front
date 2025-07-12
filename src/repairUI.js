@@ -1,22 +1,25 @@
 import { DataService } from './dataService.js';
 
+// Global variables for repair operations
+let sparesList = [];
+let spareCounter = 1;
+
+// Make sparesList globally accessible for service record manager
+window.sparesList = sparesList;
+
 export async function renderRepairHistory() {
   const container = document.getElementById('repair-history-list');
   if (!container) return;
-  
   container.innerHTML = '<div class="loading">Загрузка истории ремонтов...</div>';
-  
   try {
     const [repairs, cars] = await Promise.all([
       DataService.getRepairs(),
       DataService.getCars()
     ]);
-    
     if (!repairs || repairs.length === 0) {
       container.innerHTML = '<div class="empty">Нет записей о ремонтах.</div>';
       return;
     }
-    
     // Group repairs by carId
     const repairsByCar = {};
     repairs.forEach(r => {
@@ -67,41 +70,48 @@ export async function renderRepairHistory() {
   }
 }
 
-// Global variables for repair popup
-let sparesList = [];
-let spareCounter = 1;
-
+// Open repair popup
 export function openRepairPopup() {
+  // Check if service record exists
+  if (!window.currentServiceRecord) {
+    alert('Сначала выберите автомобиль для обслуживания');
+    return;
+  }
+  
   sparesList = [];
   spareCounter = 1;
   document.getElementById('spares-list').innerHTML = '';
   document.getElementById('repair-total').textContent = '0 ₽';
   document.getElementById('repair-work-cost').value = '';
   
-  // Set default date to today
-  const dateInput = document.getElementById('repair-date');
-  if (dateInput) {
-    const today = new Date();
-    const dd = String(today.getDate()).padStart(2, '0');
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const yyyy = today.getFullYear();
-    dateInput.value = `${dd}.${mm}.${yyyy}`;
-  } 
-  
-  // Set default mileage to current car's mileage
+  // Set default mileage to selected car's mileage from service record
   const mileageInput = document.getElementById('repair-mileage');
   if (mileageInput) {
-    getCurrentCarFromBackend().then(car => {
-      if (car && car.mileage != null) {
-        mileageInput.value = car.mileage;
-      } else {
-        mileageInput.value = '';
-      }
-    });
+    // Get mileage from service record if available
+    const serviceRecord = window.currentServiceRecord;
+    if (serviceRecord && serviceRecord.carId) {
+      // Try to get car mileage from service record context
+      DataService.getCars().then(cars => {
+        const car = cars.find(c => c.id == serviceRecord.carId);
+        if (car && car.mileage != null) {
+          mileageInput.value = car.mileage;
+        } else {
+          mileageInput.value = '';
+        }
+      });
+    } else {
+      // Fallback to current car
+      getCurrentCarFromBackend().then(car => {
+        if (car && car.mileage != null) {
+          mileageInput.value = car.mileage;
+        } else {
+          mileageInput.value = '';
+        }
+      });
+    }
   }
 
   document.getElementById('repair-entry-popup').style.display = 'flex';
-  
   // Remove any previous event listeners to avoid duplicates
   const workCostInput = document.getElementById('repair-work-cost');
   if (workCostInput) {
@@ -111,23 +121,46 @@ export function openRepairPopup() {
 }
 
 export function closeRepairPopup() {
-  document.getElementById('repair-entry-popup').style.display = 'none';
+  const popup = document.getElementById('repair-entry-popup');
+  if (popup) {
+    popup.style.display = 'none';
+  }
+  
+  // Reset spares list
   sparesList = [];
+  window.sparesList = sparesList;
 }
 
 export function openSparePopup() {
-  document.getElementById('spare-name').value = '';
-  document.getElementById('spare-cost').value = '0';
-  document.getElementById('spare-entry-popup').style.display = 'flex';
+  // Reset spare form
+  const nameInput = document.getElementById('spare-name');
+  const costInput = document.getElementById('spare-cost');
+  
+  if (nameInput) nameInput.value = '';
+  if (costInput) costInput.value = '0';
+  
+  // Show popup
+  const popup = document.getElementById('spare-entry-popup');
+  if (popup) {
+    popup.style.display = 'flex';
+  }
 }
 
 export function closeSparePopup() {
-  document.getElementById('spare-entry-popup').style.display = 'none';
+  const popup = document.getElementById('spare-entry-popup');
+  if (popup) {
+    popup.style.display = 'none';
+  }
 }
 
 export function addSpare() {
-  const name = document.getElementById('spare-name').value.trim();
-  const cost = parseFloat(document.getElementById('spare-cost').value) || 0;
+  const nameInput = document.getElementById('spare-name');
+  const costInput = document.getElementById('spare-cost');
+  
+  if (!nameInput || !costInput) return;
+  
+  const name = nameInput.value.trim();
+  const cost = parseFloat(costInput.value) || 0;
   
   if (!name) {
     alert('Введите название запчасти');
@@ -141,76 +174,57 @@ export function addSpare() {
   };
   
   sparesList.push(spare);
+  window.sparesList = sparesList; // Update global reference
   
   // Add to UI
   const sparesListDiv = document.getElementById('spares-list');
-  const spareDiv = document.createElement('div');
-  spareDiv.className = 'spare-item';
-  spareDiv.innerHTML = `
-    <span>${spare.id}. ${spare.name}</span>
-    <span>${spare.cost.toFixed(2)} ₽</span>
-  `;
-  sparesListDiv.appendChild(spareDiv);
+  if (sparesListDiv) {
+    const spareDiv = document.createElement('div');
+    spareDiv.className = 'spare-item';
+    spareDiv.innerHTML = `
+      <span>${spare.id}. ${spare.name}</span>
+      <span>${spare.cost.toFixed(2)} ₽</span>
+    `;
+    sparesListDiv.appendChild(spareDiv);
+  }
   
   // Update total
   calculateRepairTotal();
   
+  // Close popup
   closeSparePopup();
 }
 
 export function calculateRepairTotal() {
   const sparesTotal = sparesList.reduce((sum, spare) => sum + spare.cost, 0);
-  const workCost = parseFloat(document.getElementById('repair-work-cost')?.value) || 0;
+  const workCostInput = document.getElementById('repair-work-cost');
+  const workCost = workCostInput ? parseFloat(workCostInput.value) || 0 : 0;
   const total = sparesTotal + workCost;
-  document.getElementById('repair-total').textContent = `${total.toFixed(2)} ₽`;
-}
-
-export async function saveRepair() {
-  try {
-    // Validate date and mileage
-    const date = document.getElementById('repair-date').value.trim();
-    const mileage = document.getElementById('repair-mileage').value.trim();
-    
-    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
-      alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
-      return;
-    }
-    if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
-      alert('Пожалуйста, введите корректный пробег');
-      return;
-    }
-    
-    const total = parseFloat(document.getElementById('repair-total').textContent) || 0;
-    const operationName = document.getElementById('repair-operation-name') ? document.getElementById('repair-operation-name').value.trim() : '';
-    const workCost = parseFloat(document.getElementById('repair-work-cost')?.value) || 0;
-    
-    const repairData = {
-      operationName: operationName,
-      id: Date.now(), // Simple ID for demo
-      date: date,
-      spares: sparesList,
-      workCost: workCost,
-      totalCost: total,
-      carId: localStorage.getItem('currentCarId'),
-      mileage: Number(mileage)
-    };
-    
-    // Save using DataService (handles localStorage vs backend)
-    const result = await DataService.saveRepair(repairData);
-    
-    console.log('Saving repair:', repairData);
-    console.log('Save result:', result);
-    closeRepairPopup();
-    alert('Отчет о ремонте сохранен!');
-  } catch (error) {
-    console.error('Error saving repair:', error);
-    alert('Ошибка сохранения: ' + error.message);
+  
+  const totalDiv = document.getElementById('repair-total');
+  if (totalDiv) {
+    totalDiv.textContent = `${total.toFixed(2)} ₽`;
   }
 }
 
-// Helper function
+// Helper function to get current car
 async function getCurrentCarFromBackend() {
+  // TODO: Replace with actual API call
+  // return fetch(`/api/cars/${carId}`).then(res => res.json());
+  
   const carId = localStorage.getItem('currentCarId');
+  console.log('Selected car ID:', carId);
+  
+  if (!carId) {
+    console.log('No car ID found in localStorage');
+    return null;
+  }
+  
   const cars = await DataService.getCars();
-  return cars.find(c => c.id == carId);
+  console.log('Available cars:', cars);
+  
+  const selectedCar = cars.find(c => c.id == carId);
+  console.log('Selected car:', selectedCar);
+  
+  return selectedCar || null;
 } 

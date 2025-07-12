@@ -20,13 +20,17 @@ export const DataService = {
           alert('Ошибка чтения localStorage для ТО. Данные будут сброшены.');
           localStorage.removeItem('maintenance');
         }
-        existing.push(data);
+        
+        // Handle both single record and array of records
+        const recordsToAdd = Array.isArray(data) ? data : [data];
+        existing.push(...recordsToAdd);
+        
         try {
           localStorage.setItem('maintenance', JSON.stringify(existing));
         } catch (e) {
           alert('Ошибка записи в localStorage для ТО.');
         }
-        return { success: true, id: data.id };
+        return { success: true, id: Array.isArray(data) ? data.map(r => r.id) : data.id };
       }
     } catch (error) {
       throw new Error('Ошибка сохранения ТО: ' + error.message);
@@ -72,17 +76,26 @@ export const DataService = {
           alert('Ошибка чтения localStorage для ремонтов. Данные будут сброшены.');
           localStorage.removeItem('repairs');
         }
-        existing.push(data);
+        
+        // Handle both single record and array of records
+        const recordsToAdd = Array.isArray(data) ? data : [data];
+        existing.push(...recordsToAdd);
+        
         try {
           localStorage.setItem('repairs', JSON.stringify(existing));
         } catch (e) {
           alert('Ошибка записи в localStorage для ремонтов.');
         }
-        return { success: true, id: data.id };
+        return { success: true, id: Array.isArray(data) ? data.map(r => r.id) : data.id };
       }
     } catch (error) {
       throw new Error('Ошибка сохранения ремонта: ' + error.message);
     }
+  },
+
+  // Alias for saveRepair to maintain compatibility
+  async saveRepairs(data) {
+    return this.saveRepair(data);
   },
 
   async getRepairs() {

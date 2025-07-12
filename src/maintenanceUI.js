@@ -48,13 +48,9 @@ export function initializeCarOverviewUI() {
     if (vinDiv) vinDiv.textContent = car.vin ? `VIN: ${car.vin}` : '';
     // Mileage
     const mileageDiv = document.getElementById('car-mileage');
-    if (mileageDiv) mileageDiv.textContent = car.mileage != null ? `Пробег: ${car.mileage} км` : '';
-    // Tech section links
-    const maintLink = document.getElementById('car-maint-history-link');
-    if (maintLink) maintLink.href = `#mainten-history?car=${car.id}`;
-    const repairLink = document.getElementById('car-repair-history-link');
-    if (repairLink) repairLink.href = `#repair-history?car=${car.id}`;
-    // --- Finance totals (unchanged) ---
+    if (mileageDiv) mileageDiv.textContent = car.mileage ? `Пробег: ${car.mileage} км` : '';
+    
+    // --- Finance totals ---
     const maintenField = document.getElementById('total-mainten-cost');
     const repairField = document.getElementById('total-repair-cost');
     const ownField = document.getElementById('total-own-cost');
@@ -72,41 +68,12 @@ export function initializeCarOverviewUI() {
         if (repairField) repairField.textContent = 'Ошибка';
         if (ownField) ownField.textContent = 'Ошибка';
       });
-    // --- Edit/Delete button logic ---
-    const editBtn = document.getElementById('edit-car-btn');
-    if (editBtn) {
-      editBtn.onclick = () => {
-        window.location.hash = `#add-car?edit=${car.id}`;
-      };
-    }
-    const deleteBtn = document.getElementById('delete-car-btn');
-    if (deleteBtn) {
-      deleteBtn.onclick = () => {
-        if (window.showConfirmationDialog) {
-          window.showConfirmationDialog('Вы уверены, что хотите удалить машину?', async () => {
-            if (window.removeCarFromBackend) {
-              await window.removeCarFromBackend(car.id);
-              window.location.hash = '#my-cars';
-            }
-          }, () => {});
-        } else {
-          if (confirm('Вы уверены, что хотите удалить машину?')) {
-            if (window.removeCarFromBackend) {
-              window.removeCarFromBackend(car.id).then(() => {
-                window.location.hash = '#my-cars';
-              });
-            }
-          }
-        }
-      };
-    }
   });
 }
 
 export function initializeServiceCardUI() {
   console.log('Service card UI initializing...');
   loadOperations();
-  updateServiceHeader();
   
   // Event listeners
   const operationDropdown = document.getElementById('operation-dropdown');
@@ -130,6 +97,13 @@ export function initializeServiceCardUI() {
     }
   });
   
+  // Add event listener for work cost input
+  document.addEventListener('input', function(e) {
+    if (e.target.id === 'work-cost') {
+      calculateMaintTotal();
+    }
+  });
+  
   console.log('Service card UI initialized successfully');
 }
 
@@ -141,19 +115,80 @@ export async function loadOperations() {
     // const response = await fetch('/api/maintenance/operations');
     // const operations = await response.json();
     
-    // Mock data for demo
+    // Enhanced mock data for demo with more realistic operations
     const operations = [
-      { id: 1, name: 'Замена масла' },
-      { id: 2, name: 'Замена тормозных колодок' },
-      { id: 3, name: 'Замена фильтров' },
-      { id: 4, name: 'Диагностика двигателя' },
-      { id: 5, name: 'Замена ремня ГРМ' }
+      // Engine & Oil
+      { id: 1, name: 'Замена масла и фильтров', category: 'engine', consumables: [
+        { id: 1, name: 'Моторное масло', defaultItem: '5W-30 синтетическое', defaultCost: 2500 },
+        { id: 2, name: 'Масляный фильтр', defaultItem: 'Масляный фильтр', defaultCost: 800 },
+        { id: 3, name: 'Воздушный фильтр', defaultItem: 'Воздушный фильтр', defaultCost: 600 }
+      ]},
+      { id: 2, name: 'Замена масла (только масло)', category: 'engine', consumables: [
+        { id: 1, name: 'Моторное масло', defaultItem: '5W-30 синтетическое', defaultCost: 2500 },
+        { id: 2, name: 'Масляный фильтр', defaultItem: 'Масляный фильтр', defaultCost: 800 }
+      ]},
+      
+      // Brakes
+      { id: 3, name: 'Замена тормозных колодок', category: 'brakes', consumables: [
+        { id: 1, name: 'Тормозные колодки передние', defaultItem: 'Тормозные колодки', defaultCost: 3500 },
+        { id: 2, name: 'Тормозные колодки задние', defaultItem: 'Тормозные колодки', defaultCost: 2800 },
+        { id: 3, name: 'Тормозная жидкость', defaultItem: 'DOT-4', defaultCost: 400 }
+      ]},
+      { id: 4, name: 'Замена тормозных дисков', category: 'brakes', consumables: [
+        { id: 1, name: 'Тормозные диски передние', defaultItem: 'Тормозные диски', defaultCost: 4500 },
+        { id: 2, name: 'Тормозные диски задние', defaultItem: 'Тормозные диски', defaultCost: 3800 },
+        { id: 3, name: 'Тормозные колодки', defaultItem: 'Тормозные колодки', defaultCost: 2800 }
+      ]},
+      
+      // Cooling System
+      { id: 5, name: 'Замена охлаждающей жидкости', category: 'cooling', consumables: [
+        { id: 1, name: 'Охлаждающая жидкость', defaultItem: 'Антифриз G12', defaultCost: 1200 },
+        { id: 2, name: 'Патрубки системы охлаждения', defaultItem: 'Патрубки', defaultCost: 800 }
+      ]},
+      
+      // Transmission
+      { id: 6, name: 'Замена масла в коробке передач', category: 'transmission', consumables: [
+        { id: 1, name: 'Трансмиссионное масло', defaultItem: 'Масло ATF', defaultCost: 1800 },
+        { id: 2, name: 'Масляный фильтр АКПП', defaultItem: 'Фильтр АКПП', defaultCost: 1200 }
+      ]},
+      
+      // Suspension
+      { id: 7, name: 'Замена амортизаторов', category: 'suspension', consumables: [
+        { id: 1, name: 'Амортизаторы передние', defaultItem: 'Амортизаторы', defaultCost: 3200 },
+        { id: 2, name: 'Амортизаторы задние', defaultItem: 'Амортизаторы', defaultCost: 2800 },
+        { id: 3, name: 'Опорные подшипники', defaultItem: 'Подшипники', defaultCost: 600 }
+      ]},
+      
+      // Electrical
+      { id: 8, name: 'Замена аккумулятора', category: 'electrical', consumables: [
+        { id: 1, name: 'Аккумулятор', defaultItem: 'АКБ 60 Ач', defaultCost: 4500 }
+      ]},
+      
+      // Filters
+      { id: 9, name: 'Замена всех фильтров', category: 'filters', consumables: [
+        { id: 1, name: 'Масляный фильтр', defaultItem: 'Масляный фильтр', defaultCost: 800 },
+        { id: 2, name: 'Воздушный фильтр', defaultItem: 'Воздушный фильтр', defaultCost: 600 },
+        { id: 3, name: 'Топливный фильтр', defaultItem: 'Топливный фильтр', defaultCost: 900 },
+        { id: 4, name: 'Салонный фильтр', defaultItem: 'Салонный фильтр', defaultCost: 500 }
+      ]},
+      
+      // Timing Belt
+      { id: 10, name: 'Замена ремня ГРМ', category: 'timing', consumables: [
+        { id: 1, name: 'Ремень ГРМ', defaultItem: 'Ремень ГРМ', defaultCost: 2800 },
+        { id: 2, name: 'Ролик натяжителя', defaultItem: 'Ролик натяжителя', defaultCost: 1200 },
+        { id: 3, name: 'Помпа системы охлаждения', defaultItem: 'Помпа', defaultCost: 1800 }
+      ]}
     ];
     
     const dropdown = document.getElementById('operation-dropdown');
     if (!dropdown) {
       console.error('Operation dropdown not found!');
       return;
+    }
+    
+    // Clear existing options except the first one
+    while (dropdown.children.length > 1) {
+      dropdown.removeChild(dropdown.lastChild);
     }
     
     operations.forEach(op => {
@@ -169,48 +204,78 @@ export async function loadOperations() {
   }
 }
 
-// Update service header with car name
-export async function updateServiceHeader() {
-  try {
-    const car = await fetchSelectedCarFromBackend();
-    if (car) {
-      const header = document.getElementById('service-header');
-      header.textContent = `Забрал ${car.name} из ремонта?`;
-    } else {
-      // No car selected, show default message
-      const header = document.getElementById('service-header');
-      header.textContent = 'Забрал автомобиль из ремонта?';
-    }
-  } catch (error) {
-    console.error('Error updating service header:', error);
-    // Show default message on error
-    const header = document.getElementById('service-header');
-    header.textContent = 'Забрал автомобиль из ремонта?';
-  }
-}
-
 // Handle operation selection
 export async function onOperationSelect(event) {
   const operationId = event.target.value;
   if (!operationId) return;
+  
+  // Check if service record exists
+  if (!window.currentServiceRecord) {
+    alert('Сначала выберите автомобиль для обслуживания');
+    event.target.value = '';
+    return;
+  }
   
   try {
     // Replace with actual backend call
     // const response = await fetch(`/api/maintenance/operations/${operationId}`);
     // currentOperation = await response.json();
     
-    // Mock data for demo
-    currentOperation = {
-      id: operationId,
-      name: event.target.options[event.target.selectedIndex].text,
-      consumables: [
-        { id: 1, name: 'Моторное масло' },
-        { id: 2, name: 'Масляный фильтр' },
-        { id: 3, name: 'Воздушный фильтр' }
-      ]
-    };
+    // Mock data for demo - find the selected operation
+    const operations = [
+      { id: 1, name: 'Замена масла и фильтров', category: 'engine', consumables: [
+        { id: 1, name: 'Моторное масло', defaultItem: '5W-30 синтетическое', defaultCost: 2500 },
+        { id: 2, name: 'Масляный фильтр', defaultItem: 'Масляный фильтр', defaultCost: 800 },
+        { id: 3, name: 'Воздушный фильтр', defaultItem: 'Воздушный фильтр', defaultCost: 600 }
+      ]},
+      { id: 2, name: 'Замена масла (только масло)', category: 'engine', consumables: [
+        { id: 1, name: 'Моторное масло', defaultItem: '5W-30 синтетическое', defaultCost: 2500 },
+        { id: 2, name: 'Масляный фильтр', defaultItem: 'Масляный фильтр', defaultCost: 800 }
+      ]},
+      { id: 3, name: 'Замена тормозных колодок', category: 'brakes', consumables: [
+        { id: 1, name: 'Тормозные колодки передние', defaultItem: 'Тормозные колодки', defaultCost: 3500 },
+        { id: 2, name: 'Тормозные колодки задние', defaultItem: 'Тормозные колодки', defaultCost: 2800 },
+        { id: 3, name: 'Тормозная жидкость', defaultItem: 'DOT-4', defaultCost: 400 }
+      ]},
+      { id: 4, name: 'Замена тормозных дисков', category: 'brakes', consumables: [
+        { id: 1, name: 'Тормозные диски передние', defaultItem: 'Тормозные диски', defaultCost: 4500 },
+        { id: 2, name: 'Тормозные диски задние', defaultItem: 'Тормозные диски', defaultCost: 3800 },
+        { id: 3, name: 'Тормозные колодки', defaultItem: 'Тормозные колодки', defaultCost: 2800 }
+      ]},
+      { id: 5, name: 'Замена охлаждающей жидкости', category: 'cooling', consumables: [
+        { id: 1, name: 'Охлаждающая жидкость', defaultItem: 'Антифриз G12', defaultCost: 1200 },
+        { id: 2, name: 'Патрубки системы охлаждения', defaultItem: 'Патрубки', defaultCost: 800 }
+      ]},
+      { id: 6, name: 'Замена масла в коробке передач', category: 'transmission', consumables: [
+        { id: 1, name: 'Трансмиссионное масло', defaultItem: 'Масло ATF', defaultCost: 1800 },
+        { id: 2, name: 'Масляный фильтр АКПП', defaultItem: 'Фильтр АКПП', defaultCost: 1200 }
+      ]},
+      { id: 7, name: 'Замена амортизаторов', category: 'suspension', consumables: [
+        { id: 1, name: 'Амортизаторы передние', defaultItem: 'Амортизаторы', defaultCost: 3200 },
+        { id: 2, name: 'Амортизаторы задние', defaultItem: 'Амортизаторы', defaultCost: 2800 },
+        { id: 3, name: 'Опорные подшипники', defaultItem: 'Подшипники', defaultCost: 600 }
+      ]},
+      { id: 8, name: 'Замена аккумулятора', category: 'electrical', consumables: [
+        { id: 1, name: 'Аккумулятор', defaultItem: 'АКБ 60 Ач', defaultCost: 4500 }
+      ]},
+      { id: 9, name: 'Замена всех фильтров', category: 'filters', consumables: [
+        { id: 1, name: 'Масляный фильтр', defaultItem: 'Масляный фильтр', defaultCost: 800 },
+        { id: 2, name: 'Воздушный фильтр', defaultItem: 'Воздушный фильтр', defaultCost: 600 },
+        { id: 3, name: 'Топливный фильтр', defaultItem: 'Топливный фильтр', defaultCost: 900 },
+        { id: 4, name: 'Салонный фильтр', defaultItem: 'Салонный фильтр', defaultCost: 500 }
+      ]},
+      { id: 10, name: 'Замена ремня ГРМ', category: 'timing', consumables: [
+        { id: 1, name: 'Ремень ГРМ', defaultItem: 'Ремень ГРМ', defaultCost: 2800 },
+        { id: 2, name: 'Ролик натяжителя', defaultItem: 'Ролик натяжителя', defaultCost: 1200 },
+        { id: 3, name: 'Помпа системы охлаждения', defaultItem: 'Помпа', defaultCost: 1800 }
+      ]}
+    ];
     
-    openMaintPopup();
+    currentOperation = operations.find(op => op.id == operationId);
+    
+    if (currentOperation) {
+      openMaintPopup();
+    }
   } catch (error) {
     console.error('Error loading operation details:', error);
   }
@@ -222,26 +287,31 @@ export function openMaintPopup() {
   
   document.getElementById('maint-operation-name').textContent = currentOperation.name;
   
-  // Set default date to today
-  const dateInput = document.getElementById('maint-date');
-  if (dateInput) {
-    const today = new Date();
-    const dd = String(today.getDate()).padStart(2, '0');
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const yyyy = today.getFullYear();
-    dateInput.value = `${dd}.${mm}.${yyyy}`;
-  }
-  
-  // Set default mileage to current car's mileage
+  // Set default mileage to selected car's mileage from service record
   const mileageInput = document.getElementById('maint-mileage');
   if (mileageInput) {
-    getCurrentCarFromBackend().then(car => {
-      if (car && car.mileage != null) {
-        mileageInput.value = car.mileage;
-      } else {
-        mileageInput.value = '';
-      }
-    });
+    // Get mileage from service record if available
+    const serviceRecord = window.currentServiceRecord;
+    if (serviceRecord && serviceRecord.carId) {
+      // Try to get car mileage from service record context
+      DataService.getCars().then(cars => {
+        const car = cars.find(c => c.id == serviceRecord.carId);
+        if (car && car.mileage != null) {
+          mileageInput.value = car.mileage;
+        } else {
+          mileageInput.value = '';
+        }
+      });
+    } else {
+      // Fallback to current car
+      getCurrentCarFromBackend().then(car => {
+        if (car && car.mileage != null) {
+          mileageInput.value = car.mileage;
+        } else {
+          mileageInput.value = '';
+        }
+      });
+    }
   }
   
   // Populate consumables
@@ -290,66 +360,6 @@ export function calculateMaintTotal() {
   document.getElementById('maint-total').textContent = `${total.toFixed(2)} ₽`;
 }
 
-// Save maintenance entry
-export async function saveMaintenance() {
-  try {
-    // Validate date and mileage
-    const date = document.getElementById('maint-date').value.trim();
-    const mileage = document.getElementById('maint-mileage').value.trim();
-    
-    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
-      alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
-      return;
-    }
-    if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
-      alert('Пожалуйста, введите корректный пробег');
-      return;
-    }
-    
-    const consumables = [];
-    const consumableItems = document.querySelectorAll('#consumables-list .consumable-item');
-    
-    consumableItems.forEach(item => {
-      const name = item.querySelector('.consumable-name').textContent;
-      const itemInput = item.querySelector('.item-input').value;
-      const cost = parseFloat(item.querySelector('.cost-input').value) || 0;
-      
-      consumables.push({
-        name: name,
-        item: itemInput,
-        cost: cost
-      });
-    });
-    
-    const workCost = parseFloat(document.getElementById('work-cost').value) || 0;
-    const total = parseFloat(document.getElementById('maint-total').textContent) || 0;
-    
-    const maintenanceData = {
-      id: Date.now(), // Simple ID for demo
-      date: date,
-      operationId: currentOperation.id,
-      operationName: currentOperation.name,
-      consumables: consumables,
-      workCost: workCost,
-      totalCost: total,
-      carId: localStorage.getItem('currentCarId'),
-      mileage: Number(mileage)
-    };
-    
-    // Save using DataService (handles localStorage vs backend)
-    const result = await DataService.saveMaintenance(maintenanceData);
-    
-    console.log('Saving maintenance:', maintenanceData);
-    console.log('Save result:', result);
-    closeMaintPopup();
-    alert('Отчет о техобслуживании сохранен!');
-    
-  } catch (error) {
-    console.error('Error saving maintenance:', error);
-    alert('Ошибка сохранения: ' + error.message);
-  }
-}
-
 // Fetch car totals from backend (mock/demo implementation)
 export async function fetchCarTotalsFromBackend(carId) {
   // TODO: Replace with real backend API call
@@ -368,23 +378,20 @@ export async function fetchCarTotalsFromBackend(carId) {
   };
 }
 
+// Render maintenance history
 export async function renderMaintenHistory() {
   const container = document.getElementById('mainten-history-list');
   if (!container) return;
-  
   container.innerHTML = '<div class="loading">Загрузка истории ТО...</div>';
-  
   try {
     const [maintenances, cars] = await Promise.all([
       DataService.getMaintenance(),
       DataService.getCars()
     ]);
-    
     if (!maintenances || maintenances.length === 0) {
       container.innerHTML = '<div class="empty">Нет записей о ТО.</div>';
       return;
     }
-    
     // Group by carId
     const maintByCar = {};
     maintenances.forEach(m => {
@@ -435,14 +442,11 @@ export async function renderMaintenHistory() {
   }
 }
 
-// Helper functions
+// Helper function to get current car
 async function getCurrentCarFromBackend() {
-  const carId = localStorage.getItem('currentCarId');
-  const cars = await DataService.getCars();
-  return cars.find(c => c.id == carId);
-}
-
-async function fetchSelectedCarFromBackend() {
+  // TODO: Replace with actual API call
+  // return fetch(`/api/cars/${carId}`).then(res => res.json());
+  
   const carId = localStorage.getItem('currentCarId');
   console.log('Selected car ID:', carId);
   

@@ -9,8 +9,7 @@ import {
   renderMaintenHistory,
   openMaintPopup,
   closeMaintPopup,
-  calculateMaintTotal,
-  saveMaintenance
+  calculateMaintTotal
 } from './maintenanceUI.js';
 import {
   renderRepairHistory,
@@ -19,9 +18,9 @@ import {
   openSparePopup,
   closeSparePopup,
   addSpare,
-  calculateRepairTotal,
-  saveRepair
+  calculateRepairTotal
 } from './repairUI.js';
+import { initializeServiceRecord } from './serviceRecordManager.js';
 
 // Main content element
 const mainContent = document.getElementById('main-content');
@@ -30,14 +29,12 @@ const mainContent = document.getElementById('main-content');
 window.openMaintPopup = openMaintPopup;
 window.closeMaintPopup = closeMaintPopup;
 window.calculateMaintTotal = calculateMaintTotal;
-window.saveMaintenance = saveMaintenance;
 window.openRepairPopup = openRepairPopup;
 window.closeRepairPopup = closeRepairPopup;
 window.openSparePopup = openSparePopup;
 window.closeSparePopup = closeSparePopup;
 window.addSpare = addSpare;
 window.calculateRepairTotal = calculateRepairTotal;
-window.saveRepair = saveRepair;
 window.removeCarFromBackend = removeCarFromBackend;
 window.showConfirmationDialog = showConfirmationDialog;
 
@@ -54,6 +51,7 @@ function initializePageUI(page) {
       initializeCarOverviewUI();
       break;
     case 'service-card':
+      initializeServiceRecord();
       initializeServiceCardUI();
       break;
     case 'mainten-history':
@@ -68,43 +66,54 @@ function initializePageUI(page) {
   }
 }
 
-// Initial page load
-window.addEventListener('DOMContentLoaded', () => {
-  // Always default to #my-cars if no hash
-  if (!window.location.hash || window.location.hash === '#') {
-    window.location.hash = '#my-cars';
+// Initialize the application
+async function initializeApp() {
+  try {
+    // Load initial page
+    const hash = window.location.hash || '#my-cars';
+    await loadPage(hash, mainContent, initializePageUI);
+    
+    // Initialize car selection UI
+    updateCarSelectionUI();
+    
+    // Setup hash change listener
+    window.addEventListener('hashchange', async () => {
+      await loadPage(window.location.hash, mainContent, initializePageUI);
+      
+      // Hide car selection popup on navigation
+      const carSelectMenu = document.getElementById('car-select-menu');
+      if (carSelectMenu) {
+        carSelectMenu.style.display = 'none';
+      }
+    });
+    
+    // Setup car image dropdown
+    setupCarImageDropdown();
+    
+    console.log('App initialized successfully');
+  } catch (error) {
+    console.error('Error initializing app:', error);
   }
-  loadPage(window.location.hash, mainContent, initializePageUI);
-  // Always update car selection UI and dropdown
-  updateCarSelectionUI();
-  // Dropdown menu for 'Мои машины' link
-  const myCarsLink = document.getElementById('my-cars-link');
+}
+
+// Setup car image dropdown functionality
+function setupCarImageDropdown() {
+  const carImgDiv = document.getElementById('current-car-img');
   const carSelectMenu = document.getElementById('car-select-menu');
-  if (myCarsLink && carSelectMenu) {
-    myCarsLink.onclick = function(e) {
-      e.preventDefault();
+  
+  if (carImgDiv && carSelectMenu) {
+    carImgDiv.onclick = function(e) {
       e.stopPropagation();
       carSelectMenu.style.display = carSelectMenu.style.display === 'block' ? 'none' : 'block';
     };
+    
     document.addEventListener('click', function(e) {
-      if (!carSelectMenu.contains(e.target) && e.target !== myCarsLink) {
+      if (!carSelectMenu.contains(e.target) && e.target !== carImgDiv) {
         carSelectMenu.style.display = 'none';
       }
     });
   }
-});
+}
 
-// Hash navigation
-window.addEventListener('hashchange', () => {
-  loadPage(window.location.hash, mainContent, initializePageUI);
-  // Always update car selection UI and dropdown
-  updateCarSelectionUI();
-  // Hide car selection popup on navigation
-  const carSelectMenu = document.getElementById('car-select-menu');
-  if (carSelectMenu) {
-    carSelectMenu.style.display = 'none';
-  }
-});
-
-// Export for testing or further extension
-export { mainContent, initializePageUI }; 
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeApp); 
