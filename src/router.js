@@ -20,7 +20,9 @@ export const pageMap = {
 };
 
 export function loadPage(hash, mainContent, initializePageUI) {
-  const page = hash.replace('#', '');
+  // Extract page name before '?' (for hash like #add-car?edit=123)
+  const hashValue = hash.replace('#', '');
+  const page = hashValue.split('?')[0];
   const file = pageMap[page] || 'cars/my-car-overview.html';
   mainContent.innerHTML = '<div class="loading">Загрузка...</div>';
   fetch(file)

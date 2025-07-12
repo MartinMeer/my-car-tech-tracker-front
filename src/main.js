@@ -2,7 +2,7 @@ import { CONFIG } from './config.js';
 import { DataService } from './dataService.js';
 import { pageMap, loadPage } from './router.js';
 import { showConfirmationDialog } from './dialogs.js';
-import { initializeMyCarsUI, initializeAddCarUI, updateCarSelectionUI } from './carsUI.js';
+import { initializeMyCarsUI, initializeAddCarUI, updateCarSelectionUI, removeCarFromBackend } from './carsUI.js';
 import {
   initializeCarOverviewUI,
   initializeServiceCardUI,
@@ -38,6 +38,8 @@ window.closeSparePopup = closeSparePopup;
 window.addSpare = addSpare;
 window.calculateRepairTotal = calculateRepairTotal;
 window.saveRepair = saveRepair;
+window.removeCarFromBackend = removeCarFromBackend;
+window.showConfirmationDialog = showConfirmationDialog;
 
 // UI initialization stub (to be replaced with real logic)
 function initializePageUI(page) {
@@ -68,7 +70,11 @@ function initializePageUI(page) {
 
 // Initial page load
 window.addEventListener('DOMContentLoaded', () => {
-  loadPage(window.location.hash || '#my-cars', mainContent, initializePageUI);
+  // Always default to #my-cars if no hash
+  if (!window.location.hash || window.location.hash === '#') {
+    window.location.hash = '#my-cars';
+  }
+  loadPage(window.location.hash, mainContent, initializePageUI);
   // Always update car selection UI and dropdown
   updateCarSelectionUI();
   // Dropdown menu for 'Мои машины' link

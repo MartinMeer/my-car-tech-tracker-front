@@ -82,6 +82,38 @@ function setupAddCarForm() {
       }
     }
     if (!brand || !model || !year || !vin || !mileage) return;
+    const editId = form.getAttribute('data-edit-id');
+    if (editId) {
+      // Edit mode: check if required fields changed
+      const cars = await DataService.getCars();
+      const car = cars.find(c => c.id == editId);
+      let changed = false;
+      if (car) {
+        changed = car.brand !== brand || car.model !== model || car.year != year || car.vin !== vin || car.mileage != mileage;
+      }
+      const doSave = async () => {
+        // Update car object
+        if (car) {
+          car.brand = brand;
+          car.model = model;
+          car.year = year;
+          car.vin = vin;
+          car.mileage = mileage;
+          car.price = price;
+          car.nickname = nickname;
+          if (imageBase64) car.img = imageBase64;
+          await DataService.saveCars(cars);
+        }
+        window.location.hash = '#my-car-overview';
+      };
+      if (changed && window.showConfirmationDialog) {
+        window.showConfirmationDialog('Сохранить изменения?', doSave, () => {});
+      } else {
+        await doSave();
+      }
+      return;
+    }
+    // Add mode
     showConfirmationDialog(
       `Вы уверены, что хотите добавить автомобиль "${name}"?`,
       () => {
@@ -103,8 +135,8 @@ function setupAddCarForm() {
         })
           .then(() => {
             form.reset();
-            renderCarsList();
-            updateCarSelectionUI();
+            if (typeof renderCarsList === 'function') renderCarsList();
+            if (typeof updateCarSelectionUI === 'function') updateCarSelectionUI();
           })
           .catch(error => {
             alert('Ошибка добавления: ' + error.message);
@@ -126,25 +158,37 @@ export function updateCarSelectionUI() {
 
 function renderCurrentCar() {
   const carNameDiv = document.getElementById('current-car-name');
-  const carImgDiv = document.getElementById('current-car-img');
-  if (!carNameDiv || !carImgDiv) return;
+  const carImgEl = document.getElementById('current-car-img');
+  if (!carNameDiv || !carImgEl) return;
   carNameDiv.textContent = 'Загрузка...';
-  carImgDiv.textContent = '⏳';
+  carImgEl.src = '';
+  carImgEl.alt = 'car image';
   getCurrentCarFromBackend()
     .then(car => {
       if (car) {
         carNameDiv.textContent = car.name;
-        carImgDiv.textContent = car.img && car.img.startsWith('data:image/')
-          ? `<img src="${car.img}" alt="car image" style="width:2.5rem;height:2.5rem;object-fit:cover;border-radius:0.3rem;">`
-          : `<span style="font-size:1.5rem;">${car.img || '🚗'}</span>`;
+        if (car.img && car.img.startsWith('data:image/')) {
+          carImgEl.src = car.img;
+          carImgEl.alt = car.name || 'car image';
+        } else if (car.img && car.img.length === 1) { // emoji fallback
+          // Create a data URL for emoji fallback
+          carImgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>${encodeURIComponent(car.img)}</text></svg>`;
+          carImgEl.alt = car.name || 'car image';
+        } else {
+          // Default car emoji
+          carImgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>🚗</text></svg>`;
+          carImgEl.alt = 'car image';
+        }
       } else {
         carNameDiv.textContent = 'Автомобиль не выбран';
-        carImgDiv.textContent = '🚗';
+        carImgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>🚗</text></svg>`;
+        carImgEl.alt = 'car image';
       }
     })
     .catch(error => {
       carNameDiv.textContent = 'Ошибка загрузки';
-      carImgDiv.textContent = '❌';
+      carImgEl.src = '';
+      carImgEl.alt = 'Ошибка';
     });
 }
 
@@ -154,18 +198,30 @@ function renderCarsMenu() {
   menu.innerHTML = '<div class="loading">Загрузка...</div>';
   DataService.getCars()
     .then(cars => {
-      menu.innerHTML = cars.map(car =>
+      // Add 'Мои машины' entry at the top
+      let html = `<div class="car-menu-item" data-action="my-cars" style="font-weight:bold;">Мои машины</div>`;
+      html += cars.map(car =>
         `<div class="car-menu-item" data-car-id="${car.id}">${car.img && car.img.startsWith('data:image/')
           ? `<img src="${car.img}" alt="car image" style="width:2.5rem;height:2.5rem;object-fit:cover;border-radius:0.3rem;">`
           : `<span style="font-size:1.5rem;">${car.img || '🚗'}</span>`} ${car.name}</div>`
       ).join('');
+      menu.innerHTML = html;
+      // Add event listeners
       Array.from(menu.querySelectorAll('.car-menu-item')).forEach(item => {
         item.onclick = function() {
           const carId = this.getAttribute('data-car-id');
-          setCurrentCarId(carId).then(() => {
-            window.location.hash = '#my-car-overview';
+          const action = this.getAttribute('data-action');
+          if (action === 'my-cars') {
+            window.location.hash = '#my-cars';
             menu.style.display = 'none';
-          });
+            return;
+          }
+          if (carId) {
+            setCurrentCarId(carId).then(() => {
+              window.location.hash = '#my-car-overview';
+              menu.style.display = 'none';
+            });
+          }
         };
       });
     });
@@ -175,11 +231,73 @@ export function initializeAddCarUI() {
   setupAddCarForm();
   setupImagePreview();
   setupCancelButton();
+  // --- Edit mode support ---
+  const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+  const editId = params.get('edit');
+  const header = document.querySelector('.add-car-form h1, h1');
+  if (editId) {
+    if (header) header.textContent = 'Изменить информацию о машине';
+    DataService.getCars().then(cars => {
+      const car = cars.find(c => c.id == editId);
+      if (!car) return;
+      const form = document.getElementById('add-car-form');
+      if (!form) return;
+      form.setAttribute('data-edit-id', car.id);
+      form.querySelector('button[type="submit"]').textContent = 'Сохранить изменения';
+      form['brand'].value = car.brand || '';
+      form['model'].value = car.model || '';
+      form['year'].value = car.year || '';
+      form['vin'].value = car.vin || '';
+      form['mileage'].value = car.mileage || '';
+      form['price'].value = car.price || '';
+      form['nickname'].value = car.nickname || '';
+      // Show image preview if present
+      const imagePreview = document.getElementById('image-preview');
+      if (car.img && imagePreview) {
+        if (car.img.startsWith('data:image/')) {
+          imagePreview.innerHTML = `<img src="${car.img}" alt="Preview">`;
+        } else if (car.img.length === 1) {
+          imagePreview.innerHTML = `<span style="font-size:3rem;">${car.img}</span>`;
+        } else {
+          imagePreview.innerHTML = '';
+        }
+      }
+      setupRequiredFieldConfirmations(form, car);
+    });
+  } else {
+    if (header) header.textContent = 'Добавить новый автомобиль';
+    const form = document.getElementById('add-car-form');
+    if (form) setupRequiredFieldConfirmations(form, null);
+  }
+}
+
+function setupRequiredFieldConfirmations(form, original) {
+  // List of required field names
+  const requiredFields = ['brand', 'model', 'year', 'vin', 'mileage'];
+  if (!original) return; // Only attach listeners in edit mode
+  requiredFields.forEach(fieldName => {
+    const input = form[fieldName];
+    if (!input) return;
+    let prevValue = input.value;
+    input.addEventListener('focus', () => {
+      prevValue = input.value;
+    });
+    input.addEventListener('change', e => {
+      let changed = input.value !== (original[fieldName] || '');
+      if (changed && window.showConfirmationDialog) {
+        window.showConfirmationDialog(
+          'Вы уверены, что хотите изменить это поле?',
+          () => {},
+          () => { input.value = prevValue; }
+        );
+      }
+    });
+  });
 }
 
 function setupImagePreview() {
-  const imageInput = document.getElementById('car-img-input');
-  const imagePreview = document.getElementById('car-img-preview');
+  const imageInput = document.getElementById('car-image');
+  const imagePreview = document.getElementById('image-preview');
   if (!imageInput || !imagePreview) return;
   imageInput.onchange = function(e) {
     const file = e.target.files[0];
@@ -208,11 +326,62 @@ function setupImagePreview() {
 }
 
 function setupCancelButton() {
-  const cancelBtn = document.getElementById('cancel-add-car');
+  const cancelBtn = document.getElementById('cancel-btn');
   if (!cancelBtn) return;
   cancelBtn.onclick = () => {
-    window.location.hash = '#my-cars';
+    const form = document.getElementById('add-car-form');
+    if (!form) {
+      window.location.hash = '#my-cars';
+      return;
+    }
+    // Gather original data if in edit mode
+    const editId = form.getAttribute('data-edit-id');
+    let original = null;
+    if (editId) {
+      // Find the original car data
+      DataService.getCars().then(cars => {
+        original = cars.find(c => c.id == editId);
+        checkUnsavedAndMaybeClose(form, original);
+      });
+    } else {
+      checkUnsavedAndMaybeClose(form, null);
+    }
   };
+}
+
+function checkUnsavedAndMaybeClose(form, original) {
+  // Compare form values to original (if edit mode), or check if any field is filled (if add mode)
+  const brand = form['brand'].value.trim();
+  const model = form['model'].value.trim();
+  const year = form['year'].value.trim();
+  const vin = form['vin'].value.trim();
+  const mileage = form['mileage'].value.trim();
+  const price = form['price'].value.trim();
+  const nickname = form['nickname'].value.trim();
+  const imageInput = form['image'];
+  let changed = false;
+  if (original) {
+    changed =
+      brand !== (original.brand || '') ||
+      model !== (original.model || '') ||
+      year !== String(original.year || '') ||
+      vin !== (original.vin || '') ||
+      mileage !== String(original.mileage || '') ||
+      price !== String(original.price || '') ||
+      nickname !== (original.nickname || '') ||
+      (imageInput && imageInput.value); // if a new image is selected
+  } else {
+    changed = [brand, model, year, vin, mileage, price, nickname].some(v => v) || (imageInput && imageInput.value);
+  }
+  if (changed && window.showConfirmationDialog) {
+    window.showConfirmationDialog(
+      'Закрыть без сохранения изменений?',
+      () => { window.location.hash = '#my-cars'; },
+      () => {}
+    );
+  } else {
+    window.location.hash = '#my-cars';
+  }
 }
 
 // Replace direct localStorage access with DataService for currentCarId
@@ -244,11 +413,23 @@ async function setCurrentCarInBackend(carId) {
 
 async function addCarToBackend(carData) {
   let cars = await DataService.getCars();
-  const newCar = { ...carData, id: Date.now() };
+  // Ensure unique ID
+  let newId = Date.now();
+  while (cars.some(c => c.id == newId)) newId++;
+  const newCar = { ...carData, id: newId };
   cars.push(newCar);
   if (DataService.saveCars) {
     await DataService.saveCars(cars);
   }
+  // Set as current car
+  if (DataService.setCurrentCarId) {
+    await DataService.setCurrentCarId(newId);
+  } else {
+    localStorage.setItem('currentCarId', newId);
+  }
+  // Reload car list and update UI
+  if (typeof renderCarsList === 'function') renderCarsList();
+  if (typeof updateCarSelectionUI === 'function') updateCarSelectionUI();
 }
 
 async function removeCarFromBackend(carId) {
@@ -257,4 +438,6 @@ async function removeCarFromBackend(carId) {
   if (DataService.saveCars) {
     await DataService.saveCars(cars);
   }
-} 
+}
+
+export { removeCarFromBackend }; 

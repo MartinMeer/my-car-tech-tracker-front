@@ -14,7 +14,9 @@
   <div class="container">
     <nav class="sidebar">
       <div class="sidebar-top">
-        <div class="img-placeholder" id="current-car-img" style="cursor:pointer;">[IMG]</div>
+        <a href="#my-cars" id="current-car-img-link">
+          <img id="current-car-img" class="current-car-img" src="/img/main-img.jpeg" alt="car image" />
+        </a>
         <div id="car-select-menu" class="car-select-menu" style="display:none;"></div>
         <a href="#my-cars" class="my-cars-link" id="my-cars-link">Мои машины</a>
       </div>
@@ -63,8 +65,10 @@
   </div>
   <nav class="mobile-right-menu">
     <a href="#my-car-overview" class="mobile-car-img">
-      <div class="img-placeholder">[IMG]</div>
+      <img id="mobile-current-car-img" class="current-car-img" src="/img/main-img.jpeg" alt="car image" />
     </a>
+  </nav>
+  <nav class="mobile-bottom-icons">
     <a href="#oils" title="Масла и жидкости">
       <div class="icon-placeholder">[O]</div>
     </a>

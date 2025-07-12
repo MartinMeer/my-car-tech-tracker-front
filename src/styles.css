@@ -131,6 +131,7 @@ footer {
 }
 .footer-menu-mobile {
   display: none;
+  gap: 0.3rem;
 }
 
 .mobile-right-menu {
@@ -148,12 +149,20 @@ footer {
   .mobile-right-menu {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: flex-start;
     position: fixed;
     top: 0.5rem;
-    right: 0.5rem;
+    left: 0.5rem;
+    right: auto;
     z-index: 1000;
     gap: 0.7rem;
+    /* Remove bottom bar styles */
+    border-top: none;
+    background: none;
+    padding: 0;
+    width: auto;
+    margin-bottom: 0;
+    justify-content: flex-start;
   }
   .mobile-right-menu .img-placeholder {
     width: 50px;
@@ -1046,4 +1055,136 @@ footer {
     max-width: 98vw;
     padding: 0 0.5rem;
   }
+} 
+
+.current-car-img {
+  width: 170px;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #e0e0e0;
+  cursor: pointer;
+  display: block;
+}
+@media (max-width: 700px) {
+  .current-car-img {
+    width: 70px;
+    height: 70px;
+  }
+} 
+
+.mobile-bottom-icons {
+  display: none;
+}
+@media (max-width: 700px) {
+  .mobile-bottom-icons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1.2rem;
+    width: 100vw;
+    margin-bottom: 0.5rem;
+    position: static;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    padding: 0.5rem 0 0.2rem 0;
+    z-index: 100;
+  }
+} 
+
+.car-overview-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.car-overview-img {
+  width: 170px;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #e0e0e0;
+  margin-bottom: 1.2rem;
+  background: #fff;
+}
+.car-nickname {
+  font-size: 1.1rem;
+  color: #4e6a8a;
+  margin-bottom: 0.3rem;
+}
+.car-year, .car-vin, .car-mileage {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 0.2rem;
+}
+.car-tech-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.7rem 0 0.3rem 0;
+}
+.car-tech-links .car-link {
+  font-size: 1.08rem;
+  color: #2d3e50;
+  text-decoration: none;
+  text-align: left;
+  padding: 0.1rem 0;
+  border-radius: 0;
+  transition: background 0.2s;
+  display: block;
+}
+.car-tech-links .car-link:hover {
+  background: #f4f7fb;
+}
+.car-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-top: 2.2rem;
+}
+.car-action-btn {
+  padding: 0.8rem 2.2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.08rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: #2d3e50;
+  color: #fff;
+  transition: background 0.2s;
+}
+.car-action-btn:hover {
+  background: #4e6a8a;
+}
+@media (max-width: 700px) {
+  .car-overview-img {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 0.7rem;
+  }
+  .car-overview-header {
+    margin-bottom: 1.1rem;
+  }
+  .car-actions {
+    gap: 0.5rem;
+    margin-top: 1.1rem;
+  }
+  .car-action-btn {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.97rem;
+  }
+} 
+
+/* Utility: vertical stack gap */
+.vstack, .sidebar-section, .footer-menu-mobile, .car-section, .car-sections, .car-actions {
+  gap: 0.3rem !important;
+}
+
+/* Default for all flex columns */
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 } 

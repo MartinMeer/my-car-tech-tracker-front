@@ -8,29 +8,59 @@ export function initializeCarOverviewUI() {
   // Get selected car ID
   const carId = localStorage.getItem('currentCarId');
   if (!carId) return;
-  
   DataService.getCars().then(cars => {
     const car = cars.find(c => c.id == carId);
     if (!car) return;
-    
-    // Fill in car details
+    // --- New layout population ---
+    // Car image
+    const imgEl = document.getElementById('car-overview-img');
+    if (imgEl) {
+      if (car.img && car.img.startsWith('data:image/')) {
+        imgEl.src = car.img;
+        imgEl.alt = car.name || 'car image';
+      } else if (car.img && car.img.length === 1) {
+        imgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>${encodeURIComponent(car.img)}</text></svg>`;
+        imgEl.alt = car.name || 'car image';
+      } else {
+        imgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>🚗</text></svg>`;
+        imgEl.alt = 'car image';
+      }
+    }
+    // Car name
     const title = document.getElementById('car-title');
-    const vin = document.getElementById('car-vin');
-    const mileage = document.getElementById('car-mileage');
-    
-    if (title) title.textContent = `${car.brand || ''} ${car.model || ''} ${car.nickname || ''}`.trim() || car.name;
-    if (vin) vin.textContent = `VIN: ${car.vin || '-'}`;
-    if (mileage) mileage.textContent = `Пробег: ${car.mileage != null ? car.mileage + ' км' : '-'}`;
-    
-    // --- Finance totals ---
+    if (title) title.textContent = `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+    // Nickname
+    const nicknameDiv = document.getElementById('car-nickname');
+    if (nicknameDiv) {
+      if (car.nickname) {
+        nicknameDiv.textContent = car.nickname;
+        nicknameDiv.style.display = '';
+      } else {
+        nicknameDiv.textContent = '';
+        nicknameDiv.style.display = 'none';
+      }
+    }
+    // Year
+    const yearDiv = document.getElementById('car-year');
+    if (yearDiv) yearDiv.textContent = car.year ? `Год выпуска: ${car.year}` : '';
+    // VIN
+    const vinDiv = document.getElementById('car-vin');
+    if (vinDiv) vinDiv.textContent = car.vin ? `VIN: ${car.vin}` : '';
+    // Mileage
+    const mileageDiv = document.getElementById('car-mileage');
+    if (mileageDiv) mileageDiv.textContent = car.mileage != null ? `Пробег: ${car.mileage} км` : '';
+    // Tech section links
+    const maintLink = document.getElementById('car-maint-history-link');
+    if (maintLink) maintLink.href = `#mainten-history?car=${car.id}`;
+    const repairLink = document.getElementById('car-repair-history-link');
+    if (repairLink) repairLink.href = `#repair-history?car=${car.id}`;
+    // --- Finance totals (unchanged) ---
     const maintenField = document.getElementById('total-mainten-cost');
     const repairField = document.getElementById('total-repair-cost');
     const ownField = document.getElementById('total-own-cost');
-    
     if (maintenField) maintenField.textContent = '...';
     if (repairField) repairField.textContent = '...';
     if (ownField) ownField.textContent = '...';
-    
     fetchCarTotalsFromBackend(car.id)
       .then(totals => {
         if (maintenField) maintenField.textContent = totals.maintenance != null ? Number(totals.maintenance).toLocaleString('ru-RU') + ' ₽' : '—';
@@ -42,6 +72,34 @@ export function initializeCarOverviewUI() {
         if (repairField) repairField.textContent = 'Ошибка';
         if (ownField) ownField.textContent = 'Ошибка';
       });
+    // --- Edit/Delete button logic ---
+    const editBtn = document.getElementById('edit-car-btn');
+    if (editBtn) {
+      editBtn.onclick = () => {
+        window.location.hash = `#add-car?edit=${car.id}`;
+      };
+    }
+    const deleteBtn = document.getElementById('delete-car-btn');
+    if (deleteBtn) {
+      deleteBtn.onclick = () => {
+        if (window.showConfirmationDialog) {
+          window.showConfirmationDialog('Вы уверены, что хотите удалить машину?', async () => {
+            if (window.removeCarFromBackend) {
+              await window.removeCarFromBackend(car.id);
+              window.location.hash = '#my-cars';
+            }
+          }, () => {});
+        } else {
+          if (confirm('Вы уверены, что хотите удалить машину?')) {
+            if (window.removeCarFromBackend) {
+              window.removeCarFromBackend(car.id).then(() => {
+                window.location.hash = '#my-cars';
+              });
+            }
+          }
+        }
+      };
+    }
   });
 }
 
