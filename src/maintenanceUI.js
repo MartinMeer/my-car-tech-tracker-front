@@ -1,5 +1,8 @@
 import { DataService } from './dataService.js';
 import { openRepairPopup, openSparePopup } from './repairUI.js';
+import { showConfirmationDialog } from './dialogs.js';
+import { removeCarFromBackend } from './carsUI.js';
+import { CONFIG } from './config.js';
 
 // Global variables for service card
 let currentOperation = null;
@@ -8,6 +11,10 @@ export function initializeCarOverviewUI() {
   // Get selected car ID
   const carId = localStorage.getItem('currentCarId');
   if (!carId) return;
+  
+  // Set up button event listeners
+  setupCarActionButtons(carId);
+  
   DataService.getCars().then(cars => {
     const car = cars.find(c => c.id == carId);
     if (!car) return;
@@ -69,6 +76,47 @@ export function initializeCarOverviewUI() {
         if (ownField) ownField.textContent = 'Ошибка';
       });
   });
+}
+
+// Set up car action buttons (edit and delete)
+function setupCarActionButtons(carId) {
+  const editBtn = document.getElementById('edit-car-btn');
+  const deleteBtn = document.getElementById('delete-car-btn');
+  
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      // Navigate to add-car page with edit mode
+      window.location.hash = `#add-car?edit=${carId}`;
+    });
+  }
+  
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      // Get car info for confirmation dialog
+      DataService.getCars().then(cars => {
+        const car = cars.find(c => c.id == carId);
+        if (!car) return;
+        
+        const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+        
+        showConfirmationDialog(
+          `Вы уверены, что хотите удалить автомобиль "${carName}"? Это действие нельзя отменить.`,
+          async () => {
+            try {
+              await removeCarFromBackend(carId);
+              // Redirect to my-cars page after successful deletion
+              window.location.hash = '#my-cars';
+            } catch (error) {
+              alert('Ошибка удаления: ' + error.message);
+            }
+          },
+          () => {
+            // User cancelled - do nothing
+          }
+        );
+      });
+    });
+  }
 }
 
 export function initializeServiceCardUI() {
@@ -442,6 +490,316 @@ export async function renderMaintenHistory() {
   }
 }
 
+// Render service history (combined maintenance and repairs)
+export async function renderServiceHistory() {
+  const container = document.getElementById('service-history-list');
+  if (!container) return;
+  
+  container.innerHTML = '<div class="loading">Загрузка истории обслуживания...</div>';
+  
+  try {
+    const [maintenances, repairs, cars] = await Promise.all([
+      DataService.getMaintenance(),
+      DataService.getRepairs(),
+      DataService.getCars()
+    ]);
+    
+    if ((!maintenances || maintenances.length === 0) && (!repairs || repairs.length === 0)) {
+      container.innerHTML = '<div class="empty">Нет записей об обслуживании.</div>';
+      return;
+    }
+    
+    // Combine all records
+    const allRecords = [];
+    
+    // Add maintenance records
+    maintenances.forEach(m => {
+      const car = cars.find(c => c.id == m.carId);
+      allRecords.push({
+        ...m,
+        type: 'maintenance',
+        typeLabel: 'ТО',
+        typeClass: 'maintenance',
+        carName: car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль',
+        carNickname: car ? car.nickname : null,
+        carVin: car ? car.vin : null
+      });
+    });
+    
+    // Add repair records
+    repairs.forEach(r => {
+      const car = cars.find(c => c.id == r.carId);
+      allRecords.push({
+        ...r,
+        type: 'repair',
+        typeLabel: 'Ремонт',
+        typeClass: 'repair',
+        carName: car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль',
+        carNickname: car ? car.nickname : null,
+        carVin: car ? car.vin : null
+      });
+    });
+    
+    // Sort records by date (newest first)
+    allRecords.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date.split('.').reverse().join('-')) : new Date(0);
+      const dateB = b.date ? new Date(b.date.split('.').reverse().join('-')) : new Date(0);
+      return dateB - dateA;
+    });
+    
+    let html = `
+      <div class="service-history-summary" style="
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border-left: 4px solid #2d3e50;
+      ">
+        <div style="font-weight: 600; color: #2d3e50; margin-bottom: 0.5rem;">Общая статистика:</div>
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap; font-size: 0.9rem; color: #666;">
+          <span>Всего записей: <strong>${allRecords.length}</strong></span>
+          <span>ТО: <strong>${allRecords.filter(r => r.type === 'maintenance').length}</strong></span>
+          <span>Ремонты: <strong>${allRecords.filter(r => r.type === 'repair').length}</strong></span>
+          <span>Общая стоимость: <strong>${allRecords.reduce((sum, r) => sum + (Number(r.totalCost) || 0), 0).toLocaleString('ru-RU')} ₽</strong></span>
+        </div>
+      </div>
+      
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Автомобиль</th>
+            <th>Тип</th>
+            <th>Операция</th>
+            <th>Стоимость</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    allRecords.forEach((record, i) => {
+      const operationName = record.operationName || record.name || '-';
+      const cost = record.totalCost != null ? Number(record.totalCost).toLocaleString('ru-RU') + ' ₽' : '-';
+      const carDisplayName = record.carNickname ? `${record.carName} (${record.carNickname})` : record.carName;
+      
+      html += `
+        <tr${i % 2 === 1 ? ' class="alt-row"' : ''} 
+            style="cursor: pointer; transition: background 0.2s;" 
+            onclick="handleRowClick(event, '${record.id}', '${record.type}')"
+            onmouseover="this.style.background='#e8f4fd'"
+            onmouseout="this.style.background='${i % 2 === 1 ? '#f4f7fb' : 'white'}'">
+          <td>${record.date || '-'}</td>
+          <td>
+            <div style="font-weight: 500; color: #2d3e50;">${carDisplayName}</div>
+            <div style="font-size: 0.8rem; color: #888;">${record.carVin || 'VIN не указан'}</div>
+          </td>
+          <td>
+            <span class="record-type-badge ${record.typeClass}" style="
+              padding: 0.2rem 0.5rem;
+              border-radius: 12px;
+              font-size: 0.8rem;
+              font-weight: 500;
+              color: white;
+              background: ${record.type === 'maintenance' ? '#28a745' : '#dc3545'};
+            ">${record.typeLabel}</span>
+          </td>
+          <td>${operationName}</td>
+          <td style="font-weight:600;">${cost}</td>
+          <td style="text-align: center; white-space: nowrap;">
+            <button onclick="event.stopPropagation(); editServiceRecord('${record.id}', '${record.type}')" 
+                    style="
+                      background: #007bff;
+                      color: white;
+                      border: none;
+                      padding: 0.3rem 0.6rem;
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      margin-right: 0.3rem;
+                    " title="Редактировать">
+              ✏️
+            </button>
+            <button onclick="event.stopPropagation(); deleteServiceRecord('${record.id}', '${record.type}', '${operationName}')" 
+                    style="
+                      background: #dc3545;
+                      color: white;
+                      border: none;
+                      padding: 0.3rem 0.6rem;
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                    " title="Удалить">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+    
+    html += `
+        </tbody>
+      </table>
+    `;
+    
+    container.innerHTML = html;
+    
+    // Make the function globally available
+    window.showServiceRecordDetails = showServiceRecordDetails;
+    window.handleRowClick = handleRowClick;
+    window.editServiceRecord = editServiceRecord;
+    window.deleteServiceRecord = deleteServiceRecord;
+    
+  } catch (error) {
+    container.innerHTML = `<div class="error">Ошибка загрузки: ${error.message}</div>`;
+  }
+}
+
+// Function to show detailed view of a service record
+async function showServiceRecordDetails(recordId, recordType) {
+  try {
+    let record;
+    
+    if (recordType === 'maintenance') {
+      const maintenances = await DataService.getMaintenance();
+      record = maintenances.find(m => m.id == recordId);
+    } else {
+      const repairs = await DataService.getRepairs();
+      record = repairs.find(r => r.id == recordId);
+    }
+    
+    if (!record) {
+      alert('Запись не найдена');
+      return;
+    }
+    
+    const cars = await DataService.getCars();
+    const car = cars.find(c => c.id == record.carId);
+    const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+    
+    let detailsHtml = `
+      <div class="service-record-details-popup">
+        <div class="popup-header">
+          <h2>Детали ${recordType === 'maintenance' ? 'техобслуживания' : 'ремонта'}</h2>
+          <button class="close-btn" onclick="closeServiceRecordDetails()">&times;</button>
+        </div>
+        <div class="popup-body">
+          <div class="detail-section">
+            <h3>Основная информация</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Автомобиль:</span>
+                <span class="detail-value">${carName}${car && car.nickname ? ` (${car.nickname})` : ''}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Дата:</span>
+                <span class="detail-value">${record.date || '-'}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Пробег:</span>
+                <span class="detail-value">${record.mileage != null ? record.mileage + ' км' : '-'}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Операция:</span>
+                <span class="detail-value">${record.operationName || record.name || '-'}</span>
+              </div>
+            </div>
+          </div>
+    `;
+    
+    if (recordType === 'maintenance' && record.consumables && record.consumables.length > 0) {
+      detailsHtml += `
+        <div class="detail-section">
+          <h3>Расходные материалы</h3>
+          <div class="consumables-list">
+      `;
+      
+      record.consumables.forEach(consumable => {
+        detailsHtml += `
+          <div class="consumable-detail">
+            <span class="consumable-name">${consumable.name}</span>
+            <span class="consumable-item">${consumable.item || '-'}</span>
+            <span class="consumable-cost">${consumable.cost ? Number(consumable.cost).toLocaleString('ru-RU') + ' ₽' : '-'}</span>
+          </div>
+        `;
+      });
+      
+      detailsHtml += `
+          </div>
+        </div>
+      `;
+    }
+    
+    if (recordType === 'repair' && record.spares && record.spares.length > 0) {
+      detailsHtml += `
+        <div class="detail-section">
+          <h3>Запчасти</h3>
+          <div class="spares-list">
+      `;
+      
+      record.spares.forEach(spare => {
+        detailsHtml += `
+          <div class="spare-detail">
+            <span class="spare-name">${spare.name}</span>
+            <span class="spare-cost">${spare.cost ? Number(spare.cost).toLocaleString('ru-RU') + ' ₽' : '-'}</span>
+          </div>
+        `;
+      });
+      
+      detailsHtml += `
+          </div>
+        </div>
+      `;
+    }
+    
+    if (record.workCost && record.workCost > 0) {
+      detailsHtml += `
+        <div class="detail-section">
+          <h3>Работы</h3>
+          <div class="work-cost">
+            <span class="work-cost-label">Стоимость работ:</span>
+            <span class="work-cost-value">${Number(record.workCost).toLocaleString('ru-RU')} ₽</span>
+          </div>
+        </div>
+      `;
+    }
+    
+    detailsHtml += `
+          <div class="detail-section total-section">
+            <h3>Итого</h3>
+            <div class="total-amount">
+              ${record.totalCost ? Number(record.totalCost).toLocaleString('ru-RU') + ' ₽' : '-'}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Create and show popup
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.id = 'service-record-details-overlay';
+    overlay.innerHTML = detailsHtml;
+    
+    document.body.appendChild(overlay);
+    
+    // Make close function globally available
+    window.closeServiceRecordDetails = closeServiceRecordDetails;
+    
+  } catch (error) {
+    console.error('Error showing service record details:', error);
+    alert('Ошибка загрузки деталей: ' + error.message);
+  }
+}
+
+// Function to close service record details popup
+function closeServiceRecordDetails() {
+  const overlay = document.getElementById('service-record-details-overlay');
+  if (overlay) {
+    document.body.removeChild(overlay);
+  }
+}
+
 // Helper function to get current car
 async function getCurrentCarFromBackend() {
   // TODO: Replace with actual API call
@@ -462,4 +820,516 @@ async function getCurrentCarFromBackend() {
   console.log('Selected car:', selectedCar);
   
   return selectedCar || null;
+} 
+
+// Make the function globally available
+window.showServiceRecordDetails = showServiceRecordDetails;
+window.handleRowClick = handleRowClick;
+window.editServiceRecord = editServiceRecord;
+window.deleteServiceRecord = deleteServiceRecord;
+
+// Function to handle row clicks (for viewing details)
+function handleRowClick(event, recordId, recordType) {
+  // Only show details if the click wasn't on a button
+  if (!event.target.closest('button')) {
+    showServiceRecordDetails(recordId, recordType);
+  }
+}
+
+// Function to edit a service record
+async function editServiceRecord(recordId, recordType) {
+  try {
+    let record;
+    
+    if (recordType === 'maintenance') {
+      const maintenances = await DataService.getMaintenance();
+      record = maintenances.find(m => m.id == recordId);
+    } else {
+      const repairs = await DataService.getRepairs();
+      record = repairs.find(r => r.id == recordId);
+    }
+    
+    if (!record) {
+      alert('Запись не найдена');
+      return;
+    }
+    
+    // Show edit form
+    showEditServiceRecordForm(record, recordType);
+    
+  } catch (error) {
+    console.error('Error editing service record:', error);
+    alert('Ошибка редактирования: ' + error.message);
+  }
+}
+
+// Function to delete a service record
+async function deleteServiceRecord(recordId, recordType, operationName) {
+  const recordTypeText = recordType === 'maintenance' ? 'техобслуживания' : 'ремонта';
+  
+  showConfirmationDialog(
+    `Вы уверены, что хотите удалить запись ${recordTypeText} "${operationName}"?`,
+    async () => {
+      try {
+        if (recordType === 'maintenance') {
+          await deleteMaintenanceRecord(recordId);
+        } else {
+          await deleteRepairRecord(recordId);
+        }
+        
+        // Refresh the service history
+        renderServiceHistory();
+        alert('Запись успешно удалена');
+        
+      } catch (error) {
+        console.error('Error deleting service record:', error);
+        alert('Ошибка удаления: ' + error.message);
+      }
+    },
+    () => {
+      // User cancelled
+    }
+  );
+}
+
+// Function to delete maintenance record
+async function deleteMaintenanceRecord(recordId) {
+  const maintenances = await DataService.getMaintenance();
+  const updatedMaintenances = maintenances.filter(m => m.id != recordId);
+  
+  if (CONFIG.useBackend) {
+    // TODO: Replace with actual backend API call
+    // await fetch(`${CONFIG.apiUrl}/maintenance/${recordId}`, { method: 'DELETE' });
+    throw new Error('Backend API not implemented yet');
+  } else {
+    localStorage.setItem('maintenance', JSON.stringify(updatedMaintenances));
+  }
+}
+
+// Function to delete repair record
+async function deleteRepairRecord(recordId) {
+  const repairs = await DataService.getRepairs();
+  const updatedRepairs = repairs.filter(r => r.id != recordId);
+  
+  if (CONFIG.useBackend) {
+    // TODO: Replace with actual backend API call
+    // await fetch(`${CONFIG.apiUrl}/repairs/${recordId}`, { method: 'DELETE' });
+    throw new Error('Backend API not implemented yet');
+  } else {
+    localStorage.setItem('repairs', JSON.stringify(updatedRepairs));
+  }
+}
+
+// Function to show edit form for service record
+async function showEditServiceRecordForm(record, recordType) {
+  const cars = await DataService.getCars();
+  const car = cars.find(c => c.id == record.carId);
+  const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+  
+  let formHtml = `
+    <div class="service-record-edit-popup">
+      <div class="popup-header">
+        <h2>Редактировать ${recordType === 'maintenance' ? 'техобслуживание' : 'ремонт'}</h2>
+        <button class="close-btn" onclick="closeEditServiceRecordForm()">&times;</button>
+      </div>
+      <div class="popup-body">
+        <form id="edit-service-record-form">
+          <input type="hidden" id="edit-record-id" value="${record.id}">
+          <input type="hidden" id="edit-record-type" value="${recordType}">
+          
+          <div class="form-section">
+            <h3>Основная информация</h3>
+            <div class="form-grid">
+              <div class="input-group">
+                <label for="edit-car-select">Автомобиль:</label>
+                <select id="edit-car-select" required>
+                  ${cars.map(c => `
+                    <option value="${c.id}" ${c.id == record.carId ? 'selected' : ''}>
+                      ${c.brand || ''} ${c.model || ''} ${c.nickname ? `(${c.nickname})` : ''}
+                    </option>
+                  `).join('')}
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="edit-date">Дата:</label>
+                <input type="text" id="edit-date" value="${record.date || ''}" 
+                       placeholder="дд.мм.гггг" required 
+                       pattern="\\d{2}\\.\\d{2}\\.\\d{4}">
+              </div>
+              <div class="input-group">
+                <label for="edit-mileage">Пробег (км):</label>
+                <input type="number" id="edit-mileage" value="${record.mileage || ''}" 
+                       min="0" required>
+              </div>
+              <div class="input-group">
+                <label for="edit-operation">Операция:</label>
+                <input type="text" id="edit-operation" 
+                       value="${record.operationName || record.name || ''}" required>
+              </div>
+            </div>
+          </div>
+  `;
+  
+  if (recordType === 'maintenance') {
+    formHtml += `
+      <div class="form-section">
+        <h3>Расходные материалы</h3>
+        <div id="edit-consumables-list">
+    `;
+    
+    if (record.consumables && record.consumables.length > 0) {
+      record.consumables.forEach((consumable, index) => {
+        formHtml += `
+          <div class="consumable-edit-item">
+            <input type="text" class="consumable-name-input" 
+                   value="${consumable.name}" placeholder="Название" required>
+            <input type="text" class="consumable-item-input" 
+                   value="${consumable.item || ''}" placeholder="Деталь">
+            <input type="number" class="consumable-cost-input" 
+                   value="${consumable.cost || 0}" placeholder="0" min="0" step="0.01">
+            <button type="button" onclick="removeConsumableItem(this)" 
+                    style="background: #dc3545; color: white; border: none; padding: 0.3rem; border-radius: 4px; cursor: pointer;">
+              ✕
+            </button>
+          </div>
+        `;
+      });
+    }
+    
+    formHtml += `
+        </div>
+        <button type="button" onclick="addConsumableItem()" 
+                style="background: #28a745; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 0.5rem;">
+          + Добавить расходный материал
+        </button>
+      </div>
+    `;
+  }
+  
+  if (recordType === 'repair') {
+    formHtml += `
+      <div class="form-section">
+        <h3>Запчасти</h3>
+        <div id="edit-spares-list">
+    `;
+    
+    if (record.spares && record.spares.length > 0) {
+      record.spares.forEach((spare, index) => {
+        formHtml += `
+          <div class="spare-edit-item">
+            <input type="text" class="spare-name-input" 
+                   value="${spare.name}" placeholder="Название запчасти" required>
+            <input type="number" class="spare-cost-input" 
+                   value="${spare.cost || 0}" placeholder="0" min="0" step="0.01">
+            <button type="button" onclick="removeSpareItem(this)" 
+                    style="background: #dc3545; color: white; border: none; padding: 0.3rem; border-radius: 4px; cursor: pointer;">
+              ✕
+            </button>
+          </div>
+        `;
+      });
+    }
+    
+    formHtml += `
+        </div>
+        <button type="button" onclick="addSpareItem()" 
+                style="background: #28a745; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 0.5rem;">
+          + Добавить запчасть
+        </button>
+      </div>
+    `;
+  }
+  
+  formHtml += `
+          <div class="form-section">
+            <h3>Работы</h3>
+            <div class="input-group">
+              <label for="edit-work-cost">Стоимость работ (₽):</label>
+              <input type="number" id="edit-work-cost" 
+                     value="${record.workCost || 0}" placeholder="0" min="0" step="0.01">
+            </div>
+          </div>
+          
+          <div class="form-section total-section">
+            <h3>Итого: <span id="edit-total-amount">${record.totalCost ? Number(record.totalCost).toLocaleString('ru-RU') + ' ₽' : '0 ₽'}</span></h3>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Сохранить изменения</button>
+            <button type="button" onclick="closeEditServiceRecordForm()" class="btn-secondary">Отмена</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  
+  // Create and show popup
+  const overlay = document.createElement('div');
+  overlay.className = 'popup-overlay';
+  overlay.id = 'edit-service-record-overlay';
+  overlay.innerHTML = formHtml;
+  
+  document.body.appendChild(overlay);
+  
+  // Setup form event listeners
+  setupEditFormEventListeners();
+  
+  // Make functions globally available
+  window.closeEditServiceRecordForm = closeEditServiceRecordForm;
+  window.addConsumableItem = addConsumableItem;
+  window.removeConsumableItem = removeConsumableItem;
+  window.addSpareItem = addSpareItem;
+  window.removeSpareItem = removeSpareItem;
+}
+
+// Function to close edit form
+function closeEditServiceRecordForm() {
+  const overlay = document.getElementById('edit-service-record-overlay');
+  if (overlay) {
+    document.body.removeChild(overlay);
+  }
+}
+
+// Function to setup edit form event listeners
+function setupEditFormEventListeners() {
+  const form = document.getElementById('edit-service-record-form');
+  if (!form) return;
+  
+  // Add event listeners for cost inputs to recalculate total
+  form.addEventListener('input', function(e) {
+    if (e.target.classList.contains('consumable-cost-input') || 
+        e.target.classList.contains('spare-cost-input') || 
+        e.target.id === 'edit-work-cost') {
+      calculateEditTotal();
+    }
+  });
+  
+  // Handle form submission
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Validate required fields
+    const requiredFields = form.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+      if (!field.value.trim()) {
+        field.style.borderColor = '#dc3545';
+        isValid = false;
+      } else {
+        field.style.borderColor = '';
+      }
+    });
+    
+    if (!isValid) {
+      alert('Пожалуйста, заполните все обязательные поля');
+      return;
+    }
+    
+    // Validate date format
+    const dateInput = document.getElementById('edit-date');
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(dateInput.value)) {
+      alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+      dateInput.style.borderColor = '#dc3545';
+      return;
+    }
+    
+    try {
+      await saveEditedServiceRecord();
+      closeEditServiceRecordForm();
+      renderServiceHistory();
+      alert('Запись успешно обновлена');
+    } catch (error) {
+      console.error('Error saving edited record:', error);
+      alert('Ошибка сохранения: ' + error.message);
+    }
+  });
+}
+
+// Function to calculate total in edit form
+function calculateEditTotal() {
+  let total = 0;
+  
+  // Add consumables costs
+  const consumableCosts = document.querySelectorAll('.consumable-cost-input');
+  consumableCosts.forEach(input => {
+    total += parseFloat(input.value) || 0;
+  });
+  
+  // Add spares costs
+  const spareCosts = document.querySelectorAll('.spare-cost-input');
+  spareCosts.forEach(input => {
+    total += parseFloat(input.value) || 0;
+  });
+  
+  // Add work cost
+  const workCost = parseFloat(document.getElementById('edit-work-cost')?.value) || 0;
+  total += workCost;
+  
+  const totalElement = document.getElementById('edit-total-amount');
+  if (totalElement) {
+    totalElement.textContent = total.toLocaleString('ru-RU') + ' ₽';
+  }
+}
+
+// Function to add consumable item in edit form
+function addConsumableItem() {
+  const list = document.getElementById('edit-consumables-list');
+  const item = document.createElement('div');
+  item.className = 'consumable-edit-item';
+  item.innerHTML = `
+    <input type="text" class="consumable-name-input" placeholder="Название" required>
+    <input type="text" class="consumable-item-input" placeholder="Деталь">
+    <input type="number" class="consumable-cost-input" placeholder="0" min="0" step="0.01">
+    <button type="button" onclick="removeConsumableItem(this)" 
+            style="background: #dc3545; color: white; border: none; padding: 0.3rem; border-radius: 4px; cursor: pointer;">
+      ✕
+    </button>
+  `;
+  list.appendChild(item);
+}
+
+// Function to remove consumable item in edit form
+function removeConsumableItem(button) {
+  button.parentElement.remove();
+  calculateEditTotal();
+}
+
+// Function to add spare item in edit form
+function addSpareItem() {
+  const list = document.getElementById('edit-spares-list');
+  const item = document.createElement('div');
+  item.className = 'spare-edit-item';
+  item.innerHTML = `
+    <input type="text" class="spare-name-input" placeholder="Название запчасти" required>
+    <input type="number" class="spare-cost-input" placeholder="0" min="0" step="0.01">
+    <button type="button" onclick="removeSpareItem(this)" 
+            style="background: #dc3545; color: white; border: none; padding: 0.3rem; border-radius: 4px; cursor: pointer;">
+      ✕
+    </button>
+  `;
+  list.appendChild(item);
+}
+
+// Function to remove spare item in edit form
+function removeSpareItem(button) {
+  button.parentElement.remove();
+  calculateEditTotal();
+}
+
+// Function to save edited service record
+async function saveEditedServiceRecord() {
+  const recordId = document.getElementById('edit-record-id').value;
+  const recordType = document.getElementById('edit-record-type').value;
+  const carId = document.getElementById('edit-car-select').value;
+  const date = document.getElementById('edit-date').value;
+  const mileage = parseInt(document.getElementById('edit-mileage').value);
+  const operation = document.getElementById('edit-operation').value;
+  const workCost = parseFloat(document.getElementById('edit-work-cost').value) || 0;
+  
+  let totalCost = workCost;
+  
+  if (recordType === 'maintenance') {
+    const consumables = [];
+    const consumableItems = document.querySelectorAll('.consumable-edit-item');
+    
+    consumableItems.forEach(item => {
+      const name = item.querySelector('.consumable-name-input').value.trim();
+      const itemValue = item.querySelector('.consumable-item-input').value.trim();
+      const cost = parseFloat(item.querySelector('.consumable-cost-input').value) || 0;
+      
+      if (name) {
+        consumables.push({ name, item: itemValue, cost });
+        totalCost += cost;
+      }
+    });
+    
+    const maintenanceData = {
+      id: parseInt(recordId),
+      carId: parseInt(carId),
+      date,
+      mileage,
+      operationName: operation,
+      consumables,
+      workCost,
+      totalCost
+    };
+    
+    await updateMaintenanceRecord(maintenanceData);
+    
+  } else {
+    const spares = [];
+    const spareItems = document.querySelectorAll('.spare-edit-item');
+    
+    spareItems.forEach(item => {
+      const name = item.querySelector('.spare-name-input').value.trim();
+      const cost = parseFloat(item.querySelector('.spare-cost-input').value) || 0;
+      
+      if (name) {
+        spares.push({ name, cost });
+        totalCost += cost;
+      }
+    });
+    
+    const repairData = {
+      id: parseInt(recordId),
+      carId: parseInt(carId),
+      date,
+      mileage,
+      operationName: operation,
+      spares,
+      workCost,
+      totalCost
+    };
+    
+    await updateRepairRecord(repairData);
+  }
+}
+
+// Function to update maintenance record
+async function updateMaintenanceRecord(maintenanceData) {
+  const maintenances = await DataService.getMaintenance();
+  const index = maintenances.findIndex(m => m.id == maintenanceData.id);
+  
+  if (index === -1) {
+    throw new Error('Запись не найдена');
+  }
+  
+  maintenances[index] = maintenanceData;
+  
+  if (CONFIG.useBackend) {
+    // TODO: Replace with actual backend API call
+    // await fetch(`${CONFIG.apiUrl}/maintenance/${maintenanceData.id}`, {
+    //   method: 'PUT',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(maintenanceData)
+    // });
+    throw new Error('Backend API not implemented yet');
+  } else {
+    localStorage.setItem('maintenance', JSON.stringify(maintenances));
+  }
+}
+
+// Function to update repair record
+async function updateRepairRecord(repairData) {
+  const repairs = await DataService.getRepairs();
+  const index = repairs.findIndex(r => r.id == repairData.id);
+  
+  if (index === -1) {
+    throw new Error('Запись не найдена');
+  }
+  
+  repairs[index] = repairData;
+  
+  if (CONFIG.useBackend) {
+    // TODO: Replace with actual backend API call
+    // await fetch(`${CONFIG.apiUrl}/repairs/${repairData.id}`, {
+    //   method: 'PUT',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(repairData)
+    // });
+    throw new Error('Backend API not implemented yet');
+  } else {
+    localStorage.setItem('repairs', JSON.stringify(repairs));
+  }
 } 

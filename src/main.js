@@ -7,10 +7,12 @@ import {
   initializeCarOverviewUI,
   initializeServiceCardUI,
   renderMaintenHistory,
+  renderServiceHistory,
   openMaintPopup,
   closeMaintPopup,
   calculateMaintTotal
 } from './maintenanceUI.js';
+import { initializeUserAlertUI, setupUserAlertForm } from './userAlertUI.js';
 import {
   renderRepairHistory,
   openRepairPopup,
@@ -54,6 +56,13 @@ function initializePageUI(page) {
       initializeServiceRecord();
       initializeServiceCardUI();
       break;
+    case 'service-history':
+      renderServiceHistory();
+      break;
+    case 'user-alert':
+      // User alert UI is initialized globally, just set up the form
+      setupUserAlertForm();
+      break;
     case 'mainten-history':
       renderMaintenHistory();
       break;
@@ -75,6 +84,9 @@ async function initializeApp() {
     
     // Initialize car selection UI
     updateCarSelectionUI();
+    
+    // Initialize user alert UI (floating button) - available on all pages
+    initializeUserAlertUI();
     
     // Setup hash change listener
     window.addEventListener('hashchange', async () => {

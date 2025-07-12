@@ -1,0 +1,72 @@
+<section>
+  <h1>Сообщи о проблеме</h1>
+  <p class="page-description">Запишите замеченную неисправность для последующего анализа</p>
+  
+  <div class="user-alert-form">
+    <div class="alert-info">
+      <div class="alert-car-info">
+        <span class="alert-label">Автомобиль:</span>
+        <span id="alert-car-name" class="alert-value">-</span>
+      </div>
+      <div class="alert-date-info">
+        <span class="alert-label">Дата:</span>
+        <span id="alert-date" class="alert-value">-</span>
+      </div>
+      <div class="alert-mileage-info">
+        <span class="alert-label">Пробег:</span>
+        <span id="alert-mileage" class="alert-value">-</span>
+      </div>
+    </div>
+    
+    <form id="user-alert-form">
+      <div class="form-section">
+        <h3>Где замечена неисправность</h3>
+        <div class="input-group">
+          <label for="subsystem-select">Выберите систему:</label>
+          <select id="subsystem-select" required>
+            <option value="">Выберите систему...</option>
+            <option value="engine">Двигатель</option>
+            <option value="transmission">Трансмиссия</option>
+            <option value="suspension">Подвеска</option>
+            <option value="brakes">Тормозная система</option>
+            <option value="steering">Рулевое управление</option>
+            <option value="electrical">Электрика</option>
+            <option value="cooling">Система охлаждения</option>
+            <option value="fuel">Топливная система</option>
+            <option value="exhaust">Выхлопная система</option>
+            <option value="interior">Салон</option>
+            <option value="exterior">Кузов</option>
+            <option value="custom">Другое (указать)</option>
+          </select>
+        </div>
+        
+        <div id="custom-subsystem-group" class="input-group" style="display: none;">
+          <label for="custom-subsystem">Укажите место неисправности:</label>
+          <input type="text" id="custom-subsystem" 
+                 placeholder="Например: где-то справа в районе колеса" 
+                 maxlength="100">
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <h3>Описание проблемы</h3>
+        <div class="input-group">
+          <label for="problem-description">Подробное описание:</label>
+          <textarea id="problem-description" 
+                    placeholder="Опишите что именно происходит, когда появляется, при каких условиях..." 
+                    rows="6" 
+                    maxlength="500" 
+                    required></textarea>
+          <div class="char-counter">
+            <span id="char-count">0</span>/500 символов
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Сохранить</button>
+        <button type="button" class="btn-secondary" onclick="window.location.hash='#'">Не сохранять</button>
+      </div>
+    </form>
+  </div>
+</section> 

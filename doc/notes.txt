@@ -1,0 +1,1 @@
+cd /home/oleg/my-car-tech-tracker-front/my-car-tech-tracker-front && python3 -m http.server 8000
