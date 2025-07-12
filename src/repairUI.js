@@ -83,33 +83,6 @@ export function openRepairPopup() {
   document.getElementById('spares-list').innerHTML = '';
   document.getElementById('repair-total').textContent = '0 ₽';
   document.getElementById('repair-work-cost').value = '';
-  
-  // Set default mileage to selected car's mileage from service record
-  const mileageInput = document.getElementById('repair-mileage');
-  if (mileageInput) {
-    // Get mileage from service record if available
-    const serviceRecord = window.currentServiceRecord;
-    if (serviceRecord && serviceRecord.carId) {
-      // Try to get car mileage from service record context
-      DataService.getCars().then(cars => {
-        const car = cars.find(c => c.id == serviceRecord.carId);
-        if (car && car.mileage != null) {
-          mileageInput.value = car.mileage;
-        } else {
-          mileageInput.value = '';
-        }
-      });
-    } else {
-      // Fallback to current car
-      getCurrentCarFromBackend().then(car => {
-        if (car && car.mileage != null) {
-          mileageInput.value = car.mileage;
-        } else {
-          mileageInput.value = '';
-        }
-      });
-    }
-  }
 
   document.getElementById('repair-entry-popup').style.display = 'flex';
   // Remove any previous event listeners to avoid duplicates

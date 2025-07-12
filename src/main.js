@@ -5,7 +5,6 @@ import { showConfirmationDialog } from './dialogs.js';
 import { initializeMyCarsUI, initializeAddCarUI, updateCarSelectionUI, removeCarFromBackend } from './carsUI.js';
 import {
   initializeCarOverviewUI,
-  initializeServiceCardUI,
   renderMaintenHistory,
   renderServiceHistory,
   openMaintPopup,
@@ -22,10 +21,21 @@ import {
   addSpare,
   calculateRepairTotal
 } from './repairUI.js';
-import { initializeServiceRecord } from './serviceRecordManager.js';
+import { 
+  initializeServiceRecord, 
+  addMaintenanceToRecord, 
+  addRepairToRecord, 
+  removeSubRecord, 
+  editSubRecord 
+} from './serviceRecordManager.js';
 
 // Main content element
 const mainContent = document.getElementById('main-content');
+
+// Global variables for service card functionality
+window.currentOperation = null;
+window.sparesList = [];
+window.spareCounter = 1;
 
 // Make functions available globally for HTML onclick handlers
 window.openMaintPopup = openMaintPopup;
@@ -39,6 +49,113 @@ window.addSpare = addSpare;
 window.calculateRepairTotal = calculateRepairTotal;
 window.removeCarFromBackend = removeCarFromBackend;
 window.showConfirmationDialog = showConfirmationDialog;
+
+// Service Record Manager functions
+window.addMaintenanceToRecord = addMaintenanceToRecord;
+window.addRepairToRecord = addRepairToRecord;
+window.removeSubRecord = removeSubRecord;
+window.editSubRecord = editSubRecord;
+
+// Add save and remove functions for service record
+window.saveServiceRecord = async function() {
+  if (!window.currentServiceRecord || window.currentServiceRecord.subRecords.length === 0) {
+    alert('Нет операций для сохранения');
+    return;
+  }
+  
+  // Validate date
+  if (!window.currentServiceRecord.date || !/^\d{2}\.\d{2}\.\d{4}$/.test(window.currentServiceRecord.date)) {
+    alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+    return;
+  }
+  
+  try {
+    // First, save the service record itself
+    const serviceRecordToSave = {
+      id: window.currentServiceRecord.id,
+      carId: window.currentServiceRecord.carId,
+      date: window.currentServiceRecord.date,
+      createdAt: window.currentServiceRecord.createdAt,
+      subRecordsCount: window.currentServiceRecord.subRecords.length
+    };
+    
+    await DataService.saveServiceRecord(serviceRecordToSave);
+    
+    // Then save each sub-record to appropriate storage
+    const maintenanceRecords = [];
+    const repairRecords = [];
+    
+    window.currentServiceRecord.subRecords.forEach(subRecord => {
+      const recordData = {
+        ...subRecord.data,
+        id: subRecord.id,
+        date: window.currentServiceRecord.date,
+        serviceRecordId: window.currentServiceRecord.id
+      };
+      
+      if (subRecord.type === 'maintenance') {
+        maintenanceRecords.push(recordData);
+      } else {
+        repairRecords.push(recordData);
+      }
+    });
+    
+    // Save operations to backend/storage
+    const savePromises = [];
+    
+    if (maintenanceRecords.length > 0) {
+      savePromises.push(DataService.saveMaintenance(maintenanceRecords));
+    }
+    
+    if (repairRecords.length > 0) {
+      savePromises.push(DataService.saveRepair(repairRecords));
+    }
+    
+    await Promise.all(savePromises);
+    
+    console.log('Service record and operations saved successfully');
+    
+    // Show success message
+    alert('Запись об обслуживании сохранена!');
+    
+    // Navigate back to overview
+    window.location.hash = '#my-car-overview';
+    
+  } catch (error) {
+    console.error('Error saving service record:', error);
+    alert('Ошибка сохранения: ' + error.message);
+  }
+};
+
+window.removeServiceRecord = function() {
+  if (!window.currentServiceRecord) {
+    window.location.hash = '#my-car-overview';
+    return;
+  }
+  
+  const hasSubRecords = window.currentServiceRecord.subRecords.length > 0;
+  
+  showConfirmationDialog(
+    hasSubRecords 
+      ? 'Удалить запись? Все добавленные операции будут потеряны.'
+      : 'Удалить запись?',
+    () => {
+      // Clear global reference
+      window.currentServiceRecord = null;
+      
+      // Navigate back
+      window.location.hash = '#my-car-overview';
+      alert('Запись удалена');
+    },
+    () => {
+      // User cancelled
+    }
+  );
+};
+
+// Add missing functions that are referenced in HTML
+// Note: saveMaintenance and saveRepair functions are now handled by the service record system
+// and are no longer needed as standalone functions
 
 // UI initialization stub (to be replaced with real logic)
 function initializePageUI(page) {
@@ -54,7 +171,6 @@ function initializePageUI(page) {
       break;
     case 'service-card':
       initializeServiceRecord();
-      initializeServiceCardUI();
       break;
     case 'service-history':
       renderServiceHistory();

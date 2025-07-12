@@ -183,5 +183,178 @@ export const DataService = {
     } catch (error) {
       alert('Ошибка записи автомобилей.');
     }
+  },
+
+  // Service Record operations
+  async saveServiceRecord(serviceRecord) {
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/service-records`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(serviceRecord)
+        });
+        if (!response.ok) throw new Error('Ошибка сохранения записи об обслуживании');
+        return response.json();
+      } else {
+        let existing = [];
+        try {
+          existing = JSON.parse(localStorage.getItem('serviceRecords') || '[]');
+        } catch (e) {
+          alert('Ошибка чтения localStorage для записей об обслуживании. Данные будут сброшены.');
+          localStorage.removeItem('serviceRecords');
+        }
+        
+        existing.push(serviceRecord);
+        
+        try {
+          localStorage.setItem('serviceRecords', JSON.stringify(existing));
+        } catch (e) {
+          alert('Ошибка записи в localStorage для записей об обслуживании.');
+        }
+        return { success: true, id: serviceRecord.id };
+      }
+    } catch (error) {
+      throw new Error('Ошибка сохранения записи об обслуживании: ' + error.message);
+    }
+  },
+
+  async getServiceRecords(carId = null) {
+    try {
+      if (CONFIG.useBackend) {
+        const url = carId 
+          ? `${CONFIG.apiUrl}/service-records?carId=${carId}`
+          : `${CONFIG.apiUrl}/service-records`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Ошибка загрузки записей об обслуживании');
+        return response.json();
+      } else {
+        try {
+          const records = JSON.parse(localStorage.getItem('serviceRecords') || '[]');
+          if (carId) {
+            return records.filter(record => record.carId == carId);
+          }
+          return records;
+        } catch (e) {
+          alert('Ошибка чтения localStorage для записей об обслуживании.');
+          localStorage.removeItem('serviceRecords');
+          return [];
+        }
+      }
+    } catch (error) {
+      throw new Error('Ошибка загрузки записей об обслуживании: ' + error.message);
+    }
+  },
+
+  async updateServiceRecord(serviceRecordId, updates) {
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/service-records/${serviceRecordId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates)
+        });
+        if (!response.ok) throw new Error('Ошибка обновления записи об обслуживании');
+        return response.json();
+      } else {
+        let existing = [];
+        try {
+          existing = JSON.parse(localStorage.getItem('serviceRecords') || '[]');
+        } catch (e) {
+          throw new Error('Ошибка чтения localStorage для записей об обслуживании');
+        }
+        
+        const index = existing.findIndex(record => record.id == serviceRecordId);
+        if (index === -1) {
+          throw new Error('Запись об обслуживании не найдена');
+        }
+        
+        existing[index] = { ...existing[index], ...updates };
+        
+        try {
+          localStorage.setItem('serviceRecords', JSON.stringify(existing));
+        } catch (e) {
+          alert('Ошибка записи в localStorage для записей об обслуживании.');
+        }
+        return { success: true, id: serviceRecordId };
+      }
+    } catch (error) {
+      throw new Error('Ошибка обновления записи об обслуживании: ' + error.message);
+    }
+  },
+
+  async deleteServiceRecord(serviceRecordId, deleteOperations = false) {
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/service-records/${serviceRecordId}?deleteOperations=${deleteOperations}`, {
+          method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Ошибка удаления записи об обслуживании');
+        return response.json();
+      } else {
+        let existing = [];
+        try {
+          existing = JSON.parse(localStorage.getItem('serviceRecords') || '[]');
+        } catch (e) {
+          throw new Error('Ошибка чтения localStorage для записей об обслуживании');
+        }
+        
+        const recordToDelete = existing.find(record => record.id == serviceRecordId);
+        if (!recordToDelete) {
+          throw new Error('Запись об обслуживании не найдена');
+        }
+        
+        // Remove the service record
+        existing = existing.filter(record => record.id != serviceRecordId);
+        
+        try {
+          localStorage.setItem('serviceRecords', JSON.stringify(existing));
+        } catch (e) {
+          alert('Ошибка записи в localStorage для записей об обслуживании.');
+        }
+        
+        // Optionally delete related operations
+        if (deleteOperations) {
+          await this.deleteOperationsByServiceRecordId(serviceRecordId);
+        }
+        
+        return { success: true, id: serviceRecordId };
+      }
+    } catch (error) {
+      throw new Error('Ошибка удаления записи об обслуживании: ' + error.message);
+    }
+  },
+
+  async deleteOperationsByServiceRecordId(serviceRecordId) {
+    try {
+      if (CONFIG.useBackend) {
+        // Backend will handle this automatically
+        return { success: true };
+      } else {
+        // Remove maintenance operations
+        let maintenance = [];
+        try {
+          maintenance = JSON.parse(localStorage.getItem('maintenance') || '[]');
+        } catch (e) {
+          console.warn('Error reading maintenance data');
+        }
+        maintenance = maintenance.filter(record => record.serviceRecordId != serviceRecordId);
+        localStorage.setItem('maintenance', JSON.stringify(maintenance));
+        
+        // Remove repair operations
+        let repairs = [];
+        try {
+          repairs = JSON.parse(localStorage.getItem('repairs') || '[]');
+        } catch (e) {
+          console.warn('Error reading repairs data');
+        }
+        repairs = repairs.filter(record => record.serviceRecordId != serviceRecordId);
+        localStorage.setItem('repairs', JSON.stringify(repairs));
+        
+        return { success: true };
+      }
+    } catch (error) {
+      throw new Error('Ошибка удаления операций: ' + error.message);
+    }
   }
 }; 

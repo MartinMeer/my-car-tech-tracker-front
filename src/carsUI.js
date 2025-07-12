@@ -430,6 +430,9 @@ async function addCarToBackend(carData) {
   // Reload car list and update UI
   if (typeof renderCarsList === 'function') renderCarsList();
   if (typeof updateCarSelectionUI === 'function') updateCarSelectionUI();
+  
+  // Redirect to car overview page after saving new car
+  window.location.hash = '#my-car-overview';
 }
 
 async function removeCarFromBackend(carId) {

@@ -498,6 +498,206 @@ export async function renderServiceHistory() {
   container.innerHTML = '<div class="loading">Загрузка истории обслуживания...</div>';
   
   try {
+    // Try to get service records first (new system)
+    const serviceRecords = await DataService.getServiceRecords();
+    
+    if (serviceRecords && serviceRecords.length > 0) {
+      // Use new service record system
+      await renderServiceRecordsNew(serviceRecords);
+    } else {
+      // Fallback to old system for backward compatibility
+      await renderServiceRecordsLegacy();
+    }
+    
+  } catch (error) {
+    console.error('Error loading service history:', error);
+    container.innerHTML = `<div class="error">Ошибка загрузки: ${error.message}</div>`;
+  }
+}
+
+// New service record rendering system - grouped by cars
+async function renderServiceRecordsNew(serviceRecords) {
+  const container = document.getElementById('service-history-list');
+  if (!container) return;
+  
+  try {
+    const [maintenances, repairs, cars] = await Promise.all([
+      DataService.getMaintenance(),
+      DataService.getRepairs(),
+      DataService.getCars()
+    ]);
+    
+    // Group service records by car
+    const serviceRecordsByCar = {};
+    serviceRecords.forEach(serviceRecord => {
+      const carId = serviceRecord.carId;
+      if (!serviceRecordsByCar[carId]) {
+        serviceRecordsByCar[carId] = [];
+      }
+      serviceRecordsByCar[carId].push(serviceRecord);
+    });
+    
+    // Sort service records within each car by date (newest first)
+    Object.keys(serviceRecordsByCar).forEach(carId => {
+      serviceRecordsByCar[carId].sort((a, b) => {
+        const dateA = a.date ? new Date(a.date.split('.').reverse().join('-')) : new Date(0);
+        const dateB = b.date ? new Date(b.date.split('.').reverse().join('-')) : new Date(0);
+        return dateB - dateA;
+      });
+    });
+    
+    let html = `
+      <div class="service-history-summary" style="
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border-left: 4px solid #2d3e50;
+      ">
+        <div style="font-weight: 600; color: #2d3e50; margin-bottom: 0.5rem;">Общая статистика:</div>
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap; font-size: 0.9rem; color: #666;">
+          <span>Автомобилей: <strong>${Object.keys(serviceRecordsByCar).length}</strong></span>
+          <span>Записей об обслуживании: <strong>${serviceRecords.length}</strong></span>
+          <span>Всего операций: <strong>${serviceRecords.reduce((sum, sr) => sum + (sr.subRecordsCount || 0), 0)}</strong></span>
+          <span>Общая стоимость: <strong>${calculateTotalCost(serviceRecords, maintenances, repairs).toLocaleString('ru-RU')} ₽</strong></span>
+        </div>
+      </div>
+    `;
+    
+    // Render each car's service records
+    Object.keys(serviceRecordsByCar).forEach(carId => {
+      const car = cars.find(c => c.id == carId);
+      const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+      const carDisplayName = car && car.nickname ? `${carName} (${car.nickname})` : carName;
+      const carVin = car ? car.vin : 'VIN не указан';
+      
+      const carServiceRecords = serviceRecordsByCar[carId];
+      const carTotalCost = carServiceRecords.reduce((sum, sr) => sum + calculateServiceRecordCost(sr.id, maintenances, repairs), 0);
+      const carTotalOperations = carServiceRecords.reduce((sum, sr) => sum + (sr.subRecordsCount || 0), 0);
+      
+      html += `
+        <div class="car-history-block" style="
+          margin-bottom: 2.5rem;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          overflow: hidden;
+        ">
+          <div class="car-history-header" style="
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #2d3e50;
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          ">
+            <div>
+              <div style="font-weight: 600; color: #2d3e50;">${carDisplayName}</div>
+              <div style="font-size: 0.9rem; color: #888; margin-top: 0.2rem;">VIN: ${carVin}</div>
+            </div>
+            <div style="text-align: right; font-size: 0.9rem; color: #666;">
+              <div>Записей: <strong>${carServiceRecords.length}</strong></div>
+              <div>Операций: <strong>${carTotalOperations}</strong></div>
+              <div>Стоимость: <strong>${carTotalCost.toLocaleString('ru-RU')} ₽</strong></div>
+            </div>
+          </div>
+          
+          <div style="padding: 0;">
+            <table class="history-table" style="margin: 0; border: none;">
+              <thead>
+                <tr style="background: #f8f9fa;">
+                  <th style="border: none; padding: 0.75rem 1rem;">Дата</th>
+                  <th style="border: none; padding: 0.75rem 1rem;">Операций</th>
+                  <th style="border: none; padding: 0.75rem 1rem;">Стоимость</th>
+                  <th style="border: none; padding: 0.75rem 1rem;">Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+      
+      carServiceRecords.forEach((serviceRecord, i) => {
+        const serviceRecordCost = calculateServiceRecordCost(serviceRecord.id, maintenances, repairs);
+        
+        html += `
+          <tr${i % 2 === 1 ? ' class="alt-row"' : ''} 
+              style="cursor: pointer; transition: background 0.2s; border: none;" 
+              onclick="handleServiceRecordClick(event, '${serviceRecord.id}')"
+              onmouseover="this.style.background='#e8f4fd'"
+              onmouseout="this.style.background='${i % 2 === 1 ? '#f4f7fb' : 'white'}'">
+            <td style="border: none; padding: 0.75rem 1rem;">${serviceRecord.date || '-'}</td>
+            <td style="border: none; padding: 0.75rem 1rem;">
+              <span style="
+                padding: 0.2rem 0.5rem;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: white;
+                background: #007bff;
+              ">${serviceRecord.subRecordsCount || 0} операций</span>
+            </td>
+            <td style="border: none; padding: 0.75rem 1rem; font-weight:600;">${serviceRecordCost.toLocaleString('ru-RU')} ₽</td>
+            <td style="border: none; padding: 0.75rem 1rem; text-align: center; white-space: nowrap;">
+              <button onclick="event.stopPropagation(); viewServiceRecordDetails('${serviceRecord.id}')" 
+                      style="
+                        background: #17a2b8;
+                        color: white;
+                        border: none;
+                        padding: 0.3rem 0.6rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 0.8rem;
+                        margin-right: 0.3rem;
+                      " title="Просмотр деталей">
+                👁️
+              </button>
+              <button onclick="event.stopPropagation(); deleteServiceRecord('${serviceRecord.id}')" 
+                      style="
+                        background: #dc3545;
+                        color: white;
+                        border: none;
+                        padding: 0.3rem 0.6rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 0.8rem;
+                      " title="Удалить запись">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+    
+    // Make functions globally available
+    window.handleServiceRecordClick = handleServiceRecordClick;
+    window.viewServiceRecordDetails = viewServiceRecordDetails;
+    window.deleteServiceRecord = deleteServiceRecord;
+    window.deleteIndividualRecord = deleteIndividualRecord;
+    
+  } catch (error) {
+    console.error('Error rendering service records:', error);
+    container.innerHTML = `<div class="error">Ошибка отображения: ${error.message}</div>`;
+  }
+}
+
+// Legacy rendering for backward compatibility - grouped by cars
+async function renderServiceRecordsLegacy() {
+  const container = document.getElementById('service-history-list');
+  if (!container) return;
+  
+  try {
     const [maintenances, repairs, cars] = await Promise.all([
       DataService.getMaintenance(),
       DataService.getRepairs(),
@@ -540,11 +740,23 @@ export async function renderServiceHistory() {
       });
     });
     
-    // Sort records by date (newest first)
-    allRecords.sort((a, b) => {
-      const dateA = a.date ? new Date(a.date.split('.').reverse().join('-')) : new Date(0);
-      const dateB = b.date ? new Date(b.date.split('.').reverse().join('-')) : new Date(0);
-      return dateB - dateA;
+    // Group records by car
+    const recordsByCar = {};
+    allRecords.forEach(record => {
+      const carId = record.carId;
+      if (!recordsByCar[carId]) {
+        recordsByCar[carId] = [];
+      }
+      recordsByCar[carId].push(record);
+    });
+    
+    // Sort records within each car by date (newest first)
+    Object.keys(recordsByCar).forEach(carId => {
+      recordsByCar[carId].sort((a, b) => {
+        const dateA = a.date ? new Date(a.date.split('.').reverse().join('-')) : new Date(0);
+        const dateB = b.date ? new Date(b.date.split('.').reverse().join('-')) : new Date(0);
+        return dateB - dateA;
+      });
     });
     
     let html = `
@@ -555,92 +767,134 @@ export async function renderServiceHistory() {
         margin-bottom: 2rem;
         border-left: 4px solid #2d3e50;
       ">
-        <div style="font-weight: 600; color: #2d3e50; margin-bottom: 0.5rem;">Общая статистика:</div>
+        <div style="font-weight: 600; color: #2d3e50; margin-bottom: 0.5rem;">Общая статистика (устаревший формат):</div>
         <div style="display: flex; gap: 2rem; flex-wrap: wrap; font-size: 0.9rem; color: #666;">
+          <span>Автомобилей: <strong>${Object.keys(recordsByCar).length}</strong></span>
           <span>Всего записей: <strong>${allRecords.length}</strong></span>
           <span>ТО: <strong>${allRecords.filter(r => r.type === 'maintenance').length}</strong></span>
           <span>Ремонты: <strong>${allRecords.filter(r => r.type === 'repair').length}</strong></span>
           <span>Общая стоимость: <strong>${allRecords.reduce((sum, r) => sum + (Number(r.totalCost) || 0), 0).toLocaleString('ru-RU')} ₽</strong></span>
         </div>
       </div>
-      
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th>Дата</th>
-            <th>Автомобиль</th>
-            <th>Тип</th>
-            <th>Операция</th>
-            <th>Стоимость</th>
-            <th>Действия</th>
-          </tr>
-        </thead>
-        <tbody>
     `;
     
-    allRecords.forEach((record, i) => {
-      const operationName = record.operationName || record.name || '-';
-      const cost = record.totalCost != null ? Number(record.totalCost).toLocaleString('ru-RU') + ' ₽' : '-';
-      const carDisplayName = record.carNickname ? `${record.carName} (${record.carNickname})` : record.carName;
+    // Render each car's records
+    Object.keys(recordsByCar).forEach(carId => {
+      const car = cars.find(c => c.id == carId);
+      const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+      const carDisplayName = car && car.nickname ? `${carName} (${car.nickname})` : carName;
+      const carVin = car ? car.vin : 'VIN не указан';
+      
+      const carRecords = recordsByCar[carId];
+      const carTotalCost = carRecords.reduce((sum, r) => sum + (Number(r.totalCost) || 0), 0);
+      const carMaintenanceCount = carRecords.filter(r => r.type === 'maintenance').length;
+      const carRepairCount = carRecords.filter(r => r.type === 'repair').length;
       
       html += `
-        <tr${i % 2 === 1 ? ' class="alt-row"' : ''} 
-            style="cursor: pointer; transition: background 0.2s;" 
-            onclick="handleRowClick(event, '${record.id}', '${record.type}')"
-            onmouseover="this.style.background='#e8f4fd'"
-            onmouseout="this.style.background='${i % 2 === 1 ? '#f4f7fb' : 'white'}'">
-          <td>${record.date || '-'}</td>
-          <td>
-            <div style="font-weight: 500; color: #2d3e50;">${carDisplayName}</div>
-            <div style="font-size: 0.8rem; color: #888;">${record.carVin || 'VIN не указан'}</div>
-          </td>
-          <td>
-            <span class="record-type-badge ${record.typeClass}" style="
-              padding: 0.2rem 0.5rem;
-              border-radius: 12px;
-              font-size: 0.8rem;
-              font-weight: 500;
-              color: white;
-              background: ${record.type === 'maintenance' ? '#28a745' : '#dc3545'};
-            ">${record.typeLabel}</span>
-          </td>
-          <td>${operationName}</td>
-          <td style="font-weight:600;">${cost}</td>
-          <td style="text-align: center; white-space: nowrap;">
-            <button onclick="event.stopPropagation(); editServiceRecord('${record.id}', '${record.type}')" 
-                    style="
-                      background: #007bff;
-                      color: white;
-                      border: none;
-                      padding: 0.3rem 0.6rem;
-                      border-radius: 4px;
-                      cursor: pointer;
-                      font-size: 0.8rem;
-                      margin-right: 0.3rem;
-                    " title="Редактировать">
-              ✏️
-            </button>
-            <button onclick="event.stopPropagation(); deleteServiceRecord('${record.id}', '${record.type}', '${operationName}')" 
-                    style="
-                      background: #dc3545;
-                      color: white;
-                      border: none;
-                      padding: 0.3rem 0.6rem;
-                      border-radius: 4px;
-                      cursor: pointer;
-                      font-size: 0.8rem;
-                    " title="Удалить">
-              🗑️
-            </button>
-          </td>
-        </tr>
+        <div class="car-history-block" style="
+          margin-bottom: 2.5rem;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          overflow: hidden;
+        ">
+          <div class="car-history-header" style="
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #2d3e50;
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          ">
+            <div>
+              <div style="font-weight: 600; color: #2d3e50;">${carDisplayName}</div>
+              <div style="font-size: 0.9rem; color: #888; margin-top: 0.2rem;">VIN: ${carVin}</div>
+            </div>
+            <div style="text-align: right; font-size: 0.9rem; color: #666;">
+              <div>Записей: <strong>${carRecords.length}</strong></div>
+              <div>ТО: <strong>${carMaintenanceCount}</strong> | Ремонты: <strong>${carRepairCount}</strong></div>
+              <div>Стоимость: <strong>${carTotalCost.toLocaleString('ru-RU')} ₽</strong></div>
+            </div>
+          </div>
+          
+          <div style="padding: 0;">
+            <table class="history-table" style="margin: 0; border: none;">
+              <thead>
+                <tr style="background: #f8f9fa;">
+                  <th style="border: none; padding: 0.75rem 1rem;">Дата</th>
+                  <th style="border: none; padding: 0.75rem 1rem;">Тип</th>
+                  <th style="border: none; padding: 0.75rem 1rem;">Операция</th>
+                  <th style="border: none; padding: 0.75rem 1rem;">Стоимость</th>
+                  <th style="border: none; padding: 0.75rem 1rem;">Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+      
+      carRecords.forEach((record, i) => {
+        const operationName = record.operationName || record.name || '-';
+        const cost = record.totalCost != null ? Number(record.totalCost).toLocaleString('ru-RU') + ' ₽' : '-';
+        
+        html += `
+          <tr${i % 2 === 1 ? ' class="alt-row"' : ''} 
+              style="cursor: pointer; transition: background 0.2s; border: none;" 
+              onclick="handleRowClick(event, '${record.id}', '${record.type}')"
+              onmouseover="this.style.background='#e8f4fd'"
+              onmouseout="this.style.background='${i % 2 === 1 ? '#f4f7fb' : 'white'}'">
+            <td style="border: none; padding: 0.75rem 1rem;">${record.date || '-'}</td>
+            <td style="border: none; padding: 0.75rem 1rem;">
+              <span class="record-type-badge ${record.typeClass}" style="
+                padding: 0.2rem 0.5rem;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: white;
+                background: ${record.type === 'maintenance' ? '#28a745' : '#dc3545'};
+              ">${record.typeLabel}</span>
+            </td>
+            <td style="border: none; padding: 0.75rem 1rem;">${operationName}</td>
+            <td style="border: none; padding: 0.75rem 1rem; font-weight:600;">${cost}</td>
+            <td style="border: none; padding: 0.75rem 1rem; text-align: center; white-space: nowrap;">
+              <button onclick="event.stopPropagation(); editServiceRecord('${record.id}', '${record.type}')" 
+                      style="
+                        background: #007bff;
+                        color: white;
+                        border: none;
+                        padding: 0.3rem 0.6rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 0.8rem;
+                        margin-right: 0.3rem;
+                      " title="Редактировать">
+                ✏️
+              </button>
+              <button onclick="event.stopPropagation(); deleteIndividualRecord('${record.id}', '${record.type}', '${operationName}')" 
+                      style="
+                        background: #dc3545;
+                        color: white;
+                        border: none;
+                        padding: 0.3rem 0.6rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 0.8rem;
+                      " title="Удалить">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>
       `;
     });
-    
-    html += `
-        </tbody>
-      </table>
-    `;
     
     container.innerHTML = html;
     
@@ -649,10 +903,221 @@ export async function renderServiceHistory() {
     window.handleRowClick = handleRowClick;
     window.editServiceRecord = editServiceRecord;
     window.deleteServiceRecord = deleteServiceRecord;
+    window.deleteIndividualRecord = deleteIndividualRecord;
     
   } catch (error) {
     container.innerHTML = `<div class="error">Ошибка загрузки: ${error.message}</div>`;
   }
+}
+
+// Helper functions for new service record system
+function calculateTotalCost(serviceRecords, maintenances, repairs) {
+  return serviceRecords.reduce((total, serviceRecord) => {
+    return total + calculateServiceRecordCost(serviceRecord.id, maintenances, repairs);
+  }, 0);
+}
+
+function calculateServiceRecordCost(serviceRecordId, maintenances, repairs) {
+  const maintenanceCost = maintenances
+    .filter(m => m.serviceRecordId == serviceRecordId)
+    .reduce((sum, m) => sum + (Number(m.totalCost) || 0), 0);
+    
+  const repairCost = repairs
+    .filter(r => r.serviceRecordId == serviceRecordId)
+    .reduce((sum, r) => sum + (Number(r.totalCost) || 0), 0);
+    
+  return maintenanceCost + repairCost;
+}
+
+// New event handlers for service records
+function handleServiceRecordClick(event, serviceRecordId) {
+  viewServiceRecordDetails(serviceRecordId);
+}
+
+async function viewServiceRecordDetails(serviceRecordId) {
+  try {
+    const serviceRecords = await DataService.getServiceRecords();
+    const serviceRecord = serviceRecords.find(sr => sr.id == serviceRecordId);
+    
+    if (!serviceRecord) {
+      alert('Запись об обслуживании не найдена');
+      return;
+    }
+    
+    const [maintenances, repairs, cars] = await Promise.all([
+      DataService.getMaintenance(),
+      DataService.getRepairs(),
+      DataService.getCars()
+    ]);
+    
+    const car = cars.find(c => c.id == serviceRecord.carId);
+    const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+    
+    // Get operations for this service record
+    const serviceMaintenances = maintenances.filter(m => m.serviceRecordId == serviceRecordId);
+    const serviceRepairs = repairs.filter(r => r.serviceRecordId == serviceRecordId);
+    
+    let detailsHtml = `
+      <div class="service-record-details-popup">
+        <div class="popup-header">
+          <h2>Детали записи об обслуживании</h2>
+          <button class="close-btn" onclick="closeServiceRecordDetails()">&times;</button>
+        </div>
+        <div class="popup-body">
+          <div class="detail-section">
+            <h3>Основная информация</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Автомобиль:</span>
+                <span class="detail-value">${carName}${car && car.nickname ? ` (${car.nickname})` : ''}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Дата:</span>
+                <span class="detail-value">${serviceRecord.date}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Количество операций:</span>
+                <span class="detail-value">${serviceRecord.subRecordsCount || 0}</span>
+              </div>
+            </div>
+          </div>
+    `;
+    
+    if (serviceMaintenances.length > 0) {
+      detailsHtml += `
+        <div class="detail-section">
+          <h3>Техобслуживание (${serviceMaintenances.length} операций)</h3>
+          <div class="consumables-list">
+      `;
+      
+      serviceMaintenances.forEach(maint => {
+        detailsHtml += `
+          <div class="consumable-detail">
+            <div class="consumable-name">${maint.operationName || 'Операция'}</div>
+            <div class="consumable-cost">${Number(maint.totalCost || 0).toLocaleString('ru-RU')} ₽</div>
+          </div>
+        `;
+      });
+      
+      detailsHtml += `
+          </div>
+        </div>
+      `;
+    }
+    
+    if (serviceRepairs.length > 0) {
+      detailsHtml += `
+        <div class="detail-section">
+          <h3>Ремонт (${serviceRepairs.length} операций)</h3>
+          <div class="consumables-list">
+      `;
+      
+      serviceRepairs.forEach(repair => {
+        detailsHtml += `
+          <div class="consumable-detail">
+            <div class="consumable-name">${repair.operationName || 'Операция'}</div>
+            <div class="consumable-cost">${Number(repair.totalCost || 0).toLocaleString('ru-RU')} ₽</div>
+          </div>
+        `;
+      });
+      
+      detailsHtml += `
+          </div>
+        </div>
+      `;
+    }
+    
+    const totalCost = calculateServiceRecordCost(serviceRecordId, maintenances, repairs);
+    
+    detailsHtml += `
+          <div class="total-section">
+            <h3>Итого</h3>
+            <div class="total-amount">${totalCost.toLocaleString('ru-RU')} ₽</div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Create and show popup
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.style.display = 'flex';
+    popup.innerHTML = detailsHtml;
+    
+    document.body.appendChild(popup);
+    
+    // Make close function available
+    window.closeServiceRecordDetails = () => {
+      document.body.removeChild(popup);
+    };
+    
+  } catch (error) {
+    console.error('Error viewing service record details:', error);
+    alert('Ошибка загрузки деталей: ' + error.message);
+  }
+}
+
+// Updated delete function for service records
+async function deleteServiceRecord(serviceRecordId) {
+  try {
+    const serviceRecords = await DataService.getServiceRecords();
+    const serviceRecord = serviceRecords.find(sr => sr.id == serviceRecordId);
+    
+    if (!serviceRecord) {
+      alert('Запись об обслуживании не найдена');
+      return;
+    }
+    
+    const cars = await DataService.getCars();
+    const car = cars.find(c => c.id == serviceRecord.carId);
+    const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+    
+    showConfirmationDialog(
+      `Удалить запись об обслуживании от ${serviceRecord.date} для автомобиля "${carName}"? Все связанные операции будут также удалены.`,
+      async () => {
+        try {
+          await DataService.deleteServiceRecord(serviceRecordId, true); // true = delete operations too
+          showSuccessMessage('Запись об обслуживании удалена');
+          renderServiceHistory(); // Refresh the list
+        } catch (error) {
+          alert('Ошибка удаления: ' + error.message);
+        }
+      },
+      () => {
+        // User cancelled
+      }
+    );
+  } catch (error) {
+    console.error('Error deleting service record:', error);
+    alert('Ошибка: ' + error.message);
+  }
+}
+
+// Success message function
+function showSuccessMessage(message) {
+  const messageEl = document.createElement('div');
+  messageEl.className = 'message-popup success';
+  messageEl.innerHTML = `
+    <div class="message-content">
+      <span class="icon">✅</span>
+      <span>${message}</span>
+    </div>
+  `;
+  
+  document.body.appendChild(messageEl);
+  
+  setTimeout(() => {
+    messageEl.classList.add('show');
+  }, 100);
+  
+  setTimeout(() => {
+    messageEl.classList.remove('show');
+    setTimeout(() => {
+      if (messageEl.parentNode) {
+        messageEl.parentNode.removeChild(messageEl);
+      }
+    }, 300);
+  }, 3000);
 }
 
 // Function to show detailed view of a service record
@@ -827,6 +1292,7 @@ window.showServiceRecordDetails = showServiceRecordDetails;
 window.handleRowClick = handleRowClick;
 window.editServiceRecord = editServiceRecord;
 window.deleteServiceRecord = deleteServiceRecord;
+window.deleteIndividualRecord = deleteIndividualRecord;
 
 // Function to handle row clicks (for viewing details)
 function handleRowClick(event, recordId, recordType) {
@@ -863,8 +1329,8 @@ async function editServiceRecord(recordId, recordType) {
   }
 }
 
-// Function to delete a service record
-async function deleteServiceRecord(recordId, recordType, operationName) {
+// Function to delete an individual maintenance or repair record
+async function deleteIndividualRecord(recordId, recordType, operationName) {
   const recordTypeText = recordType === 'maintenance' ? 'техобслуживания' : 'ремонта';
   
   showConfirmationDialog(

@@ -21,13 +21,20 @@
         </label>
         <input type="text" id="service-record-date" required pattern="\d{2}\.\d{2}\.\d{4}" placeholder="дд.мм.гггг">
       </div>
+      <div class="service-record-mileage">
+        <label for="service-record-mileage">
+          <span class="icon">🛣️</span>
+          Пробег (км):
+        </label>
+        <input type="number" id="service-record-mileage" required min="0" placeholder="Введите пробег">
+      </div>
     </div>
     <div class="service-record-actions">
-      <button id="save-service-record-btn" class="btn btn-primary" disabled>
+      <button id="save-service-record-btn" class="btn btn-primary" onclick="saveServiceRecord()" disabled>
         <span class="icon">💾</span>
         Сохранить запись
       </button>
-      <button id="remove-service-record-btn" class="btn btn-danger">
+      <button id="remove-service-record-btn" class="btn btn-danger" onclick="removeServiceRecord()">
         <span class="icon">🗑️</span>
         Удалить запись
       </button>
@@ -113,17 +120,6 @@
     </div>
     
     <div class="popup-body">
-      <div class="form-grid">
-        <div class="input-group">
-          <label for="maint-mileage">
-            <span class="icon">🛣️</span>
-            Пробег (км) *
-          </label>
-          <input type="number" id="maint-mileage" required min="0" placeholder="Введите пробег">
-          <div class="input-hint">Текущий пробег автомобиля</div>
-        </div>
-      </div>
-      
       <div class="section-divider">
         <h3>
           <span class="icon">🔧</span>
@@ -173,17 +169,6 @@
       <button class="close-btn" onclick="closeRepairPopup()">&times;</button>
     </div>
     <div class="popup-body">
-      <div class="form-grid">
-        <div class="input-group">
-          <label for="repair-mileage">
-            <span class="icon">🛣️</span>
-            Пробег (км) *
-          </label>
-          <input type="number" id="repair-mileage" required min="0" placeholder="Введите пробег">
-          <div class="input-hint">Текущий пробег автомобиля</div>
-        </div>
-      </div>
-      
       <div class="section-divider">
         <h3>
           <span class="icon">🔧</span>

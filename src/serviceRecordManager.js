@@ -7,12 +7,13 @@ let subRecordsCounter = 1;
 
 // Service Record Structure
 class ServiceRecord {
-  constructor(carId, date) {
+  constructor(carId, date, mileage = null) {
     this.id = Date.now();
     this.carId = carId;
     this.date = date;
-    this.subRecords = [];
+    this.mileage = mileage;
     this.createdAt = new Date().toISOString();
+    this.subRecords = [];
   }
 }
 
@@ -90,6 +91,14 @@ async function showCarSelectionPopup() {
               </label>
               <input type="text" id="car-selection-date" required pattern="\\d{2}\\.\\d{2}\\.\\d{4}" placeholder="дд.мм.гггг">
             </div>
+            
+            <div class="car-selection-mileage">
+              <label for="car-selection-mileage">
+                <span class="icon">🛣️</span>
+                Пробег (км):
+              </label>
+              <input type="number" id="car-selection-mileage" required min="0" placeholder="Введите пробег">
+            </div>
           </div>
           
           <div class="popup-footer">
@@ -121,16 +130,22 @@ async function showCarSelectionPopup() {
         console.log('Car item clicked:', this.getAttribute('data-car-id'));
         const carId = this.getAttribute('data-car-id');
         const date = document.getElementById('car-selection-date').value;
+        const mileage = document.getElementById('car-selection-mileage').value;
         
-        console.log('Selected car ID:', carId, 'date:', date);
+        console.log('Selected car ID:', carId, 'date:', date, 'mileage:', mileage);
         
         if (!date || !/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
           showErrorMessage('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
           return;
         }
+
+        if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
+          showErrorMessage('Пожалуйста, введите корректный пробег');
+          return;
+        }
         
         // Create service record with selected car and date
-        createServiceRecordWithCar(carId, date);
+        createServiceRecordWithCar(carId, date, mileage);
         
         // Close popup
         closeCarSelectionPopup();
@@ -157,10 +172,10 @@ function closeCarSelectionPopup() {
 }
 
 // Create service record with selected car
-async function createServiceRecordWithCar(carId, date) {
-  console.log('Creating service record with car:', carId, 'date:', date);
+async function createServiceRecordWithCar(carId, date, mileage = null) {
+  console.log('Creating service record with car:', carId, 'date:', date, 'mileage:', mileage);
   
-  currentServiceRecord = new ServiceRecord(carId, date);
+  currentServiceRecord = new ServiceRecord(carId, date, mileage);
   subRecordsCounter = 1;
   
   // Make available globally for other modules
@@ -175,6 +190,15 @@ async function createServiceRecordWithCar(carId, date) {
     console.log('Updated date input:', date);
   } else {
     console.warn('Date input not found');
+  }
+  
+  // Update the mileage input in the service record header
+  const mileageInput = document.getElementById('service-record-mileage');
+  if (mileageInput) {
+    mileageInput.value = mileage || '';
+    console.log('Updated mileage input:', mileage);
+  } else {
+    console.warn('Mileage input not found');
   }
   
   // Update car information in header
@@ -238,18 +262,6 @@ async function updateServiceRecordCarInfo(carId) {
 
 // Setup event listeners
 function setupServiceRecordEventListeners() {
-  // Save record button
-  const saveBtn = document.getElementById('save-service-record-btn');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', saveServiceRecord);
-  }
-  
-  // Remove record button
-  const removeBtn = document.getElementById('remove-service-record-btn');
-  if (removeBtn) {
-    removeBtn.addEventListener('click', removeServiceRecord);
-  }
-  
   // Date input change
   const dateInput = document.getElementById('service-record-date');
   if (dateInput) {
@@ -259,6 +271,51 @@ function setupServiceRecordEventListeners() {
       }
     });
   }
+  
+  // Mileage input change
+  const mileageInput = document.getElementById('service-record-mileage');
+  if (mileageInput) {
+    mileageInput.addEventListener('change', function() {
+      if (currentServiceRecord) {
+        currentServiceRecord.mileage = this.value;
+      }
+    });
+  }
+  
+  // Operation dropdown
+  const operationDropdown = document.getElementById('operation-dropdown');
+  if (operationDropdown) {
+    operationDropdown.addEventListener('change', onOperationSelect);
+  }
+  
+  // Custom repair button
+  const customRepairBtn = document.getElementById('custom-repair-btn');
+  if (customRepairBtn) {
+    customRepairBtn.addEventListener('click', openRepairPopup);
+  }
+  
+  // Add spare button
+  const addSpareBtn = document.getElementById('add-spare-btn');
+  if (addSpareBtn) {
+    addSpareBtn.addEventListener('click', openSparePopup);
+  }
+  
+  // Load operations
+  loadOperations();
+  
+  // Add event listeners for dynamic cost inputs
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('cost-input')) {
+      calculateMaintTotal();
+    }
+  });
+  
+  // Add event listener for repair work cost
+  document.addEventListener('input', function(e) {
+    if (e.target.id === 'repair-work-cost') {
+      calculateRepairTotal();
+    }
+  });
 }
 
 // Update service record UI
@@ -371,6 +428,7 @@ function updateSaveButton() {
   
   const canSave = currentServiceRecord && 
                   currentServiceRecord.date && 
+                  currentServiceRecord.mileage &&
                   currentServiceRecord.subRecords.length > 0;
   
   saveBtn.disabled = !canSave;
@@ -383,13 +441,18 @@ export function addMaintenanceToRecord() {
     return;
   }
   
+  // Validate service record has required data
+  if (!currentServiceRecord.date || !currentServiceRecord.mileage) {
+    alert('Пожалуйста, заполните дату и пробег в записи об обслуживании');
+    return;
+  }
+  
   // Collect maintenance data from popup
-  const mileage = document.getElementById('maint-mileage')?.value;
   const workCost = parseFloat(document.getElementById('work-cost')?.value) || 0;
   const operationName = document.getElementById('maint-operation-name')?.textContent;
   
-  if (!mileage || !operationName) {
-    alert('Пожалуйста, заполните все обязательные поля');
+  if (!operationName) {
+    alert('Пожалуйста, выберите операцию');
     return;
   }
   
@@ -415,10 +478,10 @@ export function addMaintenanceToRecord() {
   const consumablesCost = consumables.reduce((sum, c) => sum + c.cost, 0);
   const totalCost = consumablesCost + workCost;
   
-  // Create maintenance data
+  // Create maintenance data using service record mileage
   const maintenanceData = {
     operationName: operationName,
-    mileage: Number(mileage),
+    mileage: Number(currentServiceRecord.mileage),
     consumables: consumables,
     workCost: workCost,
     totalCost: totalCost,
@@ -448,13 +511,18 @@ export function addRepairToRecord() {
     return;
   }
   
+  // Validate service record has required data
+  if (!currentServiceRecord.date || !currentServiceRecord.mileage) {
+    alert('Пожалуйста, заполните дату и пробег в записи об обслуживании');
+    return;
+  }
+  
   // Collect repair data from popup
-  const mileage = document.getElementById('repair-mileage')?.value;
   const operationName = document.getElementById('repair-operation-name')?.value.trim();
   const workCost = parseFloat(document.getElementById('repair-work-cost')?.value) || 0;
   
-  if (!mileage || !operationName) {
-    alert('Пожалуйста, заполните все обязательные поля');
+  if (!operationName) {
+    alert('Пожалуйста, введите название операции');
     return;
   }
   
@@ -465,10 +533,10 @@ export function addRepairToRecord() {
   const sparesCost = spares.reduce((sum, spare) => sum + spare.cost, 0);
   const totalCost = sparesCost + workCost;
   
-  // Create repair data
+  // Create repair data using service record mileage
   const repairData = {
     operationName: operationName,
-    mileage: Number(mileage),
+    mileage: Number(currentServiceRecord.mileage),
     spares: spares,
     workCost: workCost,
     totalCost: totalCost,
@@ -504,8 +572,26 @@ async function saveServiceRecord() {
     return;
   }
   
+  // Validate mileage
+  if (!currentServiceRecord.mileage || isNaN(currentServiceRecord.mileage) || Number(currentServiceRecord.mileage) < 0) {
+    alert('Пожалуйста, введите корректный пробег');
+    return;
+  }
+  
   try {
-    // Save each sub-record to appropriate storage
+    // First, save the service record itself
+    const serviceRecordToSave = {
+      id: currentServiceRecord.id,
+      carId: currentServiceRecord.carId,
+      date: currentServiceRecord.date,
+      mileage: currentServiceRecord.mileage, // Include mileage
+      createdAt: currentServiceRecord.createdAt,
+      subRecordsCount: currentServiceRecord.subRecords.length
+    };
+    
+    await DataService.saveServiceRecord(serviceRecordToSave);
+    
+    // Then save each sub-record to appropriate storage
     const maintenanceRecords = [];
     const repairRecords = [];
     
@@ -514,6 +600,7 @@ async function saveServiceRecord() {
         ...subRecord.data,
         id: subRecord.id,
         date: currentServiceRecord.date,
+        mileage: currentServiceRecord.mileage, // Include mileage
         serviceRecordId: currentServiceRecord.id
       };
       
@@ -524,7 +611,7 @@ async function saveServiceRecord() {
       }
     });
     
-    // Save to backend/storage
+    // Save operations to backend/storage
     const savePromises = [];
     
     if (maintenanceRecords.length > 0) {
@@ -532,12 +619,12 @@ async function saveServiceRecord() {
     }
     
     if (repairRecords.length > 0) {
-      savePromises.push(DataService.saveRepairs(repairRecords));
+      savePromises.push(DataService.saveRepair(repairRecords));
     }
     
     await Promise.all(savePromises);
     
-    console.log('Service record saved successfully');
+    console.log('Service record and operations saved successfully');
     
     // Show success message
     showSuccessMessage('Запись об обслуживании сохранена!');
@@ -668,8 +755,201 @@ function showErrorMessage(message) {
   }, 5000);
 }
 
+// Load operations from backend
+async function loadOperations() {
+  try {
+    console.log('Loading operations...');
+    // Mock data for demo
+    const operations = [
+      { id: 1, name: 'Замена масла' },
+      { id: 2, name: 'Замена тормозных колодок' },
+      { id: 3, name: 'Замена фильтров' },
+      { id: 4, name: 'Диагностика двигателя' },
+      { id: 5, name: 'Замена ремня ГРМ' }
+    ];
+    
+    const dropdown = document.getElementById('operation-dropdown');
+    if (!dropdown) {
+      console.error('Operation dropdown not found!');
+      return;
+    }
+    
+    operations.forEach(op => {
+      const option = document.createElement('option');
+      option.value = op.id;
+      option.textContent = op.name;
+      dropdown.appendChild(option);
+    });
+    
+    console.log('Operations loaded successfully:', operations.length);
+  } catch (error) {
+    console.error('Error loading operations:', error);
+  }
+}
+
+// Handle operation selection
+async function onOperationSelect(event) {
+  const operationId = event.target.value;
+  if (!operationId) return;
+  
+  try {
+    // Mock data for demo
+    window.currentOperation = {
+      id: operationId,
+      name: event.target.options[event.target.selectedIndex].text,
+      consumables: [
+        { id: 1, name: 'Моторное масло' },
+        { id: 2, name: 'Масляный фильтр' },
+        { id: 3, name: 'Воздушный фильтр' }
+      ]
+    };
+    
+    openMaintPopup();
+  } catch (error) {
+    console.error('Error loading operation details:', error);
+  }
+}
+
+// Open maintenance popup
+function openMaintPopup() {
+  if (!window.currentOperation) return;
+  
+  document.getElementById('maint-operation-name').textContent = window.currentOperation.name;
+  
+  // Populate consumables
+  const consumablesList = document.getElementById('consumables-list');
+  consumablesList.innerHTML = '';
+  
+  window.currentOperation.consumables.forEach(consumable => {
+    const consumableDiv = document.createElement('div');
+    consumableDiv.className = 'consumable-item';
+    consumableDiv.innerHTML = `
+      <span class="consumable-name">${consumable.name}</span>
+      <input type="text" class="item-input" placeholder="${consumable.name}" value="${consumable.name}">
+      <input type="number" class="cost-input" placeholder="0" min="0" step="0.01" value="0">
+    `;
+    consumablesList.appendChild(consumableDiv);
+  });
+  
+  // Reset totals
+  document.getElementById('work-cost').value = '0';
+  calculateMaintTotal();
+  
+  document.getElementById('maint-entry-popup').style.display = 'flex';
+}
+
+// Close maintenance popup
+function closeMaintPopup() {
+  document.getElementById('maint-entry-popup').style.display = 'none';
+  document.getElementById('operation-dropdown').value = '';
+  window.currentOperation = null;
+}
+
+// Calculate maintenance total
+function calculateMaintTotal() {
+  let total = 0;
+  
+  // Add consumables costs
+  const costInputs = document.querySelectorAll('#consumables-list .cost-input');
+  costInputs.forEach(input => {
+    total += parseFloat(input.value) || 0;
+  });
+  
+  // Add work cost
+  const workCost = parseFloat(document.getElementById('work-cost').value) || 0;
+  total += workCost;
+  
+  document.getElementById('maint-total').textContent = `${total.toFixed(2)} ₽`;
+}
+
+// Open repair popup
+function openRepairPopup() {
+  window.sparesList = [];
+  window.spareCounter = 1;
+  document.getElementById('spares-list').innerHTML = '';
+  document.getElementById('repair-total').textContent = '0 ₽';
+  document.getElementById('repair-work-cost').value = '';
+
+  document.getElementById('repair-entry-popup').style.display = 'flex';
+  // Remove any previous event listeners to avoid duplicates
+  const workCostInput = document.getElementById('repair-work-cost');
+  if (workCostInput) {
+    workCostInput.oninput = calculateRepairTotal;
+  }
+  calculateRepairTotal();
+}
+
+// Close repair popup
+function closeRepairPopup() {
+  document.getElementById('repair-entry-popup').style.display = 'none';
+  window.sparesList = [];
+}
+
+// Calculate repair total
+function calculateRepairTotal() {
+  const sparesTotal = window.sparesList.reduce((sum, spare) => sum + spare.cost, 0);
+  const workCost = parseFloat(document.getElementById('repair-work-cost')?.value) || 0;
+  const total = sparesTotal + workCost;
+  document.getElementById('repair-total').textContent = `${total.toFixed(2)} ₽`;
+}
+
+// Add spare to list
+function addSpare() {
+  const name = document.getElementById('spare-name').value.trim();
+  const cost = parseFloat(document.getElementById('spare-cost').value) || 0;
+  
+  if (!name) {
+    alert('Введите название запчасти');
+    return;
+  }
+  
+  const spare = {
+    id: window.spareCounter++,
+    name: name,
+    cost: cost
+  };
+  
+  window.sparesList.push(spare);
+  
+  // Add to UI
+  const sparesListDiv = document.getElementById('spares-list');
+  const spareDiv = document.createElement('div');
+  spareDiv.className = 'spare-item';
+  spareDiv.innerHTML = `
+    <span>${spare.id}. ${spare.name}</span>
+    <span>${spare.cost.toFixed(2)} ₽</span>
+  `;
+  sparesListDiv.appendChild(spareDiv);
+  
+  // Update total
+  calculateRepairTotal();
+  
+  closeSparePopup();
+}
+
+// Open spare popup
+function openSparePopup() {
+  document.getElementById('spare-name').value = '';
+  document.getElementById('spare-cost').value = '0';
+  document.getElementById('spare-entry-popup').style.display = 'flex';
+}
+
+// Close spare popup
+function closeSparePopup() {
+  document.getElementById('spare-entry-popup').style.display = 'none';
+}
+
 // Make functions available globally
 window.addMaintenanceToRecord = addMaintenanceToRecord;
 window.addRepairToRecord = addRepairToRecord;
 window.removeSubRecord = removeSubRecord;
-window.editSubRecord = editSubRecord; 
+window.editSubRecord = editSubRecord;
+window.openMaintPopup = openMaintPopup;
+window.closeMaintPopup = closeMaintPopup;
+window.calculateMaintTotal = calculateMaintTotal;
+window.openRepairPopup = openRepairPopup;
+window.closeRepairPopup = closeRepairPopup;
+window.calculateRepairTotal = calculateRepairTotal;
+window.addSpare = addSpare;
+window.openSparePopup = openSparePopup;
+window.closeSparePopup = closeSparePopup; 

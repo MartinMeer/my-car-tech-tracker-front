@@ -1558,23 +1558,26 @@ footer {
   color: #666;
 }
 
-.service-record-date {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.service-record-date label {
+.service-record-date,
+.service-record-mileage {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
-  color: #2d3e50;
-  font-size: 1.1rem;
+  margin-top: 0.5rem;
 }
 
-.service-record-date input {
+.service-record-date label,
+.service-record-mileage label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 500;
+  color: #2d3e50;
+  white-space: nowrap;
+}
+
+.service-record-date input,
+.service-record-mileage input {
   padding: 0.8rem;
   border: 2px solid #e8f0f8;
   border-radius: 8px;
@@ -1584,7 +1587,8 @@ footer {
   min-width: 150px;
 }
 
-.service-record-date input:focus {
+.service-record-date input:focus,
+.service-record-mileage input:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
@@ -1676,7 +1680,7 @@ footer {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 0.8rem;
   padding: 0.8rem;
   background: #e8f4fd;
   border-radius: 6px;
@@ -2050,7 +2054,8 @@ footer {
   margin-bottom: 0.5rem;
 }
 
-.car-selection-date input {
+.car-selection-date input,
+.car-selection-mileage input {
   width: 100%;
   padding: 0.75rem;
   border: 2px solid #e0e0e0;
@@ -2059,7 +2064,8 @@ footer {
   transition: border-color 0.2s ease;
 }
 
-.car-selection-date input:focus {
+.car-selection-date input:focus,
+.car-selection-mileage input:focus {
   outline: none;
   border-color: #2d3e50;
   box-shadow: 0 0 0 3px rgba(45, 62, 80, 0.1);
@@ -2117,13 +2123,15 @@ footer {
     font-size: 0.85rem;
   }
   
-  .service-record-date {
+  .service-record-date,
+  .service-record-mileage {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
   
-  .service-record-date input {
+  .service-record-date input,
+  .service-record-mileage input {
     width: 100%;
   }
 } 
@@ -2889,4 +2897,22 @@ footer {
   .floating-alert-icon {
     font-size: 18px;
   }
+}
+
+.car-selection-date,
+.car-selection-mileage {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.car-selection-date label,
+.car-selection-mileage label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 500;
+  color: #2d3e50;
+  white-space: nowrap;
 }
