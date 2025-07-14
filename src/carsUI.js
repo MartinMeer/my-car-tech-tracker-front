@@ -23,9 +23,9 @@ function renderCarsList() {
         // Image logic
         let imgHtml = '';
         if (car.img && car.img.startsWith('data:image/')) {
-          imgHtml = `<img src="${car.img}" alt="car image" style="width:256px;height:256px;object-fit:cover;border-radius:50%;box-shadow:0 2px 8px #e0e0e0;">`;
+          imgHtml = `<img class="car-list-img" src="${car.img}" alt="car image" style="width:256px;height:256px;object-fit:cover;border-radius:50%;box-shadow:0 2px 8px #e0e0e0;cursor:pointer;">`;
         } else {
-          imgHtml = `<div style="width:256px;height:256px;display:flex;align-items:center;justify-content:center;background:#f4f7fb;border-radius:50%;font-size:5rem;color:#bbb;box-shadow:0 2px 8px #e0e0e0;">🚗</div>`;
+          imgHtml = `<div class="car-list-img" style="width:256px;height:256px;display:flex;align-items:center;justify-content:center;background:#f4f7fb;border-radius:50%;font-size:5rem;color:#bbb;box-shadow:0 2px 8px #e0e0e0;cursor:pointer;">🚗</div>`;
         }
         return `
           <div class="car-list-item" data-car-id="${car.id}" style="display:flex;flex-direction:column;align-items:center;gap:1rem;margin-bottom:2.5rem;cursor:pointer;max-width:256px;">
@@ -39,6 +39,17 @@ function renderCarsList() {
       // Add event listeners for car name click
       Array.from(listDiv.querySelectorAll('.car-list-item .car-list-name')).forEach(nameEl => {
         nameEl.onclick = function(e) {
+          e.stopPropagation();
+          const carItem = this.closest('.car-list-item');
+          const carId = carItem.getAttribute('data-car-id');
+          setCurrentCarId(carId).then(() => {
+            window.location.hash = '#my-car-overview';
+          });
+        };
+      });
+      // Add event listeners for car image/icon click
+      Array.from(listDiv.querySelectorAll('.car-list-item .car-list-img')).forEach(imgEl => {
+        imgEl.onclick = function(e) {
           e.stopPropagation();
           const carItem = this.closest('.car-list-item');
           const carId = carItem.getAttribute('data-car-id');

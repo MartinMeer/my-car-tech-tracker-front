@@ -825,8 +825,8 @@ function openMaintPopup() {
     consumableDiv.className = 'consumable-item';
     consumableDiv.innerHTML = `
       <span class="consumable-name">${consumable.name}</span>
-      <input type="text" class="item-input" placeholder="${consumable.name}" value="${consumable.name}">
-      <input type="number" class="cost-input" placeholder="0" min="0" step="0.01" value="0">
+      <input type="text" class="item-input" placeholder="${consumable.name}">
+      <input type="number" class="cost-input" placeholder="0" min="0" step="0.01">
     `;
     consumablesList.appendChild(consumableDiv);
   });

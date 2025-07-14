@@ -1,5 +1,10 @@
-For histories pages add a btn Go to car overview
-    After saving new car redirect to defaut page
-    Remove mileage input to main service-card page
-    After saving service-card redirect to default page
+
+
+In service-card, in desktop view, make view wider
+
+
+
+
     Collect all TODO comments fron entirely project to TODO adding a structure
+
+    In car-overview, delete links to history of operations in Finance section

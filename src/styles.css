@@ -743,7 +743,7 @@ footer {
 
 /* --- Service Card Styles --- */
 .service-card {
-  max-width: 800px;
+  max-width: 2000;
   margin: 0 auto;
   padding: 2rem;
   background: white;
@@ -772,7 +772,7 @@ footer {
 }
 
 .service-card-content {
-  max-width: 600px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
