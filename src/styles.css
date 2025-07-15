@@ -1272,6 +1272,99 @@ footer {
     font-size: 2.5rem;
   }
 }
+/* Car overview full width on desktop */
+@media (min-width: 901px) {
+  #main-content > section.car-overview {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .car-overview .car-sections {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .car-overview .car-section {
+    flex: 1;
+    max-width: 350px;
+  }
+  
+  .car-overview .car-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .car-overview .car-row:last-child {
+    border-bottom: none;
+  }
+  
+  .car-overview .car-total-field {
+    font-weight: bold;
+    color: #2d3e50;
+  }
+}
+
+/* Service record full width on desktop */
+@media (min-width: 901px) {
+  #main-content > section.service-record {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .service-record {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .service-record-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    min-height: 500px;
+  }
+  
+  .service-record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
+
+/* Service history full width on desktop */
+@media (min-width: 901px) {
+  #main-content > section.service-history,
+  #main-content > section.mainten-history,
+  #main-content > section.repair-history {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .service-history .history-table,
+  .mainten-history .history-table,
+  .repair-history .history-table {
+    width: 100%;
+    font-size: 1rem;
+  }
+  
+  .service-history .page-description,
+  .mainten-history .page-description,
+  .repair-history .page-description {
+    max-width: 800px;
+    margin: 0 auto 2rem auto;
+    text-align: center;
+  }
+}
+
 @media (max-width: 700px) {
   #main-content > section {
     max-width: 98vw;

@@ -48,7 +48,7 @@ async function showCarSelectionPopup() {
       return;
     }
     
-    // Create popup HTML
+    // Create popup HTML - only car selection, no date/mileage
     const popupHTML = `
       <div class="popup-overlay" id="car-selection-popup" style="display: flex;">
         <div class="popup-content">
@@ -83,22 +83,6 @@ async function showCarSelectionPopup() {
                 `;
               }).join('')}
             </div>
-            
-            <div class="car-selection-date">
-              <label for="car-selection-date">
-                <span class="icon">📅</span>
-                Дата обслуживания:
-              </label>
-              <input type="text" id="car-selection-date" required pattern="\\d{2}\\.\\d{2}\\.\\d{4}" placeholder="дд.мм.гггг">
-            </div>
-            
-            <div class="car-selection-mileage">
-              <label for="car-selection-mileage">
-                <span class="icon">🛣️</span>
-                Пробег (км):
-              </label>
-              <input type="number" id="car-selection-mileage" required min="0" placeholder="Введите пробег">
-            </div>
           </div>
           
           <div class="popup-footer">
@@ -111,16 +95,6 @@ async function showCarSelectionPopup() {
     // Add popup to DOM
     document.body.insertAdjacentHTML('beforeend', popupHTML);
     
-    // Set default date to today
-    const dateInput = document.getElementById('car-selection-date');
-    if (dateInput) {
-      const today = new Date();
-      const dd = String(today.getDate()).padStart(2, '0');
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const yyyy = today.getFullYear();
-      dateInput.value = `${dd}.${mm}.${yyyy}`;
-    }
-    
     // Add event listeners for car selection
     const carItems = document.querySelectorAll('.car-selection-item');
     console.log('Found car items:', carItems.length);
@@ -129,26 +103,12 @@ async function showCarSelectionPopup() {
       item.addEventListener('click', function() {
         console.log('Car item clicked:', this.getAttribute('data-car-id'));
         const carId = this.getAttribute('data-car-id');
-        const date = document.getElementById('car-selection-date').value;
-        const mileage = document.getElementById('car-selection-mileage').value;
         
-        console.log('Selected car ID:', carId, 'date:', date, 'mileage:', mileage);
+        // Remove current popup without navigation (we want to stay on service-record page)
+        removeCarSelectionPopup();
         
-        if (!date || !/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
-          showErrorMessage('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
-          return;
-        }
-
-        if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
-          showErrorMessage('Пожалуйста, введите корректный пробег');
-          return;
-        }
-        
-        // Create service record with selected car and date
-        createServiceRecordWithCar(carId, date, mileage);
-        
-        // Close popup
-        closeCarSelectionPopup();
+        // Show date/mileage popup for selected car
+        showDateMileagePopup(carId);
       });
     });
     
@@ -161,14 +121,153 @@ async function showCarSelectionPopup() {
   }
 }
 
-// Close car selection popup
-function closeCarSelectionPopup() {
+// Show date and mileage selection popup
+async function showDateMileagePopup(carId) {
+  console.log('🚗 Service Record Manager: Showing date/mileage popup for car:', carId);
+  
+  try {
+    const cars = await DataService.getCars();
+    const selectedCar = cars.find(car => car.id == carId);
+    
+    if (!selectedCar) {
+      showErrorMessage('Выбранный автомобиль не найден');
+      return;
+    }
+    
+    const displayName = selectedCar.name || `${selectedCar.brand || ''} ${selectedCar.model || ''}`.trim();
+    const nickname = selectedCar.nickname ? ` "${selectedCar.nickname}"` : '';
+    const fullName = displayName + nickname;
+    
+    // Create popup HTML for date/mileage selection
+    const popupHTML = `
+      <div class="popup-overlay" id="date-mileage-popup" style="display: flex;">
+        <div class="popup-content">
+          <div class="popup-header">
+            <h2>
+              <span class="icon">📅</span>
+              Дата и пробег обслуживания
+            </h2>
+          </div>
+          
+          <div class="popup-body">
+            <div class="selected-car-info" style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="car-selection-img">
+                  ${selectedCar.img && selectedCar.img.startsWith('data:image/') 
+                    ? `<img src="${selectedCar.img}" alt="car image" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">`
+                    : `<span style="font-size:3rem;">${selectedCar.img || '🚗'}</span>`
+                  }
+                </div>
+                <div>
+                  <div style="font-weight: bold; font-size: 1.1rem;">${fullName}</div>
+                  ${selectedCar.year ? `<div style="color: #666;">${selectedCar.year} год</div>` : ''}
+                </div>
+              </div>
+            </div>
+            
+            <div class="car-selection-date">
+              <label for="date-mileage-date">
+                <span class="icon">📅</span>
+                Дата обслуживания:
+              </label>
+              <input type="text" id="date-mileage-date" required pattern="\\d{2}\\.\\d{2}\\.\\d{4}" placeholder="дд.мм.гггг">
+            </div>
+            
+            <div class="car-selection-mileage">
+              <label for="date-mileage-mileage">
+                <span class="icon">🛣️</span>
+                Пробег (км):
+              </label>
+              <input type="number" id="date-mileage-mileage" required min="0" placeholder="Введите пробег" value="${selectedCar.mileage || ''}">
+            </div>
+          </div>
+          
+          <div class="popup-footer">
+            <button class="btn btn-primary" onclick="confirmDateMileage('${carId}')">
+              <span class="icon">✅</span>
+              Продолжить
+            </button>
+            <button class="btn btn-secondary" onclick="closeDateMileagePopup()">Отмена</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add popup to DOM
+    document.body.insertAdjacentHTML('beforeend', popupHTML);
+    
+    // Set default date to today
+    const dateInput = document.getElementById('date-mileage-date');
+    if (dateInput) {
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      dateInput.value = `${dd}.${mm}.${yyyy}`;
+    }
+    
+    // Add global functions for popup buttons
+    window.confirmDateMileage = confirmDateMileage;
+    window.closeDateMileagePopup = closeDateMileagePopup;
+    
+  } catch (error) {
+    console.error('Error showing date/mileage popup:', error);
+    showErrorMessage('Ошибка показа формы даты и пробега');
+  }
+}
+
+// Confirm date and mileage selection
+function confirmDateMileage(carId) {
+  const date = document.getElementById('date-mileage-date').value;
+  const mileage = document.getElementById('date-mileage-mileage').value;
+  
+  console.log('Confirming date/mileage:', { carId, date, mileage });
+  
+  if (!date || !/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+    showErrorMessage('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+    return;
+  }
+
+  if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
+    showErrorMessage('Пожалуйста, введите корректный пробег');
+    return;
+  }
+  
+  // Close popup without navigation (we want to stay on service-record page)
+  removeDateMileagePopup();
+  
+  // Create service record with selected car, date, and mileage
+  createServiceRecordWithCar(carId, date, mileage);
+}
+
+// Remove date/mileage popup from DOM (without navigation)
+function removeDateMileagePopup() {
+  const popup = document.getElementById('date-mileage-popup');
+  if (popup) {
+    popup.remove();
+  }
+}
+
+// Close date/mileage popup and navigate back (only when user cancels)
+function closeDateMileagePopup() {
+  removeDateMileagePopup();
+  // Navigate back to overview when user cancels
+  window.location.hash = '#my-car-overview';
+}
+
+// Remove car selection popup from DOM (without navigation)
+function removeCarSelectionPopup() {
   const popup = document.getElementById('car-selection-popup');
   if (popup) {
     popup.remove();
   }
-  // Don't navigate away - stay on the service card page
-  // window.history.back(); // Remove this line
+}
+
+// Close car selection popup and navigate back (only when user cancels)
+function closeCarSelectionPopup() {
+  removeCarSelectionPopup();
+  // Navigate back to overview when user cancels
+  window.location.hash = '#my-car-overview';
 }
 
 // Create service record with selected car
