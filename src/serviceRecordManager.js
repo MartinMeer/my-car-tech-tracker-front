@@ -26,12 +26,179 @@ class SubRecord {
   }
 }
 
+// Draft Management
+const DRAFT_STORAGE_KEY = 'serviceRecordDraft';
+
+// Save current service record as draft
+function saveDraftToStorage() {
+  if (!currentServiceRecord) return;
+  
+  try {
+    const draftData = {
+      serviceRecord: currentServiceRecord,
+      subRecordsCounter: subRecordsCounter,
+      savedAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftData));
+    console.log('📝 Draft saved successfully');
+    return true;
+  } catch (error) {
+    console.error('Error saving draft:', error);
+    return false;
+  }
+}
+
+// Load draft from storage
+function loadDraftFromStorage() {
+  try {
+    const draftJson = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!draftJson) return null;
+    
+    const draftData = JSON.parse(draftJson);
+    console.log('📝 Draft loaded successfully');
+    return draftData;
+  } catch (error) {
+    console.error('Error loading draft:', error);
+    // Clear corrupted draft
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
+    return null;
+  }
+}
+
+// Clear draft from storage
+function clearDraft() {
+  localStorage.removeItem(DRAFT_STORAGE_KEY);
+  console.log('📝 Draft cleared');
+}
+
+// Check if draft exists
+function hasDraft() {
+  return localStorage.getItem(DRAFT_STORAGE_KEY) !== null;
+}
+
+// Auto-save functionality
+let autoSaveInterval = null;
+
+function startAutoSave() {
+  // Auto-save every 30 seconds
+  if (autoSaveInterval) clearInterval(autoSaveInterval);
+  
+  autoSaveInterval = setInterval(() => {
+    if (currentServiceRecord) {
+      saveDraftToStorage();
+      showSuccessMessage('Черновик автоматически сохранен', 1000);
+    }
+  }, 30000);
+  
+  // Also save when user leaves the page
+  window.addEventListener('beforeunload', function(e) {
+    if (currentServiceRecord) {
+      saveDraftToStorage();
+    }
+  });
+}
+
+function stopAutoSave() {
+  if (autoSaveInterval) {
+    clearInterval(autoSaveInterval);
+    autoSaveInterval = null;
+  }
+}
+
 // Initialize Service Record
 export function initializeServiceRecord() {
   console.log('🚗 Service Record Manager: Initializing...');
   
-  // Show car selection popup first
-  showCarSelectionPopup();
+  // Check if there's a draft and offer to load it
+  if (hasDraft()) {
+    showDraftLoadDialog();
+  } else {
+    // Show car selection popup first
+    showCarSelectionPopup();
+  }
+}
+
+// Show draft load dialog
+function showDraftLoadDialog() {
+  const draftData = loadDraftFromStorage();
+  if (!draftData) {
+    // No valid draft, proceed normally
+    showCarSelectionPopup();
+    return;
+  }
+  
+  const savedDate = new Date(draftData.savedAt).toLocaleString('ru-RU');
+  
+  showConfirmationDialog(
+    `Найден сохраненный черновик записи от ${savedDate}. Загрузить его?`,
+    () => {
+      // Load draft
+      loadDraft();
+    },
+    () => {
+      // Don't load draft, proceed with new record
+      clearDraft();
+      showCarSelectionPopup();
+    }
+  );
+}
+
+// Load draft and restore the form
+function loadDraft() {
+  const draftData = loadDraftFromStorage();
+  if (!draftData) return;
+  
+  try {
+    // Restore service record
+    currentServiceRecord = draftData.serviceRecord;
+    subRecordsCounter = draftData.subRecordsCounter;
+    
+    // Make available globally
+    window.currentServiceRecord = currentServiceRecord;
+    
+    // Update the UI with draft data
+    updateServiceRecordFromDraft();
+    
+    // Start auto-save
+    startAutoSave();
+    
+    // Show success message
+    showSuccessMessage('Черновик загружен');
+    
+    console.log('Draft loaded successfully:', currentServiceRecord);
+  } catch (error) {
+    console.error('Error loading draft:', error);
+    clearDraft();
+    showErrorMessage('Ошибка загрузки черновика');
+    showCarSelectionPopup();
+  }
+}
+
+// Update UI with draft data
+async function updateServiceRecordFromDraft() {
+  if (!currentServiceRecord) return;
+  
+  // Update date input
+  const dateInput = document.getElementById('service-record-date');
+  if (dateInput) {
+    dateInput.value = currentServiceRecord.date || '';
+  }
+  
+  // Update mileage input
+  const mileageInput = document.getElementById('service-record-mileage');
+  if (mileageInput) {
+    mileageInput.value = currentServiceRecord.mileage || '';
+  }
+  
+  // Update car information in header
+  await updateServiceRecordCarInfo(currentServiceRecord.carId);
+  
+  // Setup event listeners
+  setupServiceRecordEventListeners();
+  
+  // Update UI with existing sub-records
+  updateServiceRecordUI();
 }
 
 // Show car selection popup
@@ -309,6 +476,9 @@ async function createServiceRecordWithCar(carId, date, mileage = null) {
   // Update UI
   updateServiceRecordUI();
   
+  // Start auto-save
+  startAutoSave();
+  
   // Show success message
   showSuccessMessage('Запись об обслуживании создана');
   
@@ -361,24 +531,28 @@ async function updateServiceRecordCarInfo(carId) {
 
 // Setup event listeners
 function setupServiceRecordEventListeners() {
-  // Date input change
+  // Date input change (both input and change events for real-time updates)
   const dateInput = document.getElementById('service-record-date');
   if (dateInput) {
-    dateInput.addEventListener('change', function() {
+    const updateDate = function() {
       if (currentServiceRecord) {
         currentServiceRecord.date = this.value;
       }
-    });
+    };
+    dateInput.addEventListener('input', updateDate);
+    dateInput.addEventListener('change', updateDate);
   }
   
-  // Mileage input change
+  // Mileage input change (both input and change events for real-time updates)
   const mileageInput = document.getElementById('service-record-mileage');
   if (mileageInput) {
-    mileageInput.addEventListener('change', function() {
+    const updateMileage = function() {
       if (currentServiceRecord) {
         currentServiceRecord.mileage = this.value;
       }
-    });
+    };
+    mileageInput.addEventListener('input', updateMileage);
+    mileageInput.addEventListener('change', updateMileage);
   }
   
   // Operation dropdown
@@ -402,9 +576,9 @@ function setupServiceRecordEventListeners() {
   // Load operations
   loadOperations();
   
-  // Add event listeners for dynamic cost inputs
+  // Add event listeners for dynamic cost and quantity inputs
   document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('cost-input')) {
+    if (e.target.classList.contains('cost-input') || e.target.classList.contains('quantity-input')) {
       calculateMaintTotal();
     }
   });
@@ -522,15 +696,15 @@ function updateSummary() {
 
 // Update save button state
 function updateSaveButton() {
-  const saveBtn = document.getElementById('save-service-record-btn');
-  if (!saveBtn) return;
+  const saveAndExitBtn = document.getElementById('save-and-exit-btn');
+  if (!saveAndExitBtn) return;
   
   const canSave = currentServiceRecord && 
                   currentServiceRecord.date && 
                   currentServiceRecord.mileage &&
                   currentServiceRecord.subRecords.length > 0;
   
-  saveBtn.disabled = !canSave;
+  saveAndExitBtn.disabled = !canSave;
 }
 
 // Add maintenance to record
@@ -563,18 +737,21 @@ export function addMaintenanceToRecord() {
     const name = item.querySelector('.consumable-name')?.textContent;
     const itemInput = item.querySelector('.item-input')?.value;
     const cost = parseFloat(item.querySelector('.cost-input')?.value) || 0;
+    const quantity = parseFloat(item.querySelector('.quantity-input')?.value) || 1;
     
     if (name) {
       consumables.push({
         name: name,
         item: itemInput || name,
-        cost: cost
+        cost: cost,
+        quantity: quantity,
+        totalCost: cost * quantity
       });
     }
   });
   
   // Calculate total
-  const consumablesCost = consumables.reduce((sum, c) => sum + c.cost, 0);
+  const consumablesCost = consumables.reduce((sum, c) => sum + c.totalCost, 0);
   const totalCost = consumablesCost + workCost;
   
   // Create maintenance data using service record mileage
@@ -925,7 +1102,11 @@ function openMaintPopup() {
     consumableDiv.innerHTML = `
       <span class="consumable-name">${consumable.name}</span>
       <input type="text" class="item-input" placeholder="${consumable.name}">
-      <input type="number" class="cost-input" placeholder="0" min="0" step="0.01">
+      <input type="number" class="quantity-input" placeholder="1" min="1" step="1" value="1">
+      <div class="cost-input-wrapper">
+        <input type="number" class="cost-input" placeholder="0" min="0" step="0.01">
+        <span class="ruble-icon">₽</span>
+      </div>
     `;
     consumablesList.appendChild(consumableDiv);
   });
@@ -948,10 +1129,12 @@ function closeMaintPopup() {
 function calculateMaintTotal() {
   let total = 0;
   
-  // Add consumables costs
-  const costInputs = document.querySelectorAll('#consumables-list .cost-input');
-  costInputs.forEach(input => {
-    total += parseFloat(input.value) || 0;
+  // Add consumables costs (cost * quantity)
+  const consumableItems = document.querySelectorAll('#consumables-list .consumable-item');
+  consumableItems.forEach(item => {
+    const cost = parseFloat(item.querySelector('.cost-input')?.value) || 0;
+    const quantity = parseFloat(item.querySelector('.quantity-input')?.value) || 1;
+    total += cost * quantity;
   });
   
   // Add work cost
@@ -986,7 +1169,7 @@ function closeRepairPopup() {
 
 // Calculate repair total
 function calculateRepairTotal() {
-  const sparesTotal = window.sparesList.reduce((sum, spare) => sum + spare.cost, 0);
+  const sparesTotal = window.sparesList.reduce((sum, spare) => sum + (spare.totalCost || spare.cost), 0);
   const workCost = parseFloat(document.getElementById('repair-work-cost')?.value) || 0;
   const total = sparesTotal + workCost;
   document.getElementById('repair-total').textContent = `${total.toFixed(2)} ₽`;
@@ -996,6 +1179,7 @@ function calculateRepairTotal() {
 function addSpare() {
   const name = document.getElementById('spare-name').value.trim();
   const cost = parseFloat(document.getElementById('spare-cost').value) || 0;
+  const quantity = parseFloat(document.getElementById('spare-quantity').value) || 1;
   
   if (!name) {
     alert('Введите название запчасти');
@@ -1005,7 +1189,9 @@ function addSpare() {
   const spare = {
     id: window.spareCounter++,
     name: name,
-    cost: cost
+    cost: cost,
+    quantity: quantity,
+    totalCost: cost * quantity
   };
   
   window.sparesList.push(spare);
@@ -1015,8 +1201,8 @@ function addSpare() {
   const spareDiv = document.createElement('div');
   spareDiv.className = 'spare-item';
   spareDiv.innerHTML = `
-    <span>${spare.id}. ${spare.name}</span>
-    <span>${spare.cost.toFixed(2)} ₽</span>
+    <span>${spare.id}. ${spare.name} (${spare.quantity} шт.)</span>
+    <span>${spare.cost.toFixed(2)} ₽ × ${spare.quantity} = ${spare.totalCost.toFixed(2)} ₽</span>
   `;
   sparesListDiv.appendChild(spareDiv);
   
@@ -1029,6 +1215,7 @@ function addSpare() {
 // Open spare popup
 function openSparePopup() {
   document.getElementById('spare-name').value = '';
+  document.getElementById('spare-quantity').value = '1';
   document.getElementById('spare-cost').value = '0';
   document.getElementById('spare-entry-popup').style.display = 'flex';
 }
@@ -1036,6 +1223,138 @@ function openSparePopup() {
 // Close spare popup
 function closeSparePopup() {
   document.getElementById('spare-entry-popup').style.display = 'none';
+}
+
+// Draft Button Functions
+export function saveDraft() {
+  if (!currentServiceRecord) {
+    showErrorMessage('Нет данных для сохранения в черновик');
+    return;
+  }
+  
+  const success = saveDraftToStorage();
+  if (success) {
+    showSuccessMessage('Черновик сохранен');
+  } else {
+    showErrorMessage('Ошибка сохранения черновика');
+  }
+}
+
+export function saveAndExit() {
+  if (!currentServiceRecord || currentServiceRecord.subRecords.length === 0) {
+    showErrorMessage('Нет операций для сохранения');
+    return;
+  }
+  
+  // Validate date
+  if (!currentServiceRecord.date || !/^\d{2}\.\d{2}\.\d{4}$/.test(currentServiceRecord.date)) {
+    showErrorMessage('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+    return;
+  }
+  
+  // Validate mileage
+  if (!currentServiceRecord.mileage || isNaN(currentServiceRecord.mileage) || Number(currentServiceRecord.mileage) < 0) {
+    showErrorMessage('Пожалуйста, введите корректный пробег');
+    return;
+  }
+  
+  // Save the record permanently and exit
+  saveServiceRecordPermanently()
+    .then(() => {
+      // Clear draft after successful save
+      clearDraft();
+      stopAutoSave();
+      
+      // Navigate back to overview
+      window.location.hash = '#my-car-overview';
+      showSuccessMessage('Запись об обслуживании сохранена!');
+    })
+    .catch(error => {
+      console.error('Error saving service record:', error);
+      showErrorMessage('Ошибка сохранения: ' + error.message);
+    });
+}
+
+export function exitWithoutChanges() {
+  const hasSubRecords = currentServiceRecord && currentServiceRecord.subRecords.length > 0;
+  const hasDraftData = hasDraft();
+  
+  let message = 'Выйти без сохранения?';
+  if (hasSubRecords || hasDraftData) {
+    message = 'Выйти без сохранения? Все несохраненные изменения будут потеряны.';
+  }
+  
+  showConfirmationDialog(
+    message,
+    () => {
+      // Clear everything and exit
+      clearDraft();
+      stopAutoSave();
+      currentServiceRecord = null;
+      window.currentServiceRecord = null;
+      
+      // Navigate back
+      window.location.hash = '#my-car-overview';
+      showSuccessMessage('Вышли без сохранения');
+    },
+    () => {
+      // User cancelled
+    }
+  );
+}
+
+// Save service record permanently (extracted from original saveServiceRecord)
+async function saveServiceRecordPermanently() {
+  if (!currentServiceRecord || currentServiceRecord.subRecords.length === 0) {
+    throw new Error('Нет операций для сохранения');
+  }
+  
+  // First, save the service record itself
+  const serviceRecordToSave = {
+    id: currentServiceRecord.id,
+    carId: currentServiceRecord.carId,
+    date: currentServiceRecord.date,
+    mileage: currentServiceRecord.mileage,
+    createdAt: currentServiceRecord.createdAt,
+    subRecordsCount: currentServiceRecord.subRecords.length
+  };
+  
+  await DataService.saveServiceRecord(serviceRecordToSave);
+  
+  // Then save each sub-record to appropriate storage
+  const maintenanceRecords = [];
+  const repairRecords = [];
+  
+  currentServiceRecord.subRecords.forEach(subRecord => {
+    const recordData = {
+      ...subRecord.data,
+      id: subRecord.id,
+      date: currentServiceRecord.date,
+      mileage: currentServiceRecord.mileage,
+      serviceRecordId: currentServiceRecord.id
+    };
+    
+    if (subRecord.type === 'maintenance') {
+      maintenanceRecords.push(recordData);
+    } else {
+      repairRecords.push(recordData);
+    }
+  });
+  
+  // Save operations to backend/storage
+  const savePromises = [];
+  
+  if (maintenanceRecords.length > 0) {
+    savePromises.push(DataService.saveMaintenance(maintenanceRecords));
+  }
+  
+  if (repairRecords.length > 0) {
+    savePromises.push(DataService.saveRepair(repairRecords));
+  }
+  
+  await Promise.all(savePromises);
+  
+  console.log('Service record and operations saved successfully');
 }
 
 // Make functions available globally
@@ -1049,6 +1368,9 @@ window.calculateMaintTotal = calculateMaintTotal;
 window.openRepairPopup = openRepairPopup;
 window.closeRepairPopup = closeRepairPopup;
 window.calculateRepairTotal = calculateRepairTotal;
+window.saveDraft = saveDraft;
+window.saveAndExit = saveAndExit;
+window.exitWithoutChanges = exitWithoutChanges;
 window.addSpare = addSpare;
 window.openSparePopup = openSparePopup;
 window.closeSparePopup = closeSparePopup; 

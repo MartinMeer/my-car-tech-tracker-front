@@ -1,0 +1,328 @@
+/* ==========================================================================
+   FORMS STYLES
+   Input Styling, Buttons, Form Layouts
+   ========================================================================== */
+
+/* Button Base Styles */
+.btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  text-align: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #3a4a5e;
+}
+
+.btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--border-color);
+  color: var(--primary-color);
+}
+
+.btn-secondary:hover {
+  background: #d0d0d0;
+}
+
+.btn-danger {
+  background: var(--accent-color);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+/* Add Car Form */
+.add-car-form {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--surface);
+  padding: 2rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.form-section {
+  margin-bottom: 2rem;
+}
+
+.form-section h2 {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e0e7ef;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: border-color var(--transition-fast);
+  background: var(--surface);
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(45, 62, 80, 0.1);
+}
+
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.form-group input[type="file"]:hover {
+  border-color: var(--primary-color);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+}
+
+/* Image Preview */
+.image-preview {
+  margin-top: 1rem;
+  min-height: 100px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--border-radius);
+}
+
+.image-preview:empty::before {
+  content: 'Предварительный просмотр изображения';
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Input Groups */
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.input-group input,
+.input-group select:not(#car-year),
+.input-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  font-size: 1rem;
+  transition: border-color var(--transition-normal) ease;
+  background: var(--surface);
+}
+
+.input-group select#car-year {
+  width: 100%;
+}
+
+.input-group input:focus,
+.input-group select:not(#car-year):focus,
+.input-group textarea:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Car Year Dropdown - Limit to 6 visible options */
+#car-year {
+  size: 6;
+  height: auto;
+  /* Keep consistent styling with other form inputs */
+  padding: 0.8rem;
+  border: 2px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  font-size: 1rem;
+  transition: border-color var(--transition-normal) ease;
+  background: var(--surface);
+}
+
+#car-year:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.input-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Character Counter */
+.char-counter {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+/* Cost Input */
+.cost-input,
+.consumable-cost-input,
+.spare-cost-input {
+  border: 2px solid var(--border-light) !important;
+  border-radius: var(--border-radius-lg) !important;
+  padding: 0.7rem !important;
+  font-size: 0.9rem !important;
+  transition: border-color var(--transition-normal) ease !important;
+  background: var(--surface) !important;
+}
+
+.cost-input:focus,
+.consumable-cost-input:focus,
+.spare-cost-input:focus {
+  outline: none !important;
+  border-color: var(--secondary-color) !important;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
+}
+
+/* Cost Input with Ruble Icon */
+.cost-input-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.cost-input-wrapper .cost-input,
+.cost-input-wrapper .consumable-cost-input,
+.cost-input-wrapper .spare-cost-input {
+  padding-right: 2.5rem !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ruble-icon {
+  position: absolute;
+  right: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 500;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Quantity Input */
+.quantity-input,
+.consumable-quantity-input,
+.spare-quantity-input {
+  border: 2px solid var(--border-light) !important;
+  border-radius: var(--border-radius-lg) !important;
+  padding: 0.7rem !important;
+  font-size: 0.9rem !important;
+  transition: border-color var(--transition-normal) ease !important;
+  background: var(--surface) !important;
+  width: 80px !important;
+  text-align: center !important;
+}
+
+.quantity-input:focus,
+.consumable-quantity-input:focus,
+.spare-quantity-input:focus {
+  outline: none !important;
+  border-color: var(--secondary-color) !important;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
+}
+
+/* Item Input */
+.item-input {
+  border: 2px solid var(--border-light) !important;
+  border-radius: var(--border-radius-lg) !important;
+  padding: 0.7rem !important;
+  font-size: 0.9rem !important;
+  transition: border-color var(--transition-normal) ease !important;
+  background: var(--surface) !important;
+}
+
+.item-input:focus {
+  outline: none !important;
+  border-color: var(--secondary-color) !important;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
+} 

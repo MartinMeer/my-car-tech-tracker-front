@@ -138,9 +138,9 @@ export function initializeServiceCardUI() {
     addSpareBtn.addEventListener('click', openSparePopup);
   }
   
-  // Add event listeners for dynamic cost inputs
+  // Add event listeners for dynamic cost and quantity inputs
   document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('cost-input')) {
+    if (e.target.classList.contains('cost-input') || e.target.classList.contains('quantity-input')) {
       calculateMaintTotal();
     }
   });
@@ -372,7 +372,11 @@ export function openMaintPopup() {
     consumableDiv.innerHTML = `
       <span class="consumable-name">${consumable.name}</span>
       <input type="text" class="item-input" placeholder="${consumable.name}">
-      <input type="number" class="cost-input" placeholder="0" min="0" step="0.01">
+      <input type="number" class="quantity-input" placeholder="1" min="1" step="1" value="1">
+      <div class="cost-input-wrapper">
+        <input type="number" class="cost-input" placeholder="0" min="0" step="0.01">
+        <span class="ruble-icon">₽</span>
+      </div>
     `;
     consumablesList.appendChild(consumableDiv);
   });
@@ -395,10 +399,12 @@ export function closeMaintPopup() {
 export function calculateMaintTotal() {
   let total = 0;
   
-  // Add consumables costs
-  const costInputs = document.querySelectorAll('#consumables-list .cost-input');
-  costInputs.forEach(input => {
-    total += parseFloat(input.value) || 0;
+  // Add consumables costs (cost * quantity)
+  const consumableItems = document.querySelectorAll('#consumables-list .consumable-item');
+  consumableItems.forEach(item => {
+    const cost = parseFloat(item.querySelector('.cost-input')?.value) || 0;
+    const quantity = parseFloat(item.querySelector('.quantity-input')?.value) || 1;
+    total += cost * quantity;
   });
   
   // Add work cost
@@ -431,15 +437,32 @@ export async function renderMaintenHistory() {
   const container = document.getElementById('mainten-history-list');
   if (!container) return;
   container.innerHTML = '<div class="loading">Загрузка истории ТО...</div>';
+  
   try {
     const [maintenances, cars] = await Promise.all([
       DataService.getMaintenance(),
       DataService.getCars()
     ]);
+    
     if (!maintenances || maintenances.length === 0) {
       container.innerHTML = '<div class="empty">Нет записей о ТО.</div>';
       return;
     }
+    
+    // Check if we should filter by current car (when accessed from my-car-overview)
+    const currentCarId = localStorage.getItem('currentCarId');
+    const showAllCars = localStorage.getItem('showAllCars') === 'true';
+    let carsToShow = cars;
+    
+    if (currentCarId && !showAllCars) {
+      // Filter to show only the current car
+      carsToShow = cars.filter(car => car.id == currentCarId);
+      if (carsToShow.length === 0) {
+        container.innerHTML = '<div class="error">Выбранный автомобиль не найден.</div>';
+        return;
+      }
+    }
+    
     // Group by carId
     const maintByCar = {};
     maintenances.forEach(m => {
@@ -448,7 +471,52 @@ export async function renderMaintenHistory() {
     });
 
     let html = '';
-    cars.forEach(car => {
+    
+    // Add header indicating if we're showing filtered results
+    if (currentCarId && carsToShow.length === 1) {
+      const currentCar = carsToShow[0];
+      html += `
+        <div class="filter-notice" style="
+          background: #e3f2fd;
+          padding: 1rem;
+          border-radius: 8px;
+          margin-bottom: 2rem;
+          border-left: 4px solid #2196f3;
+          color: #1976d2;
+        ">
+          <strong>Показана история ТО для автомобиля:</strong> ${currentCar.brand || ''} ${currentCar.model || ''} ${currentCar.nickname ? '(' + currentCar.nickname + ')' : ''}
+          <div style="margin-top: 0.5rem;">
+            <a href="#mainten-history" onclick="localStorage.setItem('showAllCars', 'true'); renderMaintenHistory();" style="color: #1976d2; text-decoration: underline;">
+              Показать для всех автомобилей
+            </a>
+          </div>
+        </div>
+      `;
+    } else if (showAllCars && currentCarId) {
+      // Show notice when displaying all cars but we have a current car context
+      const currentCar = cars.find(car => car.id == currentCarId);
+      if (currentCar) {
+        html += `
+          <div class="filter-notice" style="
+            background: #fff3e0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #ff9800;
+            color: #f57c00;
+          ">
+            <strong>Показана история ТО для всех автомобилей</strong>
+            <div style="margin-top: 0.5rem;">
+              <a href="#mainten-history" onclick="localStorage.removeItem('showAllCars'); renderMaintenHistory();" style="color: #f57c00; text-decoration: underline;">
+                Показать только для ${currentCar.brand || ''} ${currentCar.model || ''} ${currentCar.nickname ? '(' + currentCar.nickname + ')' : ''}
+              </a>
+            </div>
+          </div>
+        `;
+      }
+    }
+    
+    carsToShow.forEach(car => {
       const carMaints = maintByCar[car.id] || [];
       html += `
         <div class="car-history-block" style="margin-bottom:2.5rem;">
@@ -485,6 +553,19 @@ export async function renderMaintenHistory() {
       html += `</div>`;
     });
     container.innerHTML = html;
+    
+    // Update back button text and behavior based on filter state
+    const backBtn = document.getElementById('mainten-back-btn');
+    if (backBtn) {
+      if (currentCarId && carsToShow.length === 1) {
+        backBtn.innerHTML = '← К обзору автомобиля';
+        backBtn.onclick = () => window.location.hash = '#my-car-overview';
+      } else {
+        backBtn.innerHTML = '← Вернуться';
+        // When showing all cars, still return to current car's overview
+        backBtn.onclick = () => window.location.hash = '#my-car-overview';
+      }
+    }
   } catch (error) {
     container.innerHTML = `<div class="error">Ошибка загрузки: ${error.message}</div>`;
   }
@@ -1561,10 +1642,12 @@ function setupEditFormEventListeners() {
   const form = document.getElementById('edit-service-record-form');
   if (!form) return;
   
-  // Add event listeners for cost inputs to recalculate total
+  // Add event listeners for cost and quantity inputs to recalculate total
   form.addEventListener('input', function(e) {
     if (e.target.classList.contains('consumable-cost-input') || 
         e.target.classList.contains('spare-cost-input') || 
+        e.target.classList.contains('consumable-quantity-input') || 
+        e.target.classList.contains('spare-quantity-input') || 
         e.target.id === 'edit-work-cost') {
       calculateEditTotal();
     }
@@ -1616,16 +1699,20 @@ function setupEditFormEventListeners() {
 function calculateEditTotal() {
   let total = 0;
   
-  // Add consumables costs
-  const consumableCosts = document.querySelectorAll('.consumable-cost-input');
-  consumableCosts.forEach(input => {
-    total += parseFloat(input.value) || 0;
+  // Add consumables costs (cost * quantity)
+  const consumableItems = document.querySelectorAll('.consumable-edit-item');
+  consumableItems.forEach(item => {
+    const cost = parseFloat(item.querySelector('.consumable-cost-input')?.value) || 0;
+    const quantity = parseFloat(item.querySelector('.consumable-quantity-input')?.value) || 1;
+    total += cost * quantity;
   });
   
-  // Add spares costs
-  const spareCosts = document.querySelectorAll('.spare-cost-input');
-  spareCosts.forEach(input => {
-    total += parseFloat(input.value) || 0;
+  // Add spares costs (cost * quantity)
+  const spareItems = document.querySelectorAll('.spare-edit-item');
+  spareItems.forEach(item => {
+    const cost = parseFloat(item.querySelector('.spare-cost-input')?.value) || 0;
+    const quantity = parseFloat(item.querySelector('.spare-quantity-input')?.value) || 1;
+    total += cost * quantity;
   });
   
   // Add work cost
@@ -1646,7 +1733,11 @@ function addConsumableItem() {
   item.innerHTML = `
     <input type="text" class="consumable-name-input" placeholder="Название" required>
     <input type="text" class="consumable-item-input" placeholder="Деталь">
-    <input type="number" class="consumable-cost-input" placeholder="0" min="0" step="0.01">
+    <input type="number" class="consumable-quantity-input" placeholder="1" min="1" step="1" value="1">
+    <div class="cost-input-wrapper">
+      <input type="number" class="consumable-cost-input" placeholder="0" min="0" step="0.01">
+      <span class="ruble-icon">₽</span>
+    </div>
     <button type="button" onclick="removeConsumableItem(this)" 
             style="background: #dc3545; color: white; border: none; padding: 0.3rem; border-radius: 4px; cursor: pointer;">
       ✕
@@ -1668,7 +1759,11 @@ function addSpareItem() {
   item.className = 'spare-edit-item';
   item.innerHTML = `
     <input type="text" class="spare-name-input" placeholder="Название запчасти" required>
-    <input type="number" class="spare-cost-input" placeholder="0" min="0" step="0.01">
+    <input type="number" class="spare-quantity-input" placeholder="1" min="1" step="1" value="1">
+    <div class="cost-input-wrapper">
+      <input type="number" class="spare-cost-input" placeholder="0" min="0" step="0.01">
+      <span class="ruble-icon">₽</span>
+    </div>
     <button type="button" onclick="removeSpareItem(this)" 
             style="background: #dc3545; color: white; border: none; padding: 0.3rem; border-radius: 4px; cursor: pointer;">
       ✕
@@ -1703,10 +1798,11 @@ async function saveEditedServiceRecord() {
       const name = item.querySelector('.consumable-name-input').value.trim();
       const itemValue = item.querySelector('.consumable-item-input').value.trim();
       const cost = parseFloat(item.querySelector('.consumable-cost-input').value) || 0;
+      const quantity = parseFloat(item.querySelector('.consumable-quantity-input').value) || 1;
       
       if (name) {
-        consumables.push({ name, item: itemValue, cost });
-        totalCost += cost;
+        consumables.push({ name, item: itemValue, cost, quantity, totalCost: cost * quantity });
+        totalCost += cost * quantity;
       }
     });
     
@@ -1730,10 +1826,11 @@ async function saveEditedServiceRecord() {
     spareItems.forEach(item => {
       const name = item.querySelector('.spare-name-input').value.trim();
       const cost = parseFloat(item.querySelector('.spare-cost-input').value) || 0;
+      const quantity = parseFloat(item.querySelector('.spare-quantity-input').value) || 1;
       
       if (name) {
-        spares.push({ name, cost });
-        totalCost += cost;
+        spares.push({ name, cost, quantity, totalCost: cost * quantity });
+        totalCost += cost * quantity;
       }
     });
     
@@ -1798,4 +1895,7 @@ async function updateRepairRecord(repairData) {
   } else {
     localStorage.setItem('repairs', JSON.stringify(repairs));
   }
-} 
+}
+
+// Make functions globally available for onclick handlers
+window.renderMaintenHistory = renderMaintenHistory; 

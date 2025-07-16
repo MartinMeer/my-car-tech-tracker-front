@@ -1,0 +1,101 @@
+/* ==========================================================================
+   BASE STYLES
+   CSS Reset, Typography, Colors, Variables
+   ========================================================================== */
+
+/* CSS Reset */
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+/* CSS Variables */
+:root {
+  --primary-color: #2d3e50;
+  --secondary-color: #3498db;
+  --accent-color: #e74c3c;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  
+  --background: #f7f9fa;
+  --surface: #fff;
+  --text-color: #222;
+  --text-muted: #666;
+  --text-light: #888;
+  
+  --border-color: #e0e0e0;
+  --border-light: #e8f0f8;
+  --shadow: rgba(44, 62, 80, 0.1);
+  
+  --header-height: 56px;
+  --sidebar-width: 220px;
+  --icons-width: 60px;
+  
+  --border-radius: 4px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 12px;
+  
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+}
+
+/* Typography */
+body { 
+  font-family: 'Segoe UI', Arial, sans-serif; 
+  background: var(--background); 
+  color: var(--text-color); 
+  min-height: 100vh; 
+}
+
+/* Common Text Styles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.3rem; }
+h4 { font-size: 1.2rem; }
+h5 { font-size: 1.1rem; }
+h6 { font-size: 1rem; }
+
+/* Link Styles */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--secondary-color);
+}
+
+/* Loading State */
+.loading {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Error State */
+.error {
+  color: var(--accent-color);
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Empty State */
+.empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Icon Styling */
+.icon {
+  font-size: 1.2rem;
+  display: inline-block;
+  vertical-align: middle;
+} 

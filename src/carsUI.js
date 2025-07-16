@@ -238,10 +238,36 @@ function renderCarsMenu() {
     });
 }
 
+function setupYearDropdown() {
+  const yearSelect = document.getElementById('car-year');
+  if (!yearSelect) return;
+  
+  // Clear existing options
+  yearSelect.innerHTML = '';
+  
+  // Get current year
+  const currentYear = new Date().getFullYear();
+  
+  // Generate options from 1900 to current year, in descending order
+  for (let year = currentYear; year >= 1900; year--) {
+    const option = document.createElement('option');
+    option.value = year;
+    option.textContent = year;
+    
+    // Set current year as selected by default
+    if (year === currentYear) {
+      option.selected = true;
+    }
+    
+    yearSelect.appendChild(option);
+  }
+}
+
 export function initializeAddCarUI() {
   setupAddCarForm();
   setupImagePreview();
   setupCancelButton();
+  setupYearDropdown();
   // --- Edit mode support ---
   const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
   const editId = params.get('edit');

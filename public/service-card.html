@@ -30,13 +30,17 @@
       </div>
     </div>
     <div class="service-record-actions">
-      <button id="save-service-record-btn" class="btn btn-primary" onclick="saveServiceRecord()" disabled>
+      <button id="save-draft-btn" class="btn btn-secondary" onclick="saveDraft()">
         <span class="icon">💾</span>
-        Сохранить запись
+        Сохранить черновик
       </button>
-      <button id="remove-service-record-btn" class="btn btn-danger" onclick="removeServiceRecord()">
-        <span class="icon">🗑️</span>
-        Удалить запись
+      <button id="save-and-exit-btn" class="btn btn-primary" onclick="saveAndExit()" disabled>
+        <span class="icon">✅</span>
+        Сохранить и выйти
+      </button>
+      <button id="exit-without-changes-btn" class="btn btn-danger" onclick="exitWithoutChanges()">
+        <span class="icon">❌</span>
+        Выйти без изменений
       </button>
     </div>
   </div>
@@ -141,7 +145,10 @@
       
       <div class="input-group">
         <label for="work-cost">Стоимость работ (₽)</label>
-        <input type="number" id="work-cost" class="cost-input" placeholder="0" min="0" step="0.01">
+        <div class="cost-input-wrapper">
+          <input type="number" id="work-cost" class="cost-input" placeholder="0" min="0" step="0.01">
+          <span class="ruble-icon">₽</span>
+        </div>
         <div class="input-hint">Стоимость работ мастера</div>
       </div>
       
@@ -207,7 +214,10 @@
       
       <div class="input-group">
         <label for="repair-work-cost">Стоимость работ (₽)</label>
-        <input type="number" id="repair-work-cost" placeholder="0" min="0" step="0.01">
+        <div class="cost-input-wrapper">
+          <input type="number" id="repair-work-cost" placeholder="0" min="0" step="0.01">
+          <span class="ruble-icon">₽</span>
+        </div>
         <div class="input-hint">Стоимость работ мастера</div>
       </div>
       
@@ -241,8 +251,16 @@
       </div>
       
       <div class="input-group">
-        <label for="spare-cost">Стоимость:</label>
-        <input type="number" id="spare-cost" placeholder="0" min="0" step="0.01">
+        <label for="spare-quantity">Количество:</label>
+        <input type="number" id="spare-quantity" placeholder="1" min="1" step="1" value="1">
+      </div>
+      
+      <div class="input-group">
+        <label for="spare-cost">Стоимость за единицу:</label>
+        <div class="cost-input-wrapper">
+          <input type="number" id="spare-cost" placeholder="0" min="0" step="0.01">
+          <span class="ruble-icon">₽</span>
+        </div>
       </div>
     </div>
     

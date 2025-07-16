@@ -3,6 +3,9 @@
 
 ## FRONT
 
+###Do Refactoring!
+- rename current-cad-img to my-cars-img and all corresoinded names, change hover behavior for this img likewise as user-alert
+
 ### Fix It!
 - ✅ **COMPLETED** my-car-oveview: in desktop mode make view wide to full main view area
 - ✅ **COMPLETED** service-record: in desktop mode make view wide to full main view area  
@@ -12,19 +15,23 @@
 - ✅ **COMPLETED** service-record: proper flow: 1. click заполни карточку -> car selector without date&mileage selection -> date and mileage selection popup -> service-record main 
 - ✅ **COMPLETED** user-alert: add mileage field when create a new alert
 
+- my-car-overview: in histories of maintenance and repair must show info linked to current car only, not for all cars
+- limit the car year dropdown to show only 6 options at a time.
+- К обзору автомобиля button open an unknown car
+
 ### Implement It!
-- split single css to files according to main divisions
-- **src/serviceRecordManager.js**: Implement edit functionality  
-  - `editSubRecord(subRecordId)` is a placeholder; needs real edit logic for sub-records.
+- ✅ **COMPLETED** split single css to files according to main divisions
+- ✅ **COMPLETED** service-record: maint-entry-popup, repair-entry-popup: add a Russian Ruble icon to each cost-input.
+- ✅ **COMPLETED** service-record: maint-entry-popup, repair-entry-popup: add a quantity field after each consumable-name (and between spare-entry-popup too). Fill these quantity fields with 1 by default. Implement new cost counting logic depends on quantity of items.
+
 - cookie handler
-- service-record: maint-entry-popup, repair-entry-popup: add a Russian Ruble icon to each cost-input
-- service-record: maint-entry-popup, repair-entry-popup: add a quantity field between each consumable-name (and spare-entry-popup) ane cost-inputs. Fill these quantity fields with 1 by default. Implement new cost counting logic depends on quantity of items.
+- **src/serviceRecordManager.js**: Implement edit functionality  
+- `editSubRecord(subRecordId)` is a placeholder; needs real edit logic for sub-records.
 
 ### Add Feature
-- rename current-cad-img to my-cars-img and all corresoinded names, change hover behavior for this img likewise as user-alert
-- add-car: car-year: add dropdown selector of year from 1900 to current, staring to current
-- service-record: add draft saving logic for continuing filling, if user will occasionally leave a form. Add a buttons Save draft, Save&Exit, Exit withont changes (and delete current)
-- service-record: save/don't save btn remove to the bottom of form
+- ✅ **COMPLETED** add-car: car-year: add dropdown selector of year from 1900 to current, staring to current year
+- ✅ **COMPLETED** service-record: add draft saving logic for continuing filling, if user will occasionally leave a form. Delete current buttons. Add a buttons Save draft, Save&Exit, Exit without changes
+
 - Alerting notification: if alerts exist
 
 ### Extend It
