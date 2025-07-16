@@ -168,8 +168,8 @@ export function updateCarSelectionUI() {
 }
 
 function renderCurrentCar() {
-  const carNameDiv = document.getElementById('current-car-name');
-  const carImgEl = document.getElementById('current-car-img');
+  const carNameDiv = document.getElementById('my-cars-name');
+  const carImgEl = document.getElementById('my-cars-img');
   if (!carNameDiv || !carImgEl) return;
   carNameDiv.textContent = 'Загрузка...';
   carImgEl.src = '';
@@ -209,8 +209,8 @@ function renderCarsMenu() {
   menu.innerHTML = '<div class="loading">Загрузка...</div>';
   DataService.getCars()
     .then(cars => {
-      // Add 'Мои машины' entry at the top
-      let html = `<div class="car-menu-item" data-action="my-cars" style="font-weight:bold;">Мои машины</div>`;
+      // Add 'Мои автомобили' entry at the top
+      let html = `<div class="car-menu-item" data-action="my-cars" style="font-weight:bold;">Мои автомобили</div>`;
       html += cars.map(car =>
         `<div class="car-menu-item" data-car-id="${car.id}">${car.img && car.img.startsWith('data:image/')
           ? `<img src="${car.img}" alt="car image" style="width:2.5rem;height:2.5rem;object-fit:cover;border-radius:0.3rem;">`
@@ -244,6 +244,9 @@ function setupYearDropdown() {
   
   // Clear existing options
   yearSelect.innerHTML = '';
+  
+  // Set the size attribute to limit visible options to 6
+  yearSelect.setAttribute('size', '6');
   
   // Get current year
   const currentYear = new Date().getFullYear();

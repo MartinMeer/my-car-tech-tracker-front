@@ -38,7 +38,7 @@ async function showUserAlertPopup() {
     const cars = await DataService.getCars();
     
     if (!cars || cars.length === 0) {
-      alert('Сначала добавьте автомобиль в разделе "Мои машины"');
+      alert('Сначала добавьте автомобиль в разделе "Мои автомобили"');
       return;
     }
     

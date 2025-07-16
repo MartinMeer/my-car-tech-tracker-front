@@ -1,13 +1,34 @@
 import { CONFIG } from './config.js';
+import { CookieHandler } from './cookieHandler.js';
 
 export const DataService = {
+  // Helper function to get authenticated headers
+  getAuthHeaders() {
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    const authToken = CookieHandler.getAuthToken();
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    
+    const csrfToken = CookieHandler.getCSRFToken();
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
+    }
+    
+    return headers;
+  },
+
   // Maintenance operations
   async saveMaintenance(data) {
     try {
       if (CONFIG.useBackend) {
         const response = await fetch(`${CONFIG.apiUrl}/maintenance`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error('Ошибка сохранения ТО');
@@ -40,7 +61,10 @@ export const DataService = {
   async getMaintenance() {
     try {
       if (CONFIG.useBackend) {
-        const response = await fetch(`${CONFIG.apiUrl}/maintenance`);
+        const response = await fetch(`${CONFIG.apiUrl}/maintenance`, {
+          headers: this.getAuthHeaders(),
+          credentials: 'include'
+        });
         if (!response.ok) throw new Error('Ошибка загрузки ТО');
         return response.json();
       } else {
@@ -63,7 +87,8 @@ export const DataService = {
       if (CONFIG.useBackend) {
         const response = await fetch(`${CONFIG.apiUrl}/repairs`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error('Ошибка сохранения ремонта');
@@ -101,7 +126,10 @@ export const DataService = {
   async getRepairs() {
     try {
       if (CONFIG.useBackend) {
-        const response = await fetch(`${CONFIG.apiUrl}/repairs`);
+        const response = await fetch(`${CONFIG.apiUrl}/repairs`, {
+          headers: this.getAuthHeaders(),
+          credentials: 'include'
+        });
         if (!response.ok) throw new Error('Ошибка загрузки ремонтов');
         return response.json();
       } else {
@@ -122,7 +150,10 @@ export const DataService = {
   async getCars() {
     try {
       if (CONFIG.useBackend) {
-        const response = await fetch(`${CONFIG.apiUrl}/cars`);
+        const response = await fetch(`${CONFIG.apiUrl}/cars`, {
+          headers: this.getAuthHeaders(),
+          credentials: 'include'
+        });
         if (!response.ok) throw new Error('Ошибка загрузки автомобилей');
         return response.json();
       } else {
@@ -191,7 +222,8 @@ export const DataService = {
       if (CONFIG.useBackend) {
         const response = await fetch(`${CONFIG.apiUrl}/service-records`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify(serviceRecord)
         });
         if (!response.ok) throw new Error('Ошибка сохранения записи об обслуживании');
@@ -225,7 +257,10 @@ export const DataService = {
         const url = carId 
           ? `${CONFIG.apiUrl}/service-records?carId=${carId}`
           : `${CONFIG.apiUrl}/service-records`;
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: this.getAuthHeaders(),
+          credentials: 'include'
+        });
         if (!response.ok) throw new Error('Ошибка загрузки записей об обслуживании');
         return response.json();
       } else {

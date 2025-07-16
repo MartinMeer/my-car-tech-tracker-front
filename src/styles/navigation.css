@@ -3,8 +3,8 @@
    Car Selection Menu, Sidebar Links, Mobile Navigation
    ========================================================================== */
 
-/* Current Car Name */
-.current-car-name {
+/* My Cars Name */
+.my-cars-name {
   font-size: 1.3rem;
   font-weight: bold;
   margin-bottom: 1.2rem;
@@ -12,8 +12,8 @@
   text-align: center;
 }
 
-/* Current Car Image */
-.current-car-img {
+/* My Cars Image */
+.my-cars-img {
   width: 170px;
   height: 170px;
   object-fit: cover;
@@ -21,22 +21,47 @@
   box-shadow: 0 2px 8px var(--border-color);
   cursor: pointer;
   display: block;
+  transition: all var(--transition-normal) ease;
+}
+
+.my-cars-img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(45, 62, 80, 0.3);
+}
+
+.my-cars-img:active {
+  transform: scale(0.95);
 }
 
 /* My Cars Link */
 .my-cars-link {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
   margin: 0.5rem auto 0.2rem auto;
-  text-align: center;
-  color: var(--primary-color);
-  font-weight: 500;
-  text-decoration: underline;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .my-cars-link:hover {
-  color: #4e6a8a;
+  background: #3a4a5e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 62, 80, 0.2);
 }
+
+.my-cars-link:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+/* Removed the plus symbol from my-cars-link */
 
 /* Car Selection Menu */
 .car-select-menu, .my-cars-dropdown {

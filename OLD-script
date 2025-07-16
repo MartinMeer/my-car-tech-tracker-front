@@ -568,8 +568,8 @@ function updateCarSelectionUI() {
 }
 
 function renderCurrentCar() {
-  const carNameDiv = document.getElementById('current-car-name');
-  const carImgDiv = document.getElementById('current-car-img');
+  const carNameDiv = document.getElementById('my-cars-name');
+const carImgDiv = document.getElementById('my-cars-img');
   
   if (!carNameDiv || !carImgDiv) return;
   
@@ -1161,7 +1161,7 @@ window.addEventListener('DOMContentLoaded', () => {
   updateCarSelectionUI();
   
   // Car image dropdown
-  const carImgDiv = document.getElementById('current-car-img');
+  const carImgDiv = document.getElementById('my-cars-img');
   const carSelectMenu = document.getElementById('car-select-menu');
   if (carImgDiv && carSelectMenu) {
     carImgDiv.onclick = function(e) {

@@ -239,8 +239,18 @@
     z-index: 100;
   }
 
+  .mobile-bottom-icons .mobile-icon-img {
+    width: 35px;
+    height: 35px;
+    transition: all var(--transition-normal) ease;
+  }
+
+  .mobile-bottom-icons .mobile-icon-img:hover {
+    transform: scale(1.1);
+  }
+
   /* Current car image */
-  .current-car-img {
+  .my-cars-img {
     width: 70px;
     height: 70px;
   }

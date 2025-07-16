@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Зарегистрироваться — My Car Tech Tracker</title>
-  <link rel="stylesheet" href="../src/styles.css">
+  <link rel="stylesheet" href="../../src/styles.css">
 </head>
 <body class="auth-page">
   <div class="auth-container">
@@ -14,8 +14,10 @@
       <input type="email" id="register-email" name="email" required autocomplete="username">
       <label for="register-password">Пароль</label>
       <input type="password" id="register-password" name="password" required autocomplete="new-password">
-      <label for="register-password2">Повторите пароль</label>
-      <input type="password" id="register-password2" name="password2" required autocomplete="new-password">
+      <label for="register-name">Имя (необязательно)</label>
+      <input type="text" id="register-name" name="name" autocomplete="name">
+      <label for="register-confirm-password">Повторите пароль</label>
+      <input type="password" id="register-confirm-password" name="confirm-password" required autocomplete="new-password">
       <button type="submit" class="auth-btn">Зарегистрироваться</button>
     </form>
     <div class="auth-link">
@@ -23,5 +25,111 @@
     </div>
   </div>
   <a href="../cover.html" class="back-to-cover-btn">На главную</a>
+  <script type="module" src="../../src/authUI.js"></script>
+  <script type="module">
+    import { AuthUI } from '../../src/authUI.js';
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Register page loaded, initializing AuthUI...');
+      try {
+        AuthUI.initializeRegister();
+        console.log('AuthUI initialized successfully');
+      } catch (error) {
+        console.error('Error initializing AuthUI:', error);
+        // Fallback: add basic form handling
+        initializeBasicRegister();
+      }
+    });
+
+    // Fallback function if module loading fails
+    function initializeBasicRegister() {
+      console.log('Using fallback registration handler');
+      const registerForm = document.querySelector('.auth-form');
+      if (!registerForm) {
+        console.error('Register form not found');
+        return;
+      }
+
+      registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log('Form submitted');
+        
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-confirm-password').value;
+        const name = document.getElementById('register-name')?.value || '';
+        
+        console.log('Form data:', { email, password: '***', confirmPassword: '***', name });
+        
+        // Basic validation
+        if (!email || !password || !confirmPassword) {
+          alert('Пожалуйста, заполните все обязательные поля');
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          alert('Пароли не совпадают');
+          return;
+        }
+
+        if (password.length < 6) {
+          alert('Пароль должен содержать минимум 6 символов');
+          return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          alert('Пожалуйста, введите корректный email');
+          return;
+        }
+
+        try {
+          // Show loading state
+          const submitBtn = registerForm.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = 'Регистрация...';
+          submitBtn.disabled = true;
+
+          // Mock registration for demo mode
+          console.log('Processing registration...');
+          
+          // Simulate API call delay
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Store user data in localStorage for demo
+          const userData = {
+            id: Date.now(),
+            email,
+            password, // In real app, this would be hashed
+            name: name || email,
+            role: 'user'
+          };
+          
+          // Store in localStorage
+          const existingUsers = JSON.parse(localStorage.getItem('demoUsers') || '[]');
+          const userExists = existingUsers.find(u => u.email === email);
+          
+          if (userExists) {
+            throw new Error('Пользователь с таким email уже существует');
+          }
+          
+          existingUsers.push(userData);
+          localStorage.setItem('demoUsers', JSON.stringify(existingUsers));
+          
+          alert('Регистрация успешна (demo режим)!\nТеперь вы можете войти в систему');
+          window.location.href = 'login.html';
+          
+        } catch (error) {
+          console.error('Registration error:', error);
+          alert('Ошибка регистрации: ' + error.message);
+        } finally {
+          // Restore button state
+          const submitBtn = registerForm.querySelector('button[type="submit"]');
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
+      });
+    }
+  </script>
 </body>
 </html> 

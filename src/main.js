@@ -28,6 +28,8 @@ import {
   removeSubRecord, 
   editSubRecord 
 } from './serviceRecordManager.js';
+import { CookieHandler } from './cookieHandler.js';
+import { AuthService } from './authService.js';
 
 // Main content element
 const mainContent = document.getElementById('main-content');
@@ -100,6 +102,12 @@ function initializePageUI(page) {
 // Initialize the application
 async function initializeApp() {
   try {
+    // Initialize authentication and cookie handling
+    await AuthService.initialize();
+    
+    // Check authentication for protected pages
+    await checkAuthentication();
+    
     // Load initial page
     const hash = window.location.hash || '#my-cars';
     await loadPage(hash, mainContent, initializePageUI);
@@ -124,6 +132,9 @@ async function initializeApp() {
     // Setup car image dropdown
     setupCarImageDropdown();
     
+    // Setup authentication-related event listeners
+    setupAuthEventListeners();
+    
     console.log('App initialized successfully');
   } catch (error) {
     console.error('Error initializing app:', error);
@@ -132,7 +143,7 @@ async function initializeApp() {
 
 // Setup car image dropdown functionality
 function setupCarImageDropdown() {
-  const carImgDiv = document.getElementById('current-car-img');
+  const carImgDiv = document.getElementById('my-cars-img');
   const carSelectMenu = document.getElementById('car-select-menu');
   
   if (carImgDiv && carSelectMenu) {
@@ -146,6 +157,94 @@ function setupCarImageDropdown() {
         carSelectMenu.style.display = 'none';
       }
     });
+  }
+}
+
+// Check authentication for protected pages
+async function checkAuthentication() {
+  const publicPages = [
+    'cover.html',
+    'login.html',
+    'register.html',
+    'contacts.html',
+    'privacy.html'
+  ];
+  
+  const currentPage = window.location.pathname.split('/').pop();
+  const isPublic = publicPages.includes(currentPage);
+  const devMode = localStorage.getItem('devMode') === 'true';
+  
+  if (!isPublic && !devMode) {
+    // Check both AuthService and direct localStorage for demo mode
+    const isAuthServiceAuthenticated = AuthService.isAuthenticated();
+    const hasDirectAuthToken = localStorage.getItem('auth_token');
+    
+    if (!isAuthServiceAuthenticated && !hasDirectAuthToken) {
+      window.location.href = 'cover.html';
+      return;
+    }
+  }
+}
+
+// Setup authentication-related event listeners
+function setupAuthEventListeners() {
+  // Logout button
+  const logoutBtn = document.querySelector('.logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      try {
+        // Try AuthService logout first
+        await AuthService.logout();
+      } catch (error) {
+        console.error('AuthService logout error:', error);
+      }
+      
+      // Also clear direct localStorage auth tokens (for demo mode)
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('session_id');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('currentUser');
+      
+      // Clear all cookie-related localStorage items
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('cookie_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      window.location.href = 'cover.html';
+    });
+  }
+
+  // Cookie consent popup
+  const cookiePopup = document.getElementById('cookie-popup');
+  if (cookiePopup) {
+    // Check if consent already given
+    if (CookieHandler.isCookieConsentGiven()) {
+      cookiePopup.style.display = 'none';
+      return;
+    }
+    
+    cookiePopup.style.display = 'flex';
+    
+    const acceptBtn = document.getElementById('cookie-accept');
+    const rejectBtn = document.getElementById('cookie-reject');
+    
+    if (acceptBtn) {
+      acceptBtn.onclick = function() {
+        CookieHandler.setCookieConsent('accepted');
+        cookiePopup.style.display = 'none';
+      };
+    }
+    
+    if (rejectBtn) {
+      rejectBtn.onclick = function() {
+        CookieHandler.setCookieConsent('rejected');
+        cookiePopup.style.display = 'none';
+      };
+    }
   }
 }
 

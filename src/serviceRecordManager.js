@@ -211,7 +211,7 @@ async function showCarSelectionPopup() {
     
     if (cars.length === 0) {
       console.log('🚗 Service Record Manager: No cars found, showing error message');
-      showErrorMessage('Сначала добавьте автомобиль в разделе "Мои машины"');
+      showErrorMessage('Сначала добавьте автомобиль в разделе "Мои автомобили"');
       return;
     }
     

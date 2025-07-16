@@ -4,21 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Car Tech Tracker</title>
+  <link rel="icon" type="image/x-icon" href="/img/favicons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="../src/styles.css">
 </head>
 <body>
   <header>
-    <div class="header-title">Ваш персональный помощник по обслуживанию и ремонту машины</div>
+    <div class="header-title">Ваш персональный помощник по обслуживанию и ремонту автомобиля</div>
     <a href="#" class="logout-btn">Выйти</a>
   </header>
   <div class="container">
     <nav class="sidebar">
       <div class="sidebar-top">
-        <a href="#my-cars" id="current-car-img-link">
-          <img id="current-car-img" class="current-car-img" src="/img/main-img.jpeg" alt="car image" />
+        <a href="#my-cars" id="my-cars-img-link">
+          <img id="my-cars-img" class="my-cars-img" src="/img/main-img.jpeg" alt="car image" />
         </a>
         <div id="car-select-menu" class="car-select-menu" style="display:none;"></div>
-        <a href="#my-cars" class="my-cars-link" id="my-cars-link">Мои машины</a>
+        <a href="#my-cars" class="my-cars-link" id="my-cars-link">Мои автомобили</a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-title">Был на сервисе?</div>
@@ -43,23 +48,23 @@
       </div>
     </nav>
     <main id="main-content">
-      <div id="current-car-name" class="current-car-name"></div>
+      <div id="my-cars-name" class="my-cars-name"></div>
       <!-- Content will be loaded here -->
     </main>
     <aside class="right-icons">
       <div class="icon-section">
         <a href="#oils" title="Масла и жидкости">
-          <div class="icon-placeholder">[O]</div>
+          <img src="/img/oil.jfif" alt="Масла и жидкости" class="right-icon-img" />
         </a>
       </div>
       <div class="icon-section">
         <a href="#spares" title="Запчасти">
-          <div class="icon-placeholder">[S]</div>
+          <img src="/img/spares.jpeg" alt="Запчасти" class="right-icon-img" />
         </a>
       </div>
       <div class="icon-section">
         <a href="#shops" title="Мастера">
-          <div class="icon-placeholder">[M]</div>
+          <img src="/img/master.jpeg" alt="Мастера" class="right-icon-img" />
         </a>
       </div>
     </aside>
@@ -70,18 +75,18 @@
   </div>
   <nav class="mobile-right-menu">
     <a href="#my-car-overview" class="mobile-car-img">
-      <img id="mobile-current-car-img" class="current-car-img" src="/img/main-img.jpeg" alt="car image" />
+      <img id="mobile-my-cars-img" class="my-cars-img" src="/img/main-img.jpeg" alt="car image" />
     </a>
   </nav>
   <nav class="mobile-bottom-icons">
     <a href="#oils" title="Масла и жидкости">
-      <div class="icon-placeholder">[O]</div>
+      <img src="/img/oil.jpeg" alt="Масла и жидкости" class="mobile-icon-img" />
     </a>
     <a href="#spares" title="Запчасти">
-      <div class="icon-placeholder">[S]</div>
+      <img src="/img/spares.jpeg" alt="Запчасти" class="mobile-icon-img" />
     </a>
     <a href="#shops" title="Мастера">
-      <div class="icon-placeholder">[M]</div>
+      <img src="/img/master.jpeg" alt="Мастера" class="mobile-icon-img" />
     </a>
   </nav>
   <footer>
@@ -132,7 +137,7 @@
   <script>
     // Make the car image a home button to my-car-overview
     document.addEventListener('DOMContentLoaded', function() {
-      var carImgDiv = document.getElementById('current-car-img');
+      var carImgDiv = document.getElementById('my-cars-img');
       if (carImgDiv) {
         carImgDiv.addEventListener('click', function(e) {
           e.stopPropagation();

@@ -4,7 +4,7 @@
 ## FRONT
 
 ###Do Refactoring!
-- rename current-cad-img to my-cars-img and all corresoinded names, change hover behavior for this img likewise as user-alert
+- ✅ **COMPLETED** rename current-cad-img to my-cars-img and all corresoinded names, change hover behavior for this img likewise as user-alert
 
 ### Fix It!
 - ✅ **COMPLETED** my-car-oveview: in desktop mode make view wide to full main view area
@@ -14,17 +14,16 @@
 - ✅ **COMPLETED** repair-history: in desktop mode make view wide to full main view area
 - ✅ **COMPLETED** service-record: proper flow: 1. click заполни карточку -> car selector without date&mileage selection -> date and mileage selection popup -> service-record main 
 - ✅ **COMPLETED** user-alert: add mileage field when create a new alert
-
-- my-car-overview: in histories of maintenance and repair must show info linked to current car only, not for all cars
-- limit the car year dropdown to show only 6 options at a time.
-- К обзору автомобиля button open an unknown car
+- ✅ **COMPLETED** my-car-overview: in histories of maintenance and repair must show info linked to current car only, not for all cars
+- ✅ **COMPLETED** limit the car year dropdown to show only 6 options at a time.
+- ✅ **COMPLETED** К обзору автомобиля button open an unknown car
 
 ### Implement It!
 - ✅ **COMPLETED** split single css to files according to main divisions
 - ✅ **COMPLETED** service-record: maint-entry-popup, repair-entry-popup: add a Russian Ruble icon to each cost-input.
 - ✅ **COMPLETED** service-record: maint-entry-popup, repair-entry-popup: add a quantity field after each consumable-name (and between spare-entry-popup too). Fill these quantity fields with 1 by default. Implement new cost counting logic depends on quantity of items.
 
-- cookie handler
+- ✅ **COMPLETED** cookie handler - Backend-ready cookie handler with test implementation for dev mode
 - **src/serviceRecordManager.js**: Implement edit functionality  
 - `editSubRecord(subRecordId)` is a placeholder; needs real edit logic for sub-records.
 
@@ -66,37 +65,3 @@
 ---
 
 *This list is auto-generated from code comments. Please update as you address TODOs or add new ones.* 
-
-## **Proposed CSS Structure**
-
-```
-<code_block_to_apply_changes_from>
-src/styles/
-├── index.css              # Main import file
-├── base/
-│   ├── reset.css         # CSS reset, box-sizing
-│   ├── typography.css    # Font families, text styles
-│   └── variables.css     # CSS custom properties (colors, spacing)
-├── layout/
-│   ├── header.css        # Header styles
-│   ├── sidebar.css       # Sidebar navigation
-│   ├── footer.css        # Footer styles
-│   └── container.css     # Main container, grid layouts
-├── components/
-│   ├── buttons.css       # All button styles
-│   ├── forms.css         # Form inputs, labels, validation
-│   ├── popups.css        # Modal/popup overlays
-│   ├── tables.css        # History tables
-│   ├── cards.css         # Car cards, service cards
-│   └── alerts.css        # Messages, notifications
-├── pages/
-│   ├── cover.css         # Cover/landing page
-│   ├── cars.css          # Car-related pages
-│   ├── service-card.css  # Service card page
-│   ├── service-record.css # Service record page
-│   ├── history.css       # History pages
-│   └── user-alert.css    # User alert page
-└── utils/
-    ├── responsive.css    # Media queries
-    └── utilities.css     # Helper classes
-```

@@ -163,6 +163,47 @@
   margin-top: 2.2rem;
 }
 
+/* Add New Car Button */
+.add-car-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px var(--shadow);
+  margin: 2rem auto;
+}
+
+.add-car-btn:hover {
+  background: #3a4a5e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 62, 80, 0.2);
+}
+
+.add-car-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.add-car-btn::before {
+  content: "➕";
+  font-size: 1.2rem;
+}
+
+.add-car-btn-container {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
 .car-action-btn {
   padding: 0.8rem 2.2rem;
   border: none;
