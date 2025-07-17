@@ -1,1 +1,81 @@
 cd /home/oleg/my-car-tech-tracker-front/my-car-tech-tracker-front && python3 -m http.server 8000
+
+Feature:"Регламент тех. обслуживания"
+    Load from outer json (for easy connection to AI API)
+    Or table filled by user
+    Editable by user
+    View - from backend
+    Anchored:my-car, side-bar
+
+Module:"Всё, что нужно для тех. обслуживания"
+    Load from outer json (for easy connection to AI API)
+    Or table filled by user
+    Editable by user
+    View - from backend
+    Anchored:my-car, right icon area
+
+Alerts: add priority selector:
+                        Совсем плохо/совсем страшно (red - round mark, plus folded hands emoji)
+                        Непонятно (yellow - round mark, plus woman shrugging emoji)
+                        Потерпим (blue-green - round mark, plus writing hand emoji)
+                        У нас проблемы! 
+Side-bar divisions:
+Four buttons:
+Был на сервисе? Заполни отчет! (two lines) (color:green)
+    |__________ to service-card (as exist)
+
+У нас проблемы! (color:depends on alerts priority logic:
+    |                    if no not crossed out alerts: button not clicable, grey
+    |                    if one or more red exist: red
+    |                    if no one red exist: depends on quantity of yellow vs blue-green)
+    |
+    |_____ to alert-list:
+                            prod-mode: Content come from backend html
+                            dev-mode: alerts for all cars by def,
+                            each entry:
+                            date | priority mark| description                                                  
+                            
+                            to each line append a checkbox Добавить в план, when filled -> add to next-service-plan (not visible here)
+                            to each line add a button whith 'checked' symbol. on click cross out this line
+                            lines must grupped by car, on click to car, show the same for concrete car
+                            sortable for field date or priority,
+                            must be editable.
+                            
+
+Когда на сервис? -> to next-service-list:
+                            prod-mode: Content come from backend html
+                            dev-mode: for all cars
+                            header1 Следующее тех.обслуживание | add-current-mileage button
+                                                                            |____ popup for current mileage input
+                            after mileage input show mainten-operations-list under the header1,
+                            add to each line date or mileage,
+                            using reglament counting based on current date or mileage,
+                            sort the list by this fields.
+                            red font for first line by date and first line by mileage
+                            to each line append a checkbox Добавить в план, when filled -> add to next-service-plan
+                            header2 Сервис-план
+                            Pre-filled from alert-list checkboxes,
+                            dynamically continue filling by Следующее тех.обслуживание checkboxes,
+                            Добавить операцию button
+                                                |_______ Выберите тип операции popup with two labels
+                                                            Тех.обслуживание по регламенту -> 
+                                                            mainten-operations-list entry dropdown:
+                                                            when selected, return to next-service-list,
+                                                            continue filling next line here.
+                                                            Ремонт -> popup for user input and save button,
+                                                            when save return to next-service-list,
+                                                            continue filling next line here.
+                                                            
+
+История тех.обслуживания и ремонтов (two lines)
+    |_____ to service-history:
+                            prod-mode: Content come from backend html
+                            
+
+
+Right side buttons:
+
+add as first img/checklist-car2.jpeg, Регламент тех.обслуживания alt
+    |_____ Выбери автомобиль popup
+            when select -> to mainten-operations-list for selected car
+                            if not exist Создать новый button

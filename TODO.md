@@ -7,16 +7,10 @@
 - ✅ **COMPLETED** rename current-cad-img to my-cars-img and all corresoinded names, change hover behavior for this img likewise as user-alert
 
 ### Fix It!
-- ✅ **COMPLETED** my-car-oveview: in desktop mode make view wide to full main view area
-- ✅ **COMPLETED** service-record: in desktop mode make view wide to full main view area  
-- ✅ **COMPLETED** service-history: in desktop mode make view wide to full main view area
-- ✅ **COMPLETED** mainten-history: in desktop mode make view wide to full main view area
-- ✅ **COMPLETED** repair-history: in desktop mode make view wide to full main view area
-- ✅ **COMPLETED** service-record: proper flow: 1. click заполни карточку -> car selector without date&mileage selection -> date and mileage selection popup -> service-record main 
-- ✅ **COMPLETED** user-alert: add mileage field when create a new alert
-- ✅ **COMPLETED** my-car-overview: in histories of maintenance and repair must show info linked to current car only, not for all cars
-- ✅ **COMPLETED** limit the car year dropdown to show only 6 options at a time.
-- ✅ **COMPLETED** К обзору автомобиля button open an unknown car
+- ✅ **COMPLETED** When edit a repair history entry and maintenance history entry, user can add or delele a spare or consumable, but when he try to save changes, a popup with error: Ошибка сохранения: Cannot read properties of null (reading 'value')
+- alert: car names are only nicknames. change it for names
+
+
 
 ### Implement It!
 - ✅ **COMPLETED** split single css to files according to main divisions
@@ -30,6 +24,7 @@
 ### Add Feature
 - ✅ **COMPLETED** add-car: car-year: add dropdown selector of year from 1900 to current, staring to current year
 - ✅ **COMPLETED** service-record: add draft saving logic for continuing filling, if user will occasionally leave a form. Delete current buttons. Add a buttons Save draft, Save&Exit, Exit without changes
+
 
 - Alerting notification: if alerts exist
 

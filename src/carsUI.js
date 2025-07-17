@@ -171,7 +171,20 @@ function renderCurrentCar() {
   const carNameDiv = document.getElementById('my-cars-name');
   const carImgEl = document.getElementById('my-cars-img');
   if (!carNameDiv || !carImgEl) return;
+  
+  // Check if we're on a page that doesn't require a specific car
+  const currentPage = window.location.hash.replace('#', '');
+  const pagesWithoutCarRequirement = ['alert-list', 'my-cars', 'add-car'];
+  
+  if (pagesWithoutCarRequirement.includes(currentPage)) {
+    // For these pages, don't show car selection UI
+    carNameDiv.textContent = '';
+    carImgEl.style.display = 'none';
+    return;
+  }
+  
   carNameDiv.textContent = 'Загрузка...';
+  carImgEl.style.display = 'block';
   carImgEl.src = '';
   carImgEl.alt = 'car image';
   getCurrentCarFromBackend()

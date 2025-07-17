@@ -1532,8 +1532,13 @@ async function showEditServiceRecordForm(record, recordType) {
                    value="${consumable.name}" placeholder="Название" required>
             <input type="text" class="consumable-item-input" 
                    value="${consumable.item || ''}" placeholder="Деталь">
-            <input type="number" class="consumable-cost-input" 
-                   value="${consumable.cost || 0}" placeholder="0" min="0" step="0.01">
+            <input type="number" class="consumable-quantity-input" 
+                   value="${consumable.quantity || 1}" placeholder="1" min="1" step="1">
+            <div class="cost-input-wrapper">
+              <input type="number" class="consumable-cost-input" 
+                     value="${consumable.cost || 0}" placeholder="0" min="0" step="0.01">
+              <span class="ruble-icon">₽</span>
+            </div>
             <button type="button" onclick="removeConsumableItem(this)" 
                     style="background: #dc3545; color: white; border: none; padding: 0.3rem; border-radius: 4px; cursor: pointer;">
               ✕
@@ -1566,8 +1571,13 @@ async function showEditServiceRecordForm(record, recordType) {
           <div class="spare-edit-item">
             <input type="text" class="spare-name-input" 
                    value="${spare.name}" placeholder="Название запчасти" required>
-            <input type="number" class="spare-cost-input" 
-                   value="${spare.cost || 0}" placeholder="0" min="0" step="0.01">
+            <input type="number" class="spare-quantity-input" 
+                   value="${spare.quantity || 1}" placeholder="1" min="1" step="1">
+            <div class="cost-input-wrapper">
+              <input type="number" class="spare-cost-input" 
+                     value="${spare.cost || 0}" placeholder="0" min="0" step="0.01">
+              <span class="ruble-icon">₽</span>
+            </div>
             <button type="button" onclick="removeSpareItem(this)" 
                     style="background: #dc3545; color: white; border: none; padding: 0.3rem; border-radius: 4px; cursor: pointer;">
               ✕
@@ -1780,13 +1790,19 @@ function removeSpareItem(button) {
 
 // Function to save edited service record
 async function saveEditedServiceRecord() {
-  const recordId = document.getElementById('edit-record-id').value;
-  const recordType = document.getElementById('edit-record-type').value;
-  const carId = document.getElementById('edit-car-select').value;
-  const date = document.getElementById('edit-date').value;
-  const mileage = parseInt(document.getElementById('edit-mileage').value);
-  const operation = document.getElementById('edit-operation').value;
-  const workCost = parseFloat(document.getElementById('edit-work-cost').value) || 0;
+  try {
+    const recordId = document.getElementById('edit-record-id')?.value;
+    const recordType = document.getElementById('edit-record-type')?.value;
+    const carId = document.getElementById('edit-car-select')?.value;
+    const date = document.getElementById('edit-date')?.value;
+    const mileage = parseInt(document.getElementById('edit-mileage')?.value);
+    const operation = document.getElementById('edit-operation')?.value;
+    const workCost = parseFloat(document.getElementById('edit-work-cost')?.value) || 0;
+    
+    // Validate that all required elements exist
+    if (!recordId || !recordType || !carId || !date || !operation) {
+      throw new Error('Не удалось найти необходимые поля формы');
+    }
   
   let totalCost = workCost;
   
@@ -1819,7 +1835,7 @@ async function saveEditedServiceRecord() {
     
     await updateMaintenanceRecord(maintenanceData);
     
-  } else {
+  } else if (recordType === 'repair') {
     const spares = [];
     const spareItems = document.querySelectorAll('.spare-edit-item');
     
@@ -1846,6 +1862,10 @@ async function saveEditedServiceRecord() {
     };
     
     await updateRepairRecord(repairData);
+  }
+  } catch (error) {
+    console.error('Error in saveEditedServiceRecord:', error);
+    throw new Error('Ошибка при сохранении записи: ' + error.message);
   }
 }
 

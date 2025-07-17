@@ -11,7 +11,7 @@ import {
   closeMaintPopup,
   calculateMaintTotal
 } from './maintenanceUI.js';
-import { initializeUserAlertUI, setupUserAlertForm } from './userAlertUI.js';
+import { initializeUserAlertUI, setupUserAlertForm, initializeAlertListUI, updateProblemsButtonColor } from './userAlertUI.js';
 import {
   renderRepairHistory,
   openRepairPopup,
@@ -87,6 +87,10 @@ function initializePageUI(page) {
       // User alert UI is initialized globally, just set up the form
       setupUserAlertForm();
       break;
+    case 'alert-list':
+      // Initialize alert list UI
+      initializeAlertListUI();
+      break;
     case 'mainten-history':
       renderMaintenHistory();
       break;
@@ -121,6 +125,9 @@ async function initializeApp() {
     // Setup hash change listener
     window.addEventListener('hashchange', async () => {
       await loadPage(window.location.hash, mainContent, initializePageUI);
+      
+      // Update car selection UI after page change
+      updateCarSelectionUI();
       
       // Hide car selection popup on navigation
       const carSelectMenu = document.getElementById('car-select-menu');
