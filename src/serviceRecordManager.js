@@ -373,6 +373,14 @@ async function showDateMileagePopup(carId) {
       dateInput.value = `${dd}.${mm}.${yyyy}`;
     }
     
+    // Suggest current mileage for the mileage input
+    try {
+      const { mileageHandler } = await import('./mileageHandler.js');
+      await mileageHandler.suggestMileageForInput('date-mileage-mileage', carId);
+    } catch (error) {
+      console.error('Failed to suggest mileage:', error);
+    }
+    
     // Add global functions for popup buttons
     window.confirmDateMileage = confirmDateMileage;
     window.closeDateMileagePopup = closeDateMileagePopup;
@@ -465,6 +473,16 @@ async function createServiceRecordWithCar(carId, date, mileage = null) {
     console.log('Updated mileage input:', mileage);
   } else {
     console.warn('Mileage input not found');
+  }
+  
+  // Add mileage entry to mileage handler
+  if (mileage) {
+    try {
+      const { mileageHandler } = await import('./mileageHandler.js');
+      await mileageHandler.addMileageEntry(carId, mileage, date, 'service');
+    } catch (error) {
+      console.error('Failed to add mileage entry:', error);
+    }
   }
   
   // Update car information in header
@@ -708,7 +726,7 @@ function updateSaveButton() {
 }
 
 // Add maintenance to record
-export function addMaintenanceToRecord() {
+export async function addMaintenanceToRecord() {
   if (!currentServiceRecord) {
     console.error('No active service record');
     return;
@@ -770,6 +788,20 @@ export function addMaintenanceToRecord() {
   
   console.log('Maintenance added to record:', subRecord);
   
+  // Add mileage entry to mileage handler
+  try {
+    const { mileageHandler } = await import('./mileageHandler.js');
+    await mileageHandler.addMileageEntry(
+      currentServiceRecord.carId, 
+      currentServiceRecord.mileage, 
+      currentServiceRecord.date, 
+      'maintenance',
+      { operationName: operationName }
+    );
+  } catch (error) {
+    console.error('Failed to add mileage entry for maintenance:', error);
+  }
+  
   // Update UI
   updateServiceRecordUI();
   
@@ -781,7 +813,7 @@ export function addMaintenanceToRecord() {
 }
 
 // Add repair to record
-export function addRepairToRecord() {
+export async function addRepairToRecord() {
   if (!currentServiceRecord) {
     console.error('No active service record');
     return;
@@ -824,6 +856,20 @@ export function addRepairToRecord() {
   currentServiceRecord.subRecords.push(subRecord);
   
   console.log('Repair added to record:', subRecord);
+  
+  // Add mileage entry to mileage handler
+  try {
+    const { mileageHandler } = await import('./mileageHandler.js');
+    await mileageHandler.addMileageEntry(
+      currentServiceRecord.carId, 
+      currentServiceRecord.mileage, 
+      currentServiceRecord.date, 
+      'repair',
+      { operationName: operationName }
+    );
+  } catch (error) {
+    console.error('Failed to add mileage entry for repair:', error);
+  }
   
   // Update UI
   updateServiceRecordUI();
@@ -901,6 +947,20 @@ async function saveServiceRecord() {
     await Promise.all(savePromises);
     
     console.log('Service record and operations saved successfully');
+    
+    // Update mileage handler with the final mileage and date
+    try {
+      const { mileageHandler } = await import('./mileageHandler.js');
+      await mileageHandler.addMileageEntry(
+        currentServiceRecord.carId,
+        currentServiceRecord.mileage,
+        currentServiceRecord.date,
+        'service-record-final',
+        { serviceRecordId: currentServiceRecord.id }
+      );
+    } catch (error) {
+      console.error('Failed to add mileage entry on save:', error);
+    }
     
     // Show success message
     showSuccessMessage('Запись об обслуживании сохранена!');

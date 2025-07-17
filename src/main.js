@@ -12,6 +12,7 @@ import {
   calculateMaintTotal
 } from './maintenanceUI.js';
 import { initializeUserAlertUI, setupUserAlertForm, initializeAlertListUI, updateProblemsButtonColor } from './userAlertUI.js';
+import { initializeMileageHistoryUI } from './mileageHistoryUI.js';
 import {
   renderRepairHistory,
   openRepairPopup,
@@ -58,6 +59,12 @@ window.addRepairToRecord = addRepairToRecord;
 window.removeSubRecord = removeSubRecord;
 window.editSubRecord = editSubRecord;
 
+// Mileage Handler debug function (for testing)
+window.debugMileage = async () => {
+  const { mileageHandler } = await import('./mileageHandler.js');
+  return await mileageHandler.debugMileageData();
+};
+
 // Old save and remove functions have been moved to serviceRecordManager.js
 // with new draft functionality
 
@@ -96,6 +103,9 @@ function initializePageUI(page) {
       break;
     case 'repair-history':
       renderRepairHistory();
+      break;
+    case 'mileage-history':
+      initializeMileageHistoryUI();
       break;
     // TODO: Add more cases for other modules
     default:

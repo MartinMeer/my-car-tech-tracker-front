@@ -342,21 +342,37 @@ export function openMaintPopup() {
     const serviceRecord = window.currentServiceRecord;
     if (serviceRecord && serviceRecord.carId) {
       // Try to get car mileage from service record context
-      DataService.getCars().then(cars => {
+      DataService.getCars().then(async cars => {
         const car = cars.find(c => c.id == serviceRecord.carId);
         if (car && car.mileage != null) {
           mileageInput.value = car.mileage;
         } else {
           mileageInput.value = '';
         }
+        
+        // Suggest current mileage from mileage handler
+        try {
+          const { mileageHandler } = await import('./mileageHandler.js');
+          await mileageHandler.suggestMileageForInput('maint-mileage', serviceRecord.carId);
+        } catch (error) {
+          console.error('Failed to suggest mileage:', error);
+        }
       });
     } else {
       // Fallback to current car
-      getCurrentCarFromBackend().then(car => {
+      getCurrentCarFromBackend().then(async car => {
         if (car && car.mileage != null) {
           mileageInput.value = car.mileage;
         } else {
           mileageInput.value = '';
+        }
+        
+        // Suggest current mileage from mileage handler
+        try {
+          const { mileageHandler } = await import('./mileageHandler.js');
+          await mileageHandler.suggestMileageForInput('maint-mileage', car.id);
+        } catch (error) {
+          console.error('Failed to suggest mileage:', error);
         }
       });
     }

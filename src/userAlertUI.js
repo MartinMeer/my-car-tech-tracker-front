@@ -177,6 +177,14 @@ async function selectCarForAlert(carId) {
       if (mileageInput) {
         mileageInput.value = car.mileage || '';
         currentAlertData.mileage = car.mileage || null;
+        
+        // Suggest current mileage from mileage handler
+        try {
+          const { mileageHandler } = await import('./mileageHandler.js');
+          await mileageHandler.suggestMileageForInput('alert-mileage-input', carId);
+        } catch (error) {
+          console.error('Failed to suggest mileage:', error);
+        }
       }
     }
     
@@ -441,6 +449,20 @@ async function saveUserAlert(alertData) {
       
       alerts.push(alertData);
       localStorage.setItem('userAlerts', JSON.stringify(alerts));
+    }
+    
+    // Add mileage entry to mileage handler
+    if (alertData.mileage) {
+      try {
+        const { mileageHandler } = await import('./mileageHandler.js');
+        await mileageHandler.addMileageEntry(alertData.carId, alertData.mileage, alertData.date, 'alert', {
+          subsystem: alertData.subsystem,
+          priority: alertData.priority,
+          description: alertData.description
+        });
+      } catch (error) {
+        console.error('Failed to add mileage entry for alert:', error);
+      }
     }
     
     // Update problems button color after saving

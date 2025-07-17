@@ -474,6 +474,17 @@ async function addCarToBackend(carData) {
   if (DataService.saveCars) {
     await DataService.saveCars(cars);
   }
+  
+  // Add initial mileage to mileage handler
+  try {
+    const { mileageHandler } = await import('./mileageHandler.js');
+    if (carData.mileage) {
+      await mileageHandler.addInitialMileage(newId, carData.mileage);
+    }
+  } catch (error) {
+    console.error('Failed to add initial mileage:', error);
+  }
+  
   // Set as current car
   if (DataService.setCurrentCarId) {
     await DataService.setCurrentCarId(newId);
