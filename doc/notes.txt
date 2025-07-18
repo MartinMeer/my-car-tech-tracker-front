@@ -1,5 +1,10 @@
 cd /home/oleg/my-car-tech-tracker-front/my-car-tech-tracker-front && python3 -m http.server 8000
 
+
+Feature: Privacy Policy
+    https://termly.io/
+
+
 Feature:"Регламент тех. обслуживания"
     Load from outer json (for easy connection to AI API)
     Or table filled by user
