@@ -450,11 +450,11 @@
 }
 
 .record-type-badge.maintenance {
-  background: #28a745 !important;
+  background: var(--success-color);
 }
 
 .record-type-badge.repair {
-  background: #dc3545 !important;
+  background: var(--accent-color);
 }
 
 .car-summary {
@@ -465,4 +465,350 @@
   font-size: 0.9rem;
   color: var(--text-muted);
   border-left: 4px solid var(--primary-color);
+} 
+
+/* ==========================================================================
+   SERVICE PLAN STYLES
+   Service planning and maintenance scheduling
+   ========================================================================== */
+
+.service-plan-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.plan-section {
+  margin-bottom: 2rem;
+}
+
+.plan-section:last-child {
+  margin-bottom: 0;
+}
+
+.plan-section-header {
+  background: var(--primary-color);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.plan-section-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.maintenance-operations-list,
+.service-plan-list {
+  padding: 1.5rem;
+}
+
+.maintenance-operation-item,
+.service-plan-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 1rem;
+  transition: all var(--transition-fast) ease;
+  background: var(--surface);
+}
+
+.maintenance-operation-item:last-child,
+.service-plan-item:last-child {
+  margin-bottom: 0;
+}
+
+.maintenance-operation-item:hover,
+.service-plan-item:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(45, 62, 80, 0.1);
+}
+
+.maintenance-operation-item.priority {
+  border-color: var(--accent-color);
+  background: rgba(231, 76, 60, 0.05);
+}
+
+.maintenance-operation-item.priority .operation-name {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.operation-info,
+.plan-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.operation-name,
+.plan-item-type {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.operation-details {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.next-mileage,
+.next-date {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: rgba(108, 117, 125, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--border-radius);
+}
+
+.operation-actions,
+.plan-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.add-to-plan-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.plan-item-description {
+  color: var(--text-color);
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.plan-item-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-style: italic;
+  background: rgba(108, 117, 125, 0.05);
+  border-radius: var(--border-radius-lg);
+  border: 2px dashed var(--border-color);
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: var(--z-modal);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  background: var(--primary-color);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background var(--transition-fast) ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  font-size: 1rem;
+  transition: border-color var(--transition-fast) ease;
+  background: var(--surface);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(45, 62, 80, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Operation Type Selector */
+.operation-type-selector {
+  margin-bottom: 2rem;
+}
+
+.operation-type-selector h4 {
+  margin: 0 0 1rem 0;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.operation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.operation-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.operation-option:hover {
+  border-color: var(--primary-color);
+  background: rgba(45, 62, 80, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(45, 62, 80, 0.1);
+}
+
+.operation-option .icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.operation-dropdown,
+.operation-form {
+  margin-bottom: 2rem;
+}
+
+.operation-dropdown h4,
+.operation-form h4 {
+  margin: 0 0 1rem 0;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .plan-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .maintenance-operation-item,
+  .service-plan-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .operation-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .operation-actions,
+  .plan-item-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
 } 

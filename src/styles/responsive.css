@@ -202,7 +202,7 @@
     top: 0.5rem;
     left: 0.5rem;
     right: auto;
-    z-index: 1000;
+    z-index: var(--z-dropdown);
     gap: 0.7rem;
     border-top: none;
     background: none;
@@ -236,7 +236,7 @@
     background: var(--surface);
     border-top: 1px solid var(--border-color);
     padding: 0.5rem 0 0.2rem 0;
-    z-index: 100;
+    z-index: var(--z-sticky);
   }
 
   .mobile-bottom-icons .mobile-icon-img {

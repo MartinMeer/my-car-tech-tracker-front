@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>План обслуживания - My Car Tech Tracker</title>
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../src/styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-brand">
+        <a href="#cover">
+          <img src="../img/favicon.ico" alt="Logo" class="nav-logo">
+          <span class="nav-title">My Car Tech Tracker</span>
+        </a>
+      </div>
+      <div class="nav-menu">
+        <a href="#my-car-overview" class="nav-link">Мой автомобиль</a>
+        <a href="#my-cars" class="nav-link">Мои автомобили</a>
+        <a href="#service-card" class="nav-link">Запись об обслуживании</a>
+        <a href="#alert-list" class="nav-link">Проблемы</a>
+        <a href="#service-plan" class="nav-link active">План обслуживания</a>
+        <a href="#service-history" class="nav-link">История обслуживания</a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section class="service-plan">
+        <div class="page-header">
+          <h1>Когда на автосервис?</h1>
+          <p>Планирование технического обслуживания и ремонтов</p>
+        </div>
+
+        <div class="service-plan-container">
+          <!-- Header 1: Next Maintenance -->
+          <div class="plan-section">
+            <div class="plan-section-header">
+              <h2>Следующее тех.обслуживание</h2>
+              <button class="btn btn-primary" id="add-mileage-btn">
+                <span class="icon">📊</span>
+                Добавить текущий пробег
+              </button>
+            </div>
+            
+            <div class="maintenance-operations-list" id="maintenance-operations-list">
+              <!-- Maintenance operations will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Header 2: Service Plan -->
+          <div class="plan-section">
+            <div class="plan-section-header">
+              <h2>Сервис-план</h2>
+              <button class="btn btn-primary" id="add-operation-btn">
+                <span class="icon">➕</span>
+                Добавить операцию
+              </button>
+            </div>
+            
+            <div class="service-plan-list" id="service-plan-list">
+              <!-- Service plan items will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Mileage Input Modal -->
+  <div id="mileage-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Добавить текущий пробег</h3>
+        <button class="modal-close" onclick="closeMileageModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="mileage-form">
+          <div class="form-group">
+            <label for="current-mileage">Текущий пробег (км):</label>
+            <input type="number" id="current-mileage" name="current-mileage" required min="0">
+          </div>
+          <div class="form-group">
+            <label for="mileage-date">Дата:</label>
+            <input type="date" id="mileage-date" name="mileage-date" required>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeMileageModal()">Отмена</button>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Operation Modal -->
+  <div id="operation-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Добавить операцию</h3>
+        <button class="modal-close" onclick="closeOperationModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="operation-type-selector">
+          <h4>Выберите тип операции:</h4>
+          <div class="operation-options">
+            <button class="operation-option" data-type="maintenance">
+              <span class="icon">🔧</span>
+              <span>Тех.обслуживание по регламенту</span>
+            </button>
+            <button class="operation-option" data-type="repair">
+              <span class="icon">🔨</span>
+              <span>Ремонт</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Maintenance operations dropdown (hidden by default) -->
+        <div id="maintenance-dropdown" class="operation-dropdown" style="display: none;">
+          <h4>Выберите операцию:</h4>
+          <select id="maintenance-operation-select">
+            <option value="">Выберите операцию...</option>
+            <option value="oil-change">Замена масла</option>
+            <option value="oil-filter">Замена масляного фильтра</option>
+            <option value="air-filter">Замена воздушного фильтра</option>
+            <option value="fuel-filter">Замена топливного фильтра</option>
+            <option value="brake-fluid">Замена тормозной жидкости</option>
+            <option value="coolant">Замена охлаждающей жидкости</option>
+            <option value="spark-plugs">Замена свечей зажигания</option>
+            <option value="timing-belt">Замена ремня ГРМ</option>
+            <option value="brake-pads">Замена тормозных колодок</option>
+            <option value="tires">Замена шин</option>
+          </select>
+        </div>
+        
+        <!-- Repair input form (hidden by default) -->
+        <div id="repair-form" class="operation-form" style="display: none;">
+          <h4>Описание ремонта:</h4>
+          <textarea id="repair-description" placeholder="Опишите необходимый ремонт..." rows="4"></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeOperationModal()">Отмена</button>
+          <button type="button" class="btn btn-primary" id="save-operation-btn" onclick="saveOperation()">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../src/servicePlanUI.js"></script>
+</body>
+</html> 

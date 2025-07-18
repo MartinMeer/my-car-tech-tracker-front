@@ -15,7 +15,7 @@ header {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 2000;
+  z-index: var(--z-fixed);
   width: 100vw;
   min-height: var(--header-height);
   display: flex;
@@ -229,7 +229,7 @@ footer {
   box-shadow: 0 2px 8px var(--shadow);
   transition: background var(--transition-fast);
   cursor: pointer;
-  z-index: 2100;
+  z-index: var(--z-popover);
 }
 
 .logout-btn:hover {

@@ -13,6 +13,7 @@ import {
 } from './maintenanceUI.js';
 import { initializeUserAlertUI, setupUserAlertForm, initializeAlertListUI, updateProblemsButtonColor } from './userAlertUI.js';
 import { initializeMileageHistoryUI } from './mileageHistoryUI.js';
+import { initializeServicePlanUI } from './servicePlanUI.js';
 import {
   renderRepairHistory,
   openRepairPopup,
@@ -106,6 +107,9 @@ function initializePageUI(page) {
       break;
     case 'mileage-history':
       initializeMileageHistoryUI();
+      break;
+    case 'service-plan':
+      initializeServicePlanUI();
       break;
     // TODO: Add more cases for other modules
     default:

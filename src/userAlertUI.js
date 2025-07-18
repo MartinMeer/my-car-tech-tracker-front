@@ -924,18 +924,23 @@ export async function updateProblemsButtonColor() {
     const alerts = await getUserAlerts();
     const activeAlerts = alerts.filter(alert => !alert.completed);
     
+    // Remove all existing color classes
+    problemsButton.classList.remove('problems-red', 'problems-yellow', 'problems-blue-green', 'problems-grey');
+    
     if (activeAlerts.length === 0) {
-      // No active alerts - grey button
-      problemsButton.style.color = '#6c757d';
-      problemsButton.style.pointerEvents = 'none';
+      // No active alerts - grey button, not clickable
+      problemsButton.classList.add('problems-grey');
+      problemsButton.disabled = true;
       problemsButton.title = 'Нет активных проблем';
     } else {
+      // Enable button
+      problemsButton.disabled = false;
+      
       // Check for critical alerts first
       const criticalAlerts = activeAlerts.filter(alert => alert.priority === 'critical');
       if (criticalAlerts.length > 0) {
         // Red for critical alerts
-        problemsButton.style.color = '#dc3545';
-        problemsButton.style.pointerEvents = 'auto';
+        problemsButton.classList.add('problems-red');
         problemsButton.title = `${criticalAlerts.length} критичных проблем!`;
       } else {
         // Check for warning vs info alerts
@@ -944,13 +949,11 @@ export async function updateProblemsButtonColor() {
         
         if (warningAlerts.length > infoAlerts.length) {
           // Yellow for more warnings
-          problemsButton.style.color = '#ffc107';
-          problemsButton.style.pointerEvents = 'auto';
+          problemsButton.classList.add('problems-yellow');
           problemsButton.title = `${warningAlerts.length} проблем требуют внимания`;
         } else {
           // Blue-green for more info alerts
-          problemsButton.style.color = '#17a2b8';
-          problemsButton.style.pointerEvents = 'auto';
+          problemsButton.classList.add('problems-blue-green');
           problemsButton.title = `${infoAlerts.length} незначительных проблем`;
         }
       }

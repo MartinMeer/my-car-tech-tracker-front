@@ -1,0 +1,61 @@
+/* ==========================================================================
+   TABLE COMPONENT STYLES
+   Extracted from tables.css
+   ========================================================================== */
+
+/* Table Base Styles */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.table th {
+  background: var(--surface-secondary);
+  color: var(--primary-color);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  padding: var(--space-md);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Table Variants */
+.table-striped tbody tr:nth-child(even) {
+  background: var(--surface-secondary);
+}
+
+.table-striped tbody tr:nth-child(even):hover {
+  background: var(--surface-hover);
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid var(--border-color);
+}
+
+.table-sm th,
+.table-sm td {
+  padding: var(--space-sm);
+}
+
+.table-lg th,
+.table-lg td {
+  padding: var(--space-lg);
+} 

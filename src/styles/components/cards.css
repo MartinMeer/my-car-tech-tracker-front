@@ -1,0 +1,32 @@
+/* ==========================================================================
+   CARD COMPONENT STYLES
+   Extracted from utilities.css
+   ========================================================================== */
+
+.card {
+  background: var(--surface);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 2px 8px var(--shadow);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal) ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px var(--shadow-dark);
+}
+
+.card-header {
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-secondary);
+}
+
+.card-body {
+  padding: var(--space-lg);
+}
+
+.card-footer {
+  padding: var(--space-lg);
+  border-top: 1px solid var(--border-color);
+  background: var(--surface-secondary);
+} 

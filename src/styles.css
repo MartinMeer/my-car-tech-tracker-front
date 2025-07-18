@@ -12,6 +12,13 @@
 /* Navigation Styles - Car selection menu, sidebar links, mobile nav */
 @import url('./styles/navigation.css');
 
+/* Component Styles */
+@import url('./styles/components/buttons.css');
+@import url('./styles/components/forms.css');
+@import url('./styles/components/popups.css');
+@import url('./styles/components/cards.css');
+@import url('./styles/components/tables.css');
+
 /* Form Styles - Input styling, buttons, form layouts */
 @import url('./styles/forms.css');
 
