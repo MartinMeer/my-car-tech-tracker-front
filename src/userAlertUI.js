@@ -5,12 +5,9 @@ import { CONFIG } from './config.js';
 // Global variables for user alert
 let currentAlertData = null;
 
-// Initialize user alert UI (floating button)
+// Initialize user alert UI
 export function initializeUserAlertUI() {
   console.log('User alert UI initializing...');
-  
-  // Set up floating alert button
-  setupUserAlertButton();
   
   // Update problems button color
   updateProblemsButtonColor();
@@ -18,17 +15,7 @@ export function initializeUserAlertUI() {
   console.log('User alert UI initialized successfully');
 }
 
-// Set up the floating user alert button
-function setupUserAlertButton() {
-  // Setup floating button
-  const floatingAlertBtn = document.getElementById('floating-user-alert-btn');
-  if (floatingAlertBtn) {
-    floatingAlertBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      showUserAlertPopup();
-    });
-  }
-}
+
 
 // Show the user alert popup for car selection and date
 async function showUserAlertPopup() {
