@@ -773,13 +773,25 @@ async function createAlertItem(alert) {
 }
 
 // Show empty alert list
-function showEmptyAlertList() {
+async function showEmptyAlertList() {
   const content = document.getElementById('alert-list-content');
   const empty = document.getElementById('alert-list-empty');
   
   if (content && empty) {
     content.style.display = 'none';
     empty.style.display = 'block';
+    
+    // Check if there are no active alerts (not completed)
+    const alerts = await getUserAlerts();
+    const activeAlerts = alerts.filter(alert => !alert.completed);
+    
+    // Hide the "Сообщить о проблеме" button if there are no active alerts
+    const reportButton = empty.querySelector('button');
+    if (reportButton && activeAlerts.length === 0) {
+      reportButton.style.display = 'none';
+    } else if (reportButton) {
+      reportButton.style.display = 'block';
+    }
   }
 }
 
@@ -942,15 +954,14 @@ export async function updateProblemsButtonColor() {
     // Remove all existing color classes
     problemsButton.classList.remove('problems-red', 'problems-yellow', 'problems-blue-green', 'problems-grey');
     
+    // Always enable the button
+    problemsButton.disabled = false;
+    
     if (activeAlerts.length === 0) {
-      // No active alerts - grey button, not clickable
+      // No active alerts - grey button, but still clickable
       problemsButton.classList.add('problems-grey');
-      problemsButton.disabled = true;
       problemsButton.title = 'Нет активных проблем';
     } else {
-      // Enable button
-      problemsButton.disabled = false;
-      
       // Check for critical alerts first
       const criticalAlerts = activeAlerts.filter(alert => alert.priority === 'critical');
       if (criticalAlerts.length > 0) {
