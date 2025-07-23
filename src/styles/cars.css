@@ -482,23 +482,40 @@
   padding: 1.5rem;
 }
 
-.alert-list-header-content {
+.add-alert-btn-container {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
 }
 
-.alert-list-title-section h1 {
+.add-alert-btn-container .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
   color: white;
-  margin-bottom: 0.5rem;
-  font-size: 1.8rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  text-decoration: none;
 }
 
-.alert-list-title-section .page-description {
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  font-size: 0.95rem;
+.add-alert-btn-container .btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.add-alert-btn-container .btn:active {
+  transform: translateY(0);
+}
+
+.add-alert-btn-container .btn .icon {
+  font-size: 1.2rem;
 }
 
 .alert-list-controls {
@@ -794,14 +811,15 @@
 
 /* Responsive design for alert list */
 @media (max-width: 768px) {
-  .alert-list-header-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
+  .add-alert-btn-container {
+    justify-content: center;
+    margin-bottom: 1.5rem;
   }
   
-  .alert-list-title-section h1 {
-    font-size: 1.5rem;
+  .add-alert-btn-container .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem 1.5rem;
   }
   
   .alert-list-controls {

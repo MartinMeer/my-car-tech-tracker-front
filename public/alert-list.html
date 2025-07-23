@@ -1,12 +1,11 @@
 <section>
+  <h1>У нас проблемы!</h1>
+ 
+  
   <div class="alert-list-container">
     <div class="alert-list-header">
-      <div class="alert-list-header-content">
-        <div class="alert-list-title-section">
-          <h1>У нас проблемы!</h1>
-          <p class="page-description">Список всех обнаруженных проблем по автомобилям</p>
-        </div>
-        <button class="btn btn-danger" onclick="window.location.hash='#user-alert'">
+      <div class="add-alert-btn-container">
+        <button id="new-alert-btn" class="btn btn-primary">
           <span class="icon">🚨</span>
           Сообщить о проблеме
         </button>
@@ -14,6 +13,7 @@
     </div>
     
     <div class="alert-list-content" id="alert-list-content">
+      <p class="page-description">Список всех обнаруженных проблем по автомобилям</p>
       <!-- Alerts will be loaded here dynamically -->
     </div>
     
