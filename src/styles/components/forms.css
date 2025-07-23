@@ -147,17 +147,7 @@
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-#car-year[size] {
-  height: 2.5rem;
-  overflow: hidden;
-  transition: height var(--transition-normal) ease;
-}
 
-#car-year[size]:focus {
-  height: auto;
-  max-height: 12rem;
-  overflow-y: auto;
-}
 
 /* Form Utilities */
 .input-hint {

@@ -5,12 +5,12 @@ import { CONFIG } from './config.js';
 // Global variables for user alert
 let currentAlertData = null;
 
-// Initialize user alert UI (floating button)
+// Initialize user alert UI
 export function initializeUserAlertUI() {
   console.log('User alert UI initializing...');
   
-  // Set up floating alert button
-  setupUserAlertButton();
+  // Set up new alert button on alert-list page
+  setupNewAlertButton();
   
   // Update problems button color
   updateProblemsButtonColor();
@@ -18,15 +18,19 @@ export function initializeUserAlertUI() {
   console.log('User alert UI initialized successfully');
 }
 
-// Set up the floating user alert button
-function setupUserAlertButton() {
-  // Setup floating button
-  const floatingAlertBtn = document.getElementById('floating-user-alert-btn');
-  if (floatingAlertBtn) {
-    floatingAlertBtn.addEventListener('click', function(e) {
+// Set up the new alert button on alert-list page
+function setupNewAlertButton() {
+  // Setup new alert button
+  const newAlertBtn = document.getElementById('new-alert-btn');
+  if (newAlertBtn) {
+    console.log('New alert button found and setting up event listener');
+    newAlertBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      console.log('New alert button clicked!');
       showUserAlertPopup();
     });
+  } else {
+    console.log('New alert button not found!');
   }
 }
 
@@ -521,6 +525,10 @@ export async function deleteUserAlert(alertId) {
 export function initializeAlertListUI() {
   console.log('Alert list UI initializing...');
   
+  // Set up new alert button
+  console.log('Setting up new alert button...');
+  setupNewAlertButton();
+  
   // Load and display alerts
   loadAlertList();
   
@@ -601,7 +609,14 @@ async function displayAlertList(alertsByCar, sortType = 'date-desc') {
   content.style.display = 'block';
   empty.style.display = 'none';
   
+  // Preserve the page description and clear only the alerts
+  const description = content.querySelector('.page-description');
   content.innerHTML = '';
+  
+  // Restore the description if it exists
+  if (description) {
+    content.appendChild(description);
+  }
   
   // Sort car groups based on sort type
   const sortedCarNames = Object.keys(alertsByCar).sort((a, b) => {

@@ -200,7 +200,7 @@
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-/* Car Year Dropdown - Limit to 6 visible options */
+/* Car Year Dropdown */
 #car-year {
   /* Keep consistent styling with other form inputs */
   padding: var(--space-sm);
@@ -211,7 +211,6 @@
   background: var(--surface);
 }
 
-/* Limit dropdown options to show only 6 at a time */
 #car-year option {
   padding: var(--space-sm) var(--space-sm);
 }
@@ -220,19 +219,6 @@
   outline: none;
   border-color: var(--secondary-color);
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-/* Make the size-limited select behave more like a dropdown */
-#car-year[size] {
-  height: 2.5rem; /* Single line height when not focused */
-  overflow: hidden;
-  transition: height var(--transition-normal) ease;
-}
-
-#car-year[size]:focus {
-  height: auto;
-  max-height: 12rem; /* Approximately 6 options */
-  overflow-y: auto;
 }
 
 .input-hint {

@@ -258,8 +258,8 @@ function setupYearDropdown() {
   // Clear existing options
   yearSelect.innerHTML = '';
   
-  // Set the size attribute to limit visible options to 6
-  yearSelect.setAttribute('size', '6');
+  // Remove size attribute to make it a proper dropdown
+  yearSelect.removeAttribute('size');
   
   // Get current year
   const currentYear = new Date().getFullYear();

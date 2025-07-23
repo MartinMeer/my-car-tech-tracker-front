@@ -1,34 +1,19 @@
 <section>
   <h1>У нас проблемы!</h1>
-  <p class="page-description">Список всех обнаруженных проблем по автомобилям</p>
+ 
   
   <div class="alert-list-container">
     <div class="alert-list-header">
-      <div class="alert-list-controls">
-        <div class="sort-controls">
-          <label for="sort-select">Сортировка:</label>
-          <select id="sort-select">
-            <option value="date-desc">По дате (новые сначала)</option>
-            <option value="date-asc">По дате (старые сначала)</option>
-            <option value="priority-desc">По приоритету (критичные сначала)</option>
-            <option value="priority-asc">По приоритету (незначительные сначала)</option>
-          </select>
-        </div>
-        <div class="filter-controls">
-          <label for="filter-select">Фильтр:</label>
-          <select id="filter-select">
-            <option value="all">Все проблемы</option>
-            <option value="critical">Критичные</option>
-            <option value="warning">Непонятные</option>
-            <option value="info">Незначительные</option>
-            <option value="active">Активные</option>
-            <option value="completed">Завершенные</option>
-          </select>
-        </div>
+      <div class="add-alert-btn-container">
+        <button id="new-alert-btn" class="btn btn-primary">
+          <span class="icon">🚨</span>
+          Сообщить о проблеме
+        </button>
       </div>
     </div>
     
     <div class="alert-list-content" id="alert-list-content">
+      <p class="page-description">Список всех обнаруженных проблем по автомобилям</p>
       <!-- Alerts will be loaded here dynamically -->
     </div>
     

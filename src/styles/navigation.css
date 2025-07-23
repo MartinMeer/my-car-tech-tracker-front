@@ -230,46 +230,7 @@
   box-shadow: 0 0 0 3px rgba(45, 62, 80, 0.1);
 }
 
-/* Floating Alert Button */
-.floating-alert-btn {
-  position: fixed;
-  top: 120px; /* Below header */
-  left: 240px; /* After sidebar */
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, var(--accent-color), #c0392b);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-  transition: all var(--transition-normal) ease;
-  z-index: var(--z-popover);
-  border: 2px solid #fff;
-}
 
-.floating-alert-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
-  background: linear-gradient(135deg, #c0392b, #a93226);
-}
-
-.floating-alert-btn:active {
-  transform: scale(0.95);
-}
-
-.floating-alert-icon {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
-  border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
-  background: #fff;
-  padding: 4px;
-}
 
 /* ==========================================================================
    SIDEBAR BUTTONS
