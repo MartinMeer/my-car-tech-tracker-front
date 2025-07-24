@@ -9,7 +9,7 @@
 </head>
 <body>
   <div class="container">
-    <!-- Navigation -->
+    <!-- Navigation 
     <nav class="navbar">
       <div class="nav-brand">
         <a href="#cover">
@@ -26,6 +26,7 @@
         <a href="#service-history" class="nav-link">История обслуживания</a>
       </div>
     </nav>
+    -->
 
     <!-- Main Content -->
     <main class="main-content">
@@ -40,10 +41,11 @@
           <div class="plan-section">
             <div class="plan-section-header">
               <h2>Следующее тех.обслуживание</h2>
-              <button class="btn btn-primary" id="add-mileage-btn">
-                <span class="icon">📊</span>
-                Добавить текущий пробег
-              </button>
+              <div class="current-car-info" id="current-car-info" style="display: none;">
+                <span class="icon">🚗</span>
+                <span id="current-car-name"></span>
+                <span class="current-mileage">Пробег: <span id="current-mileage-display">0</span> км</span>
+              </div>
             </div>
             
             <div class="maintenance-operations-list" id="maintenance-operations-list">
@@ -51,7 +53,22 @@
             </div>
           </div>
 
-          <!-- Header 2: Service Plan -->
+          <!-- Header 2: Critical Alerts -->
+          <div class="plan-section">
+            <div class="plan-section-header">
+              <h2>🚨 Критические предупреждения</h2>
+              <button class="btn btn-secondary" id="view-all-alerts-btn">
+                <span class="icon">📋</span>
+                Все предупреждения
+              </button>
+            </div>
+            
+            <div class="critical-alerts-list" id="critical-alerts-list">
+              <!-- Critical alerts will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Header 3: Service Plan -->
           <div class="plan-section">
             <div class="plan-section-header">
               <h2>Сервис-план</h2>
@@ -70,31 +87,7 @@
     </main>
   </div>
 
-  <!-- Mileage Input Modal -->
-  <div id="mileage-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Добавить текущий пробег</h3>
-        <button class="modal-close" onclick="closeMileageModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="mileage-form">
-          <div class="form-group">
-            <label for="current-mileage">Текущий пробег (км):</label>
-            <input type="number" id="current-mileage" name="current-mileage" required min="0">
-          </div>
-          <div class="form-group">
-            <label for="mileage-date">Дата:</label>
-            <input type="date" id="mileage-date" name="mileage-date" required>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="closeMileageModal()">Отмена</button>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Add Operation Modal -->
   <div id="operation-modal" class="modal">

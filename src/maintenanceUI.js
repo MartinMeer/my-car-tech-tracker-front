@@ -387,6 +387,7 @@ export function openMaintPopup() {
     consumableDiv.className = 'consumable-item';
     consumableDiv.innerHTML = `
       <span class="consumable-name">${consumable.name}</span>
+      <label>Наименование</label>
       <input type="text" class="item-input" placeholder="${consumable.name}">
       <input type="number" class="quantity-input" placeholder="1" min="1" step="1" value="1">
       <div class="cost-input-wrapper">

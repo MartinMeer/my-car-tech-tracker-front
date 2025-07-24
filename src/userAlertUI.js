@@ -646,7 +646,7 @@ async function displayAlertList(alertsByCar, sortType = 'date-desc') {
         const minPriorityB = Math.min(...carDataB.alerts.map(alert => priorityOrder[alert.priority] || 1));
         return minPriorityA - minPriorityB;
       default:
-        return 0;
+        return 'priority-desc';
     }
   });
   
