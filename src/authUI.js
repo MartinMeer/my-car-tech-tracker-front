@@ -36,7 +36,7 @@ export const AuthUI = {
         if (result.success) {
           alert(result.message);
           // Redirect to main app
-          window.location.href = '../index.html';
+          window.location.href = '/';
         }
       } catch (error) {
         alert('Ошибка входа: ' + error.message);
@@ -105,7 +105,7 @@ export const AuthUI = {
         if (result.success) {
           alert(result.message + '\nТеперь вы можете войти в систему');
           // Redirect to login page
-          window.location.href = 'login.html';
+          window.location.href = '/auth/login';
         }
       } catch (error) {
         alert('Ошибка регистрации: ' + error.message);
@@ -123,7 +123,7 @@ export const AuthUI = {
    */
   initializeDemoMode() {
     // Add demo login button for development
-    if (window.location.pathname.includes('login.html')) {
+    if (window.location.pathname.includes('auth/login')) {
       const demoBtn = document.createElement('button');
       demoBtn.type = 'button';
       demoBtn.className = 'demo-btn';
@@ -144,7 +144,7 @@ export const AuthUI = {
           const result = await AuthService.login('demo@example.com', 'demo123');
           if (result.success) {
             alert('Demo login successful!');
-            window.location.href = '../index.html';
+            window.location.href = '/';
           }
         } catch (error) {
           alert('Demo login failed: ' + error.message);

@@ -121,12 +121,12 @@ async function initializeApp() {
     // Initialize authentication and cookie handling
     await AuthService.initialize();
     
-    // Check authentication for protected pages
-    await checkAuthentication();
-    
-    // Load initial page
+    // Load initial page first
     const hash = window.location.hash || '#my-cars';
     await loadPage(hash, mainContent, initializePageUI);
+    
+    // Check authentication for protected pages after page load
+    await checkAuthentication();
     
     // Initialize car selection UI
     updateCarSelectionUI();
@@ -135,16 +135,24 @@ async function initializeApp() {
     initializeUserAlertUI();
     
     // Setup hash change listener
+    let isNavigating = false;
     window.addEventListener('hashchange', async () => {
-      await loadPage(window.location.hash, mainContent, initializePageUI);
+      if (isNavigating) return; // Prevent recursive navigation
+      isNavigating = true;
       
-      // Update car selection UI after page change
-      updateCarSelectionUI();
-      
-      // Hide car selection popup on navigation
-      const carSelectMenu = document.getElementById('car-select-menu');
-      if (carSelectMenu) {
-        carSelectMenu.style.display = 'none';
+      try {
+        await loadPage(window.location.hash, mainContent, initializePageUI);
+        
+        // Update car selection UI after page change
+        updateCarSelectionUI();
+        
+        // Hide car selection popup on navigation
+        const carSelectMenu = document.getElementById('car-select-menu');
+        if (carSelectMenu) {
+          carSelectMenu.style.display = 'none';
+        }
+      } finally {
+        isNavigating = false;
       }
     });
     
@@ -182,27 +190,43 @@ function setupCarImageDropdown() {
 // Check authentication for protected pages
 async function checkAuthentication() {
   const publicPages = [
-    'cover.html',
-    'login.html',
-    'register.html',
-    'contacts.html',
-    'privacy.html'
+    'cover',
+    'login',
+    'register',
+    'contacts',
+    'privacy'
   ];
   
-  const currentPage = window.location.pathname.split('/').pop();
+  // Get current page from hash, not pathname
+  const hash = window.location.hash.replace('#', '');
+  const currentPage = hash.split('?')[0]; // Remove query parameters
   const isPublic = publicPages.includes(currentPage);
   const devMode = localStorage.getItem('devMode') === 'true';
+  
+  console.log('Auth check:', { hash, currentPage, isPublic, devMode });
+  
+  // If no hash is set and we're on the main page, allow access (will be handled by router)
+  if (!hash && window.location.pathname === '/') {
+    console.log('No hash, allowing access to main page');
+    return;
+  }
   
   if (!isPublic && !devMode) {
     // Check both AuthService and direct localStorage for demo mode
     const isAuthServiceAuthenticated = AuthService.isAuthenticated();
     const hasDirectAuthToken = localStorage.getItem('auth_token');
     
+    console.log('Auth status:', { isAuthServiceAuthenticated, hasDirectAuthToken });
+    
     if (!isAuthServiceAuthenticated && !hasDirectAuthToken) {
-      window.location.href = 'cover.html';
+      console.log('Not authenticated, redirecting to cover');
+      // Use hash-based navigation instead of full page redirect
+      window.location.hash = '#cover';
       return;
     }
   }
+  
+  console.log('Authentication check passed');
 }
 
 // Setup authentication-related event listeners
@@ -233,7 +257,8 @@ function setupAuthEventListeners() {
         }
       });
       
-      window.location.href = 'cover.html';
+      // Use hash-based navigation instead of full page redirect
+      window.location.hash = '#cover';
     });
   }
 
@@ -267,5 +292,11 @@ function setupAuthEventListeners() {
   }
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeApp); 
+// Initialize when DOM is loaded (only once)
+let appInitialized = false;
+document.addEventListener('DOMContentLoaded', () => {
+  if (!appInitialized) {
+    appInitialized = true;
+    initializeApp();
+  }
+}); 

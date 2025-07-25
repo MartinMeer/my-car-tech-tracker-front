@@ -1,0 +1,147 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Зарегистрироваться — My Car Tech Tracker">
+  <div class="auth-container">
+    <h1>Зарегистрироваться</h1>
+    <form class="auth-form">
+      <label for="register-email">Email</label>
+      <input type="email" id="register-email" name="email" required autocomplete="username">
+      <label for="register-password">Пароль</label>
+      <input type="password" id="register-password" name="password" required autocomplete="new-password">
+      <label for="register-name">Имя (необязательно)</label>
+      <input type="text" id="register-name" name="name" autocomplete="name">
+      <label for="register-confirm-password">Повторите пароль</label>
+      <input type="password" id="register-confirm-password" name="confirm-password" required autocomplete="new-password">
+      <button type="submit" class="auth-btn">Зарегистрироваться</button>
+    </form>
+    <div class="auth-link">
+      Уже есть аккаунт? <a href="/auth/login">Войти</a>
+    </div>
+  </div>
+  <a href="/cover" class="back-to-cover-btn">На главную</a>
+</Layout>
+
+<script type="module">
+  import { AuthUI } from '/src/authUI.js';
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Register page loaded, initializing AuthUI...');
+    try {
+      AuthUI.initializeRegister();
+      console.log('AuthUI initialized successfully');
+    } catch (error) {
+      console.error('Error initializing AuthUI:', error);
+      // Fallback: add basic form handling
+      initializeBasicRegister();
+    }
+  });
+
+  // Fallback function if module loading fails
+  function initializeBasicRegister() {
+    console.log('Using fallback registration handler');
+    const registerForm = document.querySelector('.auth-form');
+    if (!registerForm) {
+      console.error('Register form not found');
+      return;
+    }
+
+    registerForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      console.log('Form submitted');
+      
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const confirmPassword = document.getElementById('register-confirm-password').value;
+      const name = document.getElementById('register-name')?.value || '';
+      
+      console.log('Form data:', { email, password: '***', confirmPassword: '***', name });
+      
+      // Basic validation
+      if (!email || !password || !confirmPassword) {
+        alert('Пожалуйста, заполните все обязательные поля');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert('Пароли не совпадают');
+        return;
+      }
+
+      if (password.length < 6) {
+        alert('Пароль должен содержать минимум 6 символов');
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert('Пожалуйста, введите корректный email');
+        return;
+      }
+
+      try {
+        // Show loading state
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Регистрация...';
+        submitBtn.disabled = true;
+
+        // Mock registration for demo mode
+        console.log('Processing registration...');
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Store user data in localStorage for demo
+        const userData = {
+          id: Date.now(),
+          email: email,
+          password: password,
+          name: name || 'User',
+          role: 'user',
+          createdAt: new Date().toISOString()
+        };
+        
+        // Get existing demo users or create new array
+        const demoUsers = JSON.parse(localStorage.getItem('demoUsers') || '[]');
+        
+        // Check if user already exists
+        const existingUser = demoUsers.find(u => u.email === email);
+        if (existingUser) {
+          throw new Error('Пользователь с таким email уже существует');
+        }
+        
+        // Add new user
+        demoUsers.push(userData);
+        localStorage.setItem('demoUsers', JSON.stringify(demoUsers));
+        
+        // Auto-login after registration
+        const mockToken = 'demo_token_' + Date.now();
+        const mockSessionId = 'demo_session_' + Date.now();
+        
+        localStorage.setItem('auth_token', mockToken);
+        localStorage.setItem('session_id', mockSessionId);
+        localStorage.setItem('user_id', userData.id.toString());
+        localStorage.setItem('currentUser', JSON.stringify({
+          ...userData,
+          token: mockToken,
+          sessionId: mockSessionId
+        }));
+        
+        alert('Регистрация выполнена успешно (demo режим)!');
+        window.location.href = '/';
+        
+      } catch (error) {
+        console.error('Registration error:', error);
+        alert('Ошибка регистрации: ' + error.message);
+      } finally {
+        // Restore button state
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  }
+</script> 

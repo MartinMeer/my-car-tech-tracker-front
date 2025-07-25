@@ -1,0 +1,19 @@
+{
+  "name": "my-car-tech-tracker-front",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Your personal car maintenance and repair assistant",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "start": "astro dev"
+  },
+  "dependencies": {
+    "astro": "^5.12.3"
+  },
+  "keywords": ["car", "maintenance", "tracker", "automotive", "service"],
+  "author": "com.martinmeer",
+  "license": "MIT"
+}

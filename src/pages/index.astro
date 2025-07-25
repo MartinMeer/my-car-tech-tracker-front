@@ -1,0 +1,133 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="My Car Tech Tracker">
+  <header>
+    <div class="header-title">Ваш персональный помощник по обслуживанию и ремонту автомобиля</div>
+    <a href="#" class="logout-btn">Выйти</a>
+  </header>
+  
+  <div class="container">
+    <nav class="sidebar">
+      <div class="sidebar-top">
+        <a href="#my-cars" id="my-cars-img-link">
+          <img id="my-cars-img" class="my-cars-img" src="/main-img.jpeg" alt="car image" />
+        </a>
+        <div id="car-select-menu" class="car-select-menu" style="display:none;"></div>
+        <a href="#my-cars" class="my-cars-link" id="my-cars-link">Мои автомобили</a>
+      </div>
+      
+      <!-- Four main action buttons -->
+      <div class="sidebar-buttons">
+        <button class="sidebar-btn sidebar-btn-service" onclick="window.location.hash='#service-card'">
+          <span class="btn-icon">🔧</span>
+          <span class="btn-text">
+            <span class="btn-line-1">Был на автосервисе?</span>
+            <span class="btn-line-2">Заполни отчет!</span>
+          </span>
+        </button>
+        
+        <button class="sidebar-btn sidebar-btn-problems" id="problems-button" onclick="window.location.hash='#alert-list'">
+          <span class="btn-icon">⚠️</span>
+          <span class="btn-text">У нас проблемы!</span>
+        </button>
+        
+        <button class="sidebar-btn sidebar-btn-history" onclick="window.location.hash='#service-history'">
+          <span class="btn-icon">📋</span>
+          <span class="btn-text">
+            <span class="btn-line-1">История тех. обслуживания</span>
+            <span class="btn-line-2">и ремонтов</span>
+          </span>
+        </button>
+      </div>
+    </nav>
+    
+    <main id="main-content">
+      <div id="my-cars-name" class="my-cars-name"></div>
+      <!-- Content will be loaded here -->
+    </main>
+    
+    <aside class="right-icons">
+      <div class="icon-section">
+        <a href="#oils" title="Масла и жидкости">
+          <img src="/oil.jfif" alt="Масла и жидкости" class="right-icon-img" />
+        </a>
+      </div>
+      <div class="icon-section">
+        <a href="#spares" title="Запчасти">
+          <img src="/spares.jpeg" alt="Запчасти" class="right-icon-img" />
+        </a>
+      </div>
+      <div class="icon-section">
+        <a href="#shops" title="Мастера">
+          <img src="/master.jpeg" alt="Мастера" class="right-icon-img" />
+        </a>
+      </div>
+    </aside>
+  </div>
+  
+  <nav class="mobile-right-menu">
+    <a href="#my-car-overview" class="mobile-car-img">
+      <img id="mobile-my-cars-img" class="my-cars-img" src="/main-img.jpeg" alt="car image" />
+    </a>
+  </nav>
+  
+  <nav class="mobile-bottom-icons">
+    <a href="#oils" title="Масла и жидкости">
+      <img src="/oil.jpeg" alt="Масла и жидкости" class="mobile-icon-img" />
+    </a>
+    <a href="#spares" title="Запчасти">
+      <img src="/spares.jpeg" alt="Запчасти" class="mobile-icon-img" />
+    </a>
+    <a href="#shops" title="Мастера">
+      <img src="/master.jpeg" alt="Мастера" class="mobile-icon-img" />
+    </a>
+  </nav>
+  
+  <footer>
+    <div class="footer-menu-desktop">
+      <a href="#service-card">Был на автосервисе? Заполни отчет!</a>
+      <a href="#alert-list">У нас проблемы!</a>
+      <a href="#service-history">История тех. обслуживания и ремонтов</a>
+    </div>
+    <div class="footer-menu-mobile">
+      <details>
+        <summary>Был на автосервисе?</summary>
+        <a href="#service-card">Заполни отчет!</a>
+      </details>
+      <details>
+        <summary>Проблемы</summary>
+        <a href="#alert-list">У нас проблемы!</a>
+      </details>
+      <details>
+        <summary>История</summary>
+        <a href="#service-history">История тех. обслуживания и ремонтов</a>
+      </details>
+    </div>
+    <div class="footer-info">
+      <span>&copy;  ©2025 com.martinmeer' </span>
+      <span>your@email.com</span>
+      <span>Обновлено: 08.07.2025</span>
+    </div>
+  </footer>
+  
+  <div id="cookie-popup" class="cookie-popup">
+    <span>Мы используем cookies для улучшения работы сайта. Подробнее — <a href="/info/privacy" target="_blank">Безопасность ваших персональных данных</a>.</span>
+    <button id="cookie-accept" class="cookie-btn">Принять</button>
+    <button id="cookie-reject" class="cookie-btn cookie-btn-reject">Отклонить</button>
+  </div>
+</Layout>
+
+<script>
+  // Make the car image a home button to my-car-overview
+  document.addEventListener('DOMContentLoaded', function() {
+    var carImgDiv = document.getElementById('my-cars-img');
+    if (carImgDiv) {
+      carImgDiv.addEventListener('click', function(e) {
+        e.stopPropagation();
+        window.location.hash = '#my-car-overview';
+      });
+    }
+  });
+</script>

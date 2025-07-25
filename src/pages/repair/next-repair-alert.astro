@@ -1,0 +1,30 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Планируемые ремонты — My Car Tech Tracker">
+  <section class="next-repair-alert">
+    <h1>Планируемые ремонты</h1>
+    <p class="page-description">
+      Информация о планируемых ремонтах
+    </p>
+    
+    <div class="alert-info">
+      <h3>Планируемые работы</h3>
+      <p>Здесь будет отображаться информация о планируемых ремонтных работах</p>
+    </div>
+    
+    <div id="next-repair-content">
+      <!-- Content will be loaded by JavaScript -->
+      <div class="loading-indicator">
+        <div class="loading-spinner"></div>
+        <span>Загрузка информации о ремонтах...</span>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // This page will be handled by the main.js router
+  console.log('Next repair alert page loaded');
+</script> 

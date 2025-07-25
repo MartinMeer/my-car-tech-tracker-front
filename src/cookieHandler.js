@@ -351,7 +351,10 @@ export const CookieHandler = {
   }
 };
 
-// Auto-initialize when module is loaded
-CookieHandler.initialize();
+// Auto-initialize when module is loaded (only once)
+if (!CookieHandler._initialized) {
+  CookieHandler.initialize();
+  CookieHandler._initialized = true;
+}
 
 export default CookieHandler; 

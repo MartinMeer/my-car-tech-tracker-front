@@ -1,0 +1,183 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Войти — My Car Tech Tracker">
+  <div class="auth-container">
+    <h1>Войти</h1>
+    <form class="auth-form">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" name="email" required autocomplete="username">
+      <label for="login-password">Пароль</label>
+      <input type="password" id="login-password" name="password" required autocomplete="current-password">
+      <button type="submit" class="auth-btn">Войти</button>
+    </form>
+    <div class="auth-link">
+      Нет аккаунта? <a href="/auth/register">Зарегистрироваться</a>
+    </div>
+  </div>
+  <a href="/cover" class="back-to-cover-btn">На главную</a>
+</Layout>
+
+<script type="module">
+  import { AuthUI } from '/src/authUI.js';
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Login page loaded, initializing AuthUI...');
+    try {
+      AuthUI.initializeLogin();
+      AuthUI.initializeDemoMode();
+      console.log('AuthUI initialized successfully');
+    } catch (error) {
+      console.error('Error initializing AuthUI:', error);
+      // Fallback: add basic form handling
+      initializeBasicLogin();
+    }
+  });
+
+  // Fallback function if module loading fails
+  function initializeBasicLogin() {
+    console.log('Using fallback login handler');
+    const loginForm = document.querySelector('.auth-form');
+    if (!loginForm) {
+      console.error('Login form not found');
+      return;
+    }
+
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      console.log('Login form submitted');
+      
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      
+      console.log('Login attempt for:', email);
+      
+      if (!email || !password) {
+        alert('Пожалуйста, заполните все поля');
+        return;
+      }
+
+      try {
+        // Show loading state
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Вход...';
+        submitBtn.disabled = true;
+
+        // Mock login for demo mode
+        console.log('Processing login...');
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Check demo users first
+        const demoUsers = JSON.parse(localStorage.getItem('demoUsers') || '[]');
+        const user = demoUsers.find(u => u.email === email && u.password === password);
+        
+        if (user) {
+          // Demo user found
+          console.log('Demo user login successful');
+          
+          // Set authentication cookies
+          const mockToken = 'demo_token_' + Date.now();
+          const mockSessionId = 'demo_session_' + Date.now();
+          
+          // Store in localStorage for demo mode
+          localStorage.setItem('auth_token', mockToken);
+          localStorage.setItem('session_id', mockSessionId);
+          localStorage.setItem('user_id', user.id.toString());
+          localStorage.setItem('currentUser', JSON.stringify({
+            ...user,
+            token: mockToken,
+            sessionId: mockSessionId
+          }));
+          
+          alert('Вход выполнен успешно (demo режим)!');
+          window.location.href = '/';
+          return;
+        }
+        
+        // Check built-in demo user
+        if (email === 'demo@example.com' && password === 'demo123') {
+          console.log('Built-in demo user login successful');
+          
+          const mockToken = 'demo_token_' + Date.now();
+          const mockSessionId = 'demo_session_' + Date.now();
+          
+          localStorage.setItem('auth_token', mockToken);
+          localStorage.setItem('session_id', mockSessionId);
+          localStorage.setItem('user_id', '1');
+          localStorage.setItem('currentUser', JSON.stringify({
+            id: 1,
+            email: 'demo@example.com',
+            name: 'Demo User',
+            role: 'user',
+            token: mockToken,
+            sessionId: mockSessionId
+          }));
+          
+          alert('Вход выполнен успешно (demo режим)!');
+          window.location.href = '/';
+          return;
+        }
+        
+        throw new Error('Неверный email или пароль');
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Ошибка входа: ' + error.message);
+      } finally {
+        // Restore button state
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Add demo login button
+    const demoBtn = document.createElement('button');
+    demoBtn.type = 'button';
+    demoBtn.className = 'demo-btn';
+    demoBtn.textContent = 'Demo Login (demo@example.com / demo123)';
+    demoBtn.style.cssText = `
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+      width: 100%;
+    `;
+    
+    demoBtn.addEventListener('click', async function() {
+      try {
+        document.getElementById('login-email').value = 'demo@example.com';
+        document.getElementById('login-password').value = 'demo123';
+        
+        const mockToken = 'demo_token_' + Date.now();
+        const mockSessionId = 'demo_session_' + Date.now();
+        
+        localStorage.setItem('auth_token', mockToken);
+        localStorage.setItem('session_id', mockSessionId);
+        localStorage.setItem('user_id', '1');
+        localStorage.setItem('currentUser', JSON.stringify({
+          id: 1,
+          email: 'demo@example.com',
+          name: 'Demo User',
+          role: 'user',
+          token: mockToken,
+          sessionId: mockSessionId
+        }));
+        
+        alert('Demo login successful!');
+        window.location.href = '/';
+      } catch (error) {
+        alert('Demo login failed: ' + error.message);
+      }
+    });
+
+    loginForm.appendChild(demoBtn);
+  }
+</script> 

@@ -1,0 +1,155 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Добавить автомобиль — My Car Tech Tracker">
+  <section>
+    <h1>Добавить новый автомобиль</h1>
+    
+    <form id="add-car-form" class="add-car-form">
+      <div class="form-section">
+        <h2>Основная информация</h2>
+        
+        <div class="form-group">
+          <label for="car-brand">Марка *</label>
+          <input type="text" id="car-brand" name="brand" required placeholder="Например, Toyota">
+        </div>
+        
+        <div class="form-group">
+          <label for="car-model">Модель *</label>
+          <input type="text" id="car-model" name="model" required placeholder="Например, Camry">
+        </div>
+        
+        <div class="form-group">
+          <label for="car-year">Год выпуска *</label>
+          <select id="car-year" name="year" required>
+            <!-- Options will be populated by JavaScript -->
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="car-vin">VIN *</label>
+          <input type="text" id="car-vin" name="vin" required placeholder="17 символов VIN кода">
+        </div>
+        
+        <div class="form-group">
+          <label for="car-mileage">Пробег на момент приобретения (км) *</label>
+          <input type="number" id="car-mileage" name="mileage" required min="0" placeholder="50000">
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <h2>Дополнительная информация</h2>
+        
+        <div class="form-group">
+          <label for="car-price">Цена приобретения (₽)</label>
+          <input type="number" id="car-price" name="price" min="0" placeholder="1500000">
+        </div>
+        
+        <div class="form-group">
+          <label for="car-nickname">Придумай имя!</label>
+          <input type="text" id="car-nickname" name="nickname" placeholder="Например, Мой любимчик">
+        </div>
+        
+        <div class="form-group">
+          <label for="car-image">Загрузи свою картинку</label>
+          <input type="file" id="car-image" name="image" accept="image/*">
+          <div id="image-preview" class="image-preview"></div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" id="cancel-btn" class="btn btn-secondary">Отмена</button>
+        <button type="submit" class="btn btn-primary">Добавить автомобиль</button>
+      </div>
+    </form>
+  </section>
+</Layout>
+
+<script type="module">
+  import { initializeAddCarUI } from '/src/carsUI.js';
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Add car page loaded, initializing add car UI...');
+    try {
+      initializeAddCarUI();
+      console.log('Add car UI initialized successfully');
+    } catch (error) {
+      console.error('Error initializing add car UI:', error);
+      // Fallback initialization
+      initializeBasicAddCar();
+    }
+  });
+
+  function initializeBasicAddCar() {
+    console.log('Using fallback add car handler');
+    
+    // Populate year dropdown
+    const yearSelect = document.getElementById('car-year');
+    if (yearSelect) {
+      const currentYear = new Date().getFullYear();
+      for (let year = currentYear; year >= 1990; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+      }
+    }
+    
+    // Image preview
+    const imageInput = document.getElementById('car-image');
+    const imagePreview = document.getElementById('image-preview');
+    
+    if (imageInput && imagePreview) {
+      imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 200px; max-height: 200px;">`;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+    
+    // Form submission
+    const form = document.getElementById('add-car-form');
+    const cancelBtn = document.getElementById('cancel-btn');
+    
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic validation
+        const brand = document.getElementById('car-brand').value;
+        const model = document.getElementById('car-model').value;
+        const year = document.getElementById('car-year').value;
+        const vin = document.getElementById('car-vin').value;
+        const mileage = document.getElementById('car-mileage').value;
+        
+        if (!brand || !model || !year || !vin || !mileage) {
+          alert('Пожалуйста, заполните все обязательные поля');
+          return;
+        }
+        
+        if (vin.length !== 17) {
+          alert('VIN код должен содержать 17 символов');
+          return;
+        }
+        
+        // Mock car addition
+        alert('Автомобиль добавлен успешно (demo режим)!');
+        window.location.href = '/cars/my-cars';
+      });
+    }
+    
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function() {
+        if (confirm('Вы уверены, что хотите отменить добавление автомобиля?')) {
+          window.location.href = '/cars/my-cars';
+        }
+      });
+    }
+  }
+</script> 

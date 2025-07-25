@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="История ремонтов — My Car Tech Tracker">
+  <section class="repair-history">
+    <h1>История ремонтов</h1>
+    <p class="page-description">
+      Здесь отображается полная история ремонтов вашего автомобиля
+    </p>
+    
+    <div class="service-history-summary">
+      <div>
+        <h3>Общая статистика</h3>
+        <p>Просмотр всех записей о ремонтах</p>
+      </div>
+      <div>
+        <span class="record-type-badge repair">Ремонт</span>
+        <span id="total-repair-count">0 записей</span>
+      </div>
+    </div>
+    
+    <div id="repair-history-content">
+      <!-- Content will be loaded by JavaScript -->
+      <div class="loading-indicator">
+        <div class="loading-spinner"></div>
+        <span>Загрузка истории ремонтов...</span>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // This page will be handled by the main.js router
+  console.log('Repair history page loaded');
+</script> 

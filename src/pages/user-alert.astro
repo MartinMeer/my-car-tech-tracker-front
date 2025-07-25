@@ -1,0 +1,208 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Сообщи о проблеме — My Car Tech Tracker">
+  <section>
+    <h1>Сообщи о проблеме</h1>
+    <p class="page-description">Запишите замеченную неисправность для последующего анализа</p>
+    
+    <div class="user-alert-form">
+      <div class="alert-info">
+        <div class="alert-car-info">
+          <span class="alert-label">Автомобиль:</span>
+          <span id="alert-car-name" class="alert-value">-</span>
+        </div>
+        <div class="alert-date-info">
+          <span class="alert-label">Дата:</span>
+          <span id="alert-date" class="alert-value">-</span>
+        </div>
+        <div class="alert-mileage-info">
+          <span class="alert-label">Пробег:</span>
+          <span id="alert-mileage" class="alert-value">-</span>
+        </div>
+      </div>
+      
+      <form id="user-alert-form">
+        <div class="form-section">
+          <h3>Где замечена неисправность</h3>
+          <div class="input-group">
+            <label for="subsystem-select">Выберите систему:</label>
+            <select id="subsystem-select" required>
+              <option value="">Выберите систему...</option>
+              <option value="engine">Двигатель</option>
+              <option value="transmission">Трансмиссия</option>
+              <option value="suspension">Подвеска</option>
+              <option value="brakes">Тормозная система</option>
+              <option value="steering">Рулевое управление</option>
+              <option value="electrical">Электрика</option>
+              <option value="cooling">Система охлаждения</option>
+              <option value="fuel">Топливная система</option>
+              <option value="exhaust">Выхлопная система</option>
+              <option value="interior">Салон</option>
+              <option value="exterior">Кузов</option>
+              <option value="custom">Другое (указать)</option>
+            </select>
+          </div>
+          
+          <div id="custom-subsystem-group" class="input-group" style="display: none;">
+            <label for="custom-subsystem">Укажите место неисправности:</label>
+            <input type="text" id="custom-subsystem" 
+                   placeholder="Например: где-то справа в районе колеса" 
+                   maxlength="100">
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3>Приоритет проблемы</h3>
+          <div class="priority-selector">
+            <div class="priority-option" data-priority="critical">
+              <div class="priority-marker critical">
+                <span class="priority-icon">🔴</span>
+                <span class="priority-emoji">🙏</span>
+              </div>
+              <div class="priority-content">
+                <div class="priority-title">Совсем плохо/совсем страшно</div>
+                <div class="priority-description">Критическая проблема, требующая немедленного внимания</div>
+              </div>
+            </div>
+            
+            <div class="priority-option" data-priority="warning">
+              <div class="priority-marker warning">
+                <span class="priority-icon">🟡</span>
+                <span class="priority-emoji">🤷‍♀️</span>
+              </div>
+              <div class="priority-content">
+                <div class="priority-title">Непонятно</div>
+                <div class="priority-description">Проблема неясного характера, требует диагностики</div>
+              </div>
+            </div>
+            
+            <div class="priority-option" data-priority="info">
+              <div class="priority-marker info">
+                <span class="priority-icon">🔵</span>
+                <span class="priority-emoji">✍️</span>
+              </div>
+              <div class="priority-content">
+                <div class="priority-title">Потерпим</div>
+                <div class="priority-description">Незначительная проблема, можно отложить</div>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" id="priority-input" name="priority" required>
+        </div>
+        
+        <div class="form-section">
+          <h3>Описание проблемы</h3>
+          <div class="input-group">
+            <label for="problem-description">Подробное описание:</label>
+            <textarea id="problem-description" 
+                      placeholder="Опишите что именно происходит, когда появляется, при каких условиях..." 
+                      rows="6" 
+                      maxlength="500" 
+                      required></textarea>
+            <div class="char-counter">
+              <span id="char-count">0</span>/500 символов
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" id="cancel-btn" class="btn btn-secondary">
+            <span class="icon">❌</span>
+            Отмена
+          </button>
+          <button type="submit" id="submit-btn" class="btn btn-primary">
+            <span class="icon">✅</span>
+            Сохранить проблему
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<script type="module">
+  import { setupUserAlertForm } from '/src/userAlertUI.js';
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('User alert page loaded, initializing user alert form...');
+    try {
+      setupUserAlertForm();
+      console.log('User alert form initialized successfully');
+    } catch (error) {
+      console.error('Error initializing user alert form:', error);
+      // Fallback initialization
+      initializeBasicUserAlert();
+    }
+  });
+
+  function initializeBasicUserAlert() {
+    console.log('Using fallback user alert handler');
+    
+    // Set current date
+    const dateElement = document.getElementById('alert-date');
+    if (dateElement) {
+      dateElement.textContent = new Date().toLocaleDateString('ru-RU');
+    }
+    
+    // Character counter
+    const textarea = document.getElementById('problem-description');
+    const charCount = document.getElementById('char-count');
+    if (textarea && charCount) {
+      textarea.addEventListener('input', function() {
+        charCount.textContent = this.value.length;
+      });
+    }
+    
+    // Priority selector
+    const priorityOptions = document.querySelectorAll('.priority-option');
+    const priorityInput = document.getElementById('priority-input');
+    
+    priorityOptions.forEach(option => {
+      option.addEventListener('click', function() {
+        // Remove active class from all options
+        priorityOptions.forEach(opt => opt.classList.remove('active'));
+        // Add active class to clicked option
+        this.classList.add('active');
+        // Set hidden input value
+        if (priorityInput) {
+          priorityInput.value = this.dataset.priority;
+        }
+      });
+    });
+    
+    // Custom subsystem handling
+    const subsystemSelect = document.getElementById('subsystem-select');
+    const customGroup = document.getElementById('custom-subsystem-group');
+    
+    if (subsystemSelect && customGroup) {
+      subsystemSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+          customGroup.style.display = 'block';
+        } else {
+          customGroup.style.display = 'none';
+        }
+      });
+    }
+    
+    // Form submission
+    const form = document.getElementById('user-alert-form');
+    const cancelBtn = document.getElementById('cancel-btn');
+    
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Функция сохранения проблемы будет доступна в полной версии');
+      });
+    }
+    
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function() {
+        if (confirm('Вы уверены, что хотите отменить создание проблемы?')) {
+          window.location.href = '/alert-list';
+        }
+      });
+    }
+  }
+</script> 

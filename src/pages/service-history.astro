@@ -1,0 +1,105 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="История обслуживания — My Car Tech Tracker">
+  <section class="service-history">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h1>История обслуживания</h1>
+    </div>
+    <p class="page-description">Полная история всех операций обслуживания и ремонта по всем автомобилям</p>
+    <div id="service-history-list">
+      <div class="loading">Загрузка истории обслуживания...</div>
+    </div>
+    <div style="display: flex; justify-content: center; margin-top: 2rem;">
+      <button onclick="window.location.href='/cars/my-car-overview'" class="btn-primary" style="padding: 0.7rem 2rem; font-size: 1rem;">
+        ← К обзору автомобиля
+      </button>
+    </div>
+  </section>
+</Layout>
+
+<script type="module">
+  import { DataService } from '/src/dataService.js';
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Service history page loaded, loading data...');
+    try {
+      loadServiceHistory();
+    } catch (error) {
+      console.error('Error loading service history:', error);
+      showError('Ошибка загрузки истории обслуживания');
+    }
+  });
+
+  async function loadServiceHistory() {
+    const historyList = document.getElementById('service-history-list');
+    if (!historyList) return;
+
+    try {
+      // Show loading state
+      historyList.innerHTML = '<div class="loading">Загрузка истории обслуживания...</div>';
+      
+      // Load service history data
+      const serviceHistory = await DataService.getServiceHistory();
+      
+      if (!serviceHistory || serviceHistory.length === 0) {
+        historyList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>История пуста</h3>
+            <p>У вас пока нет записей об обслуживании</p>
+            <button class="btn-primary" onclick="window.location.href='/service-card'">
+              <span class="icon">🔧</span>
+              Добавить запись
+            </button>
+          </div>
+        `;
+        return;
+      }
+      
+      // Render service history
+      const historyHTML = serviceHistory.map(record => `
+        <div class="service-record-item">
+          <div class="service-record-header">
+            <h3>${record.carName || 'Автомобиль'}</h3>
+            <span class="service-date">${record.date}</span>
+          </div>
+          <div class="service-record-details">
+            <p><strong>Пробег:</strong> ${record.mileage} км</p>
+            <p><strong>Операции:</strong> ${record.operations?.length || 0}</p>
+          </div>
+        </div>
+      `).join('');
+      
+      historyList.innerHTML = historyHTML;
+      
+    } catch (error) {
+      console.error('Error loading service history:', error);
+      historyList.innerHTML = `
+        <div class="error-state">
+          <div class="error-icon">❌</div>
+          <h3>Ошибка загрузки</h3>
+          <p>Не удалось загрузить историю обслуживания</p>
+          <button class="btn-primary" onclick="location.reload()">
+            <span class="icon">🔄</span>
+            Попробовать снова
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  function showError(message) {
+    const historyList = document.getElementById('service-history-list');
+    if (historyList) {
+      historyList.innerHTML = `
+        <div class="error-state">
+          <div class="error-icon">❌</div>
+          <h3>Ошибка</h3>
+          <p>${message}</p>
+        </div>
+      `;
+    }
+  }
+</script> 
