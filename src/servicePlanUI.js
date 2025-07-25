@@ -446,11 +446,7 @@ async function loadCriticalAlerts() {
               `<button class="btn btn-sm btn-danger recall-alert-from-plan-btn" onclick="recallAlertFromPlan('${alert.id}')">
                 <span class="icon">↩️</span>
                 Убрать из плана
-              </button>` :
-              `<button class="btn btn-sm btn-warning add-alert-to-plan-btn" onclick="addAlertToPlan('${alert.id}')">
-                <span class="icon">📋</span>
-                В план
-              </button>`
+              </button>` : ''
             }
           </div>
         </div>
@@ -479,57 +475,7 @@ function isAlertInPlan(alertId) {
   }
 }
 
-// Add alert to plan
-window.addAlertToPlan = function(alertId) {
-  try {
-    // Get alert details
-    const storedAlerts = localStorage.getItem('userAlerts');
-    if (!storedAlerts) {
-      alert('Предупреждение не найдено');
-      return;
-    }
-    
-    const alerts = JSON.parse(storedAlerts);
-    const alert = alerts.find(a => a.id === alertId);
-    
-    if (!alert) {
-      alert('Предупреждение не найдено');
-      return;
-    }
-    
-    const alertData = {
-      id: Date.now(),
-      type: 'alert',
-      description: alert.title || 'Предупреждение',
-      details: alert.description,
-      priority: alert.priority,
-      alertId: alertId,
-      carId: currentCarId,
-      addedDate: new Date().toISOString()
-    };
-    
-    // Add to service plan
-    let servicePlan = localStorage.getItem('servicePlan');
-    if (!servicePlan) {
-      servicePlan = [];
-    } else {
-      servicePlan = JSON.parse(servicePlan);
-    }
-    
-    servicePlan.push(alertData);
-    localStorage.setItem('servicePlan', JSON.stringify(servicePlan));
-    
-    // Reload service plan and critical alerts
-    loadServicePlan();
-    loadCriticalAlerts();
-    
-    alert('Предупреждение добавлено в план');
-    
-  } catch (error) {
-    console.error('Error adding alert to plan:', error);
-    alert('Ошибка добавления в план: ' + error.message);
-  }
-};
+
 
 // Recall alert from plan
 window.recallAlertFromPlan = function(alertId) {
@@ -636,11 +582,7 @@ function showAllAlertsModal() {
                         `<button class="btn btn-sm btn-danger recall-alert-from-plan-btn" onclick="recallAlertFromPlan('${alert.id}')">
                           <span class="icon">↩️</span>
                           Убрать из плана
-                        </button>` :
-                        `<button class="btn btn-sm btn-warning add-alert-to-plan-btn" onclick="addAlertToPlan('${alert.id}')">
-                          <span class="icon">📋</span>
-                          В план
-                        </button>`
+                        </button>` : ''
                       }
                     </div>
                   </div>

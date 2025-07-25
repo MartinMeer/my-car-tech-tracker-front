@@ -34,13 +34,41 @@ function setupNewAlertButton() {
   }
 }
 
+// Set up the archive view button
+function setupArchiveViewButton() {
+  const viewArchiveBtn = document.getElementById('view-archive-btn');
+  const backToAlertsBtn = document.getElementById('back-to-alerts-btn');
+  
+  if (viewArchiveBtn) {
+    console.log('Archive view button found and setting up event listener');
+    viewArchiveBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('Archive view button clicked!');
+      showArchiveView();
+    });
+  } else {
+    console.log('Archive view button not found!');
+  }
+  
+  if (backToAlertsBtn) {
+    console.log('Back to alerts button found and setting up event listener');
+    backToAlertsBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('Back to alerts button clicked!');
+      showAlertListView();
+    });
+  } else {
+    console.log('Back to alerts button not found!');
+  }
+}
+
 // Show the user alert popup for car selection and date
 async function showUserAlertPopup() {
   try {
     const cars = await DataService.getCars();
     
     if (!cars || cars.length === 0) {
-      alert('Сначала добавьте автомобиль в разделе "Мои автомобили"');
+      window.alert('Сначала добавьте автомобиль в разделе "Мои автомобили"');
       return;
     }
     
@@ -125,7 +153,7 @@ async function showUserAlertPopup() {
     
   } catch (error) {
     console.error('Error showing user alert popup:', error);
-    alert('Ошибка загрузки данных: ' + error.message);
+    window.alert('Ошибка загрузки данных: ' + error.message);
   }
 }
 
@@ -182,13 +210,13 @@ async function confirmUserAlert() {
     
     // Validate date format
     if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
-      alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+      window.alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
       dateInput.style.borderColor = '#dc3545';
       return;
     }
     
     if (!currentAlertData.carId) {
-      alert('Пожалуйста, выберите автомобиль');
+      window.alert('Пожалуйста, выберите автомобиль');
       return;
     }
     
@@ -200,7 +228,7 @@ async function confirmUserAlert() {
     
   } catch (error) {
     console.error('Error confirming user alert:', error);
-    alert('Ошибка: ' + error.message);
+    window.alert('Ошибка: ' + error.message);
   }
 }
 
@@ -211,7 +239,7 @@ async function showMileageConfirmationPopup() {
     const car = cars.find(c => c.id == currentAlertData.carId);
     
     if (!car) {
-      alert('Автомобиль не найден');
+      window.alert('Автомобиль не найден');
       return;
     }
     
@@ -269,7 +297,7 @@ async function showMileageConfirmationPopup() {
     
   } catch (error) {
     console.error('Error showing mileage confirmation popup:', error);
-    alert('Ошибка: ' + error.message);
+    window.alert('Ошибка: ' + error.message);
   }
 }
 
@@ -289,7 +317,7 @@ async function saveMileageAndContinue() {
     
     // Validate mileage
     if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
-      alert('Пожалуйста, введите корректный пробег');
+      window.alert('Пожалуйста, введите корректный пробег');
       mileageInput.style.borderColor = '#dc3545';
       return;
     }
@@ -307,7 +335,7 @@ async function saveMileageAndContinue() {
     
   } catch (error) {
     console.error('Error saving mileage and continuing:', error);
-    alert('Ошибка: ' + error.message);
+    window.alert('Ошибка: ' + error.message);
   }
 }
 
@@ -332,7 +360,7 @@ async function keepCurrentMileage() {
     
   } catch (error) {
     console.error('Error keeping current mileage:', error);
-    alert('Ошибка: ' + error.message);
+    window.alert('Ошибка: ' + error.message);
   }
 }
 
@@ -378,7 +406,7 @@ async function loadAlertData() {
     const car = cars.find(c => c.id == alertData.carId);
     
     if (!car) {
-      alert('Автомобиль не найден');
+      window.alert('Автомобиль не найден');
       window.location.hash = '#';
       return;
     }
@@ -394,7 +422,7 @@ async function loadAlertData() {
     
   } catch (error) {
     console.error('Error loading alert data:', error);
-    alert('Ошибка загрузки данных: ' + error.message);
+    window.alert('Ошибка загрузки данных: ' + error.message);
     window.location.hash = '#';
   }
 }
@@ -466,24 +494,24 @@ async function handleFormSubmission(event) {
     
     // Validate required fields
     if (!subsystemSelect.value) {
-      alert('Пожалуйста, выберите систему');
+      window.alert('Пожалуйста, выберите систему');
       subsystemSelect.focus();
       return;
     }
     
     if (subsystemSelect.value === 'custom' && !customSubsystem.value.trim()) {
-      alert('Пожалуйста, укажите место неисправности');
+      window.alert('Пожалуйста, укажите место неисправности');
       customSubsystem.focus();
       return;
     }
     
     if (!priorityInput.value) {
-      alert('Пожалуйста, выберите приоритет проблемы');
+      window.alert('Пожалуйста, выберите приоритет проблемы');
       return;
     }
     
     if (!problemDescription.value.trim()) {
-      alert('Пожалуйста, опишите проблему');
+      window.alert('Пожалуйста, опишите проблему');
       problemDescription.focus();
       return;
     }
@@ -516,12 +544,12 @@ async function handleFormSubmission(event) {
     sessionStorage.removeItem('userAlertData');
     
     // Show success message and redirect
-    alert('Проблема успешно записана!');
+    window.alert('Проблема успешно записана!');
     window.location.hash = '#';
     
   } catch (error) {
     console.error('Error saving user alert:', error);
-    alert('Ошибка сохранения: ' + error.message);
+    window.alert('Ошибка сохранения: ' + error.message);
   }
 }
 
@@ -624,6 +652,9 @@ export function initializeAlertListUI() {
   console.log('Setting up new alert button...');
   setupNewAlertButton();
   
+  // Set up archive view button
+  setupArchiveViewButton();
+  
   // Load and display alerts
   loadAlertList();
   
@@ -644,16 +675,19 @@ async function loadAlertList(sortType = 'date-desc', filterType = 'all') {
       return;
     }
     
-    // Apply filtering
+    // Apply filtering - only show non-archived alerts by default
     let filteredAlerts = alerts;
     if (filterType !== 'all') {
       if (filterType === 'active') {
-        filteredAlerts = alerts.filter(alert => !alert.completed);
-      } else if (filterType === 'completed') {
-        filteredAlerts = alerts.filter(alert => alert.completed);
+        filteredAlerts = alerts.filter(alert => !alert.archived);
+      } else if (filterType === 'archived') {
+        filteredAlerts = alerts.filter(alert => alert.archived);
       } else {
-        filteredAlerts = alerts.filter(alert => alert.priority === filterType);
+        filteredAlerts = alerts.filter(alert => alert.priority === filterType && !alert.archived);
       }
+    } else {
+      // Default filter: show only non-archived alerts
+      filteredAlerts = alerts.filter(alert => !alert.archived);
     }
     
     if (filteredAlerts.length === 0) {
@@ -812,7 +846,7 @@ async function createAlertGroup(carName, carData, sortType = 'date-desc') {
 // Create individual alert item
 async function createAlertItem(alert) {
   const item = document.createElement('div');
-  item.className = `alert-item ${alert.completed ? 'completed' : ''}`;
+  item.className = `alert-item ${alert.archived ? 'archived' : ''}`;
   item.setAttribute('data-alert-id', alert.id);
   
   const priorityConfig = {
@@ -823,18 +857,8 @@ async function createAlertItem(alert) {
   
   const config = priorityConfig[alert.priority] || priorityConfig.info;
   
-  // Check if alert is in service plan
-  let servicePlan = localStorage.getItem('servicePlan');
-  let isInPlan = false;
-  if (servicePlan) {
-    servicePlan = JSON.parse(servicePlan);
-    isInPlan = servicePlan.some(item => item.alertId == alert.id);
-  }
-  
-  const planButtonClass = isInPlan ? 'add-to-plan added' : 'add-to-plan';
-  const planButtonText = isInPlan ? 'В плане' : 'В план';
-  const planButtonIcon = isInPlan ? '✅' : '📋';
-  const planButtonTitle = isInPlan ? 'Удалить из плана' : 'Добавить в план';
+  // Check if alert is archived
+  const isArchived = alert.archived || false;
   
   item.innerHTML = `
     <div class="alert-priority-marker ${alert.priority}">
@@ -853,13 +877,9 @@ async function createAlertItem(alert) {
     </div>
     
     <div class="alert-actions">
-      <button class="alert-action-btn ${planButtonClass}" onclick="addAlertToPlan(${alert.id})" title="${planButtonTitle}">
-        <span class="icon">${planButtonIcon}</span>
-        ${planButtonText}
-      </button>
-      <button class="alert-action-btn complete ${alert.completed ? 'completed' : ''}" onclick="toggleAlertComplete(${alert.id})" title="${alert.completed ? 'Восстановить' : 'Завершить'}">
-        <span class="icon">${alert.completed ? '↩️' : '✅'}</span>
-        ${alert.completed ? 'Восстановить' : 'Завершить'}
+      <button class="alert-action-btn archive ${isArchived ? 'archived' : ''}" onclick="toggleAlertArchive(${alert.id})" title="${isArchived ? 'Восстановить из архива' : 'Отправить в архив'}">
+        <span class="icon">${isArchived ? '📂' : '🗄️'}</span>
+        ${isArchived ? 'В архиве' : 'В архив'}
       </button>
     </div>
   `;
@@ -876,9 +896,9 @@ async function showEmptyAlertList() {
     content.style.display = 'none';
     empty.style.display = 'block';
     
-    // Check if there are no active alerts (not completed)
+    // Check if there are no active alerts (not archived)
     const alerts = await getUserAlerts();
-    const activeAlerts = alerts.filter(alert => !alert.completed);
+    const activeAlerts = alerts.filter(alert => !alert.archived);
     
     // Hide the "Сообщить о проблеме" button if there are no active alerts
     const reportButton = empty.querySelector('button');
@@ -888,6 +908,158 @@ async function showEmptyAlertList() {
       reportButton.style.display = 'block';
     }
   }
+}
+
+// Show archive view
+async function showArchiveView() {
+  const alertListView = document.getElementById('alert-list-content');
+  const alertListEmpty = document.getElementById('alert-list-empty');
+  const archiveView = document.getElementById('archive-view');
+  const archiveContent = document.getElementById('archive-content');
+  const archiveEmpty = document.getElementById('archive-empty');
+  
+  if (alertListView) alertListView.style.display = 'none';
+  if (alertListEmpty) alertListEmpty.style.display = 'none';
+  if (archiveView) archiveView.style.display = 'block';
+  
+  // Load archived alerts
+  await loadArchiveView();
+}
+
+// Show alert list view
+function showAlertListView() {
+  const alertListView = document.getElementById('alert-list-content');
+  const alertListEmpty = document.getElementById('alert-list-empty');
+  const archiveView = document.getElementById('archive-view');
+  
+  if (archiveView) archiveView.style.display = 'none';
+  if (alertListView) alertListView.style.display = 'block';
+  if (alertListEmpty) alertListEmpty.style.display = 'none';
+  
+  // Reload alert list
+  loadAlertList();
+}
+
+// Load archive view
+async function loadArchiveView() {
+  try {
+    const alerts = await getUserAlerts();
+    const cars = await DataService.getCars();
+    
+    // Filter only archived alerts
+    const archivedAlerts = alerts.filter(alert => alert.archived);
+    
+    if (archivedAlerts.length === 0) {
+      showEmptyArchiveView();
+      return;
+    }
+    
+    // Group archived alerts by car
+    const alertsByCar = groupAlertsByCar(archivedAlerts, cars);
+    
+    // Display archived alerts in table format
+    displayArchiveTable(alertsByCar);
+    
+  } catch (error) {
+    console.error('Error loading archive view:', error);
+    showEmptyArchiveView();
+  }
+}
+
+// Show empty archive view
+function showEmptyArchiveView() {
+  const archiveContent = document.getElementById('archive-content');
+  const archiveEmpty = document.getElementById('archive-empty');
+  
+  if (archiveContent && archiveEmpty) {
+    archiveContent.style.display = 'none';
+    archiveEmpty.style.display = 'block';
+  }
+}
+
+// Display archive table
+async function displayArchiveTable(alertsByCar) {
+  const archiveContent = document.getElementById('archive-content');
+  const archiveEmpty = document.getElementById('archive-empty');
+  
+  if (!archiveContent || !archiveEmpty) return;
+  
+  archiveContent.style.display = 'block';
+  archiveEmpty.style.display = 'none';
+  
+  // Sort car groups by newest alert date
+  const sortedCarNames = Object.keys(alertsByCar).sort((a, b) => {
+    const carDataA = alertsByCar[a];
+    const carDataB = alertsByCar[b];
+    
+    // Sort by newest alert date
+    const newestA = Math.max(...carDataA.alerts.map(alert => new Date(alert.date)));
+    const newestB = Math.max(...carDataB.alerts.map(alert => new Date(alert.date)));
+    return newestB - newestA;
+  });
+  
+  let tableHTML = `
+    <div class="archive-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Автомобиль</th>
+            <th>Дата</th>
+            <th>Система</th>
+            <th>Приоритет</th>
+            <th>Описание</th>
+            <th>Пробег</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  sortedCarNames.forEach(carName => {
+    const carData = alertsByCar[carName];
+    
+    // Sort alerts by date (newer first)
+    const sortedAlerts = carData.alerts.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    sortedAlerts.forEach(alert => {
+      const priorityConfig = {
+        critical: { icon: '🔴', text: 'Критично' },
+        warning: { icon: '🟡', text: 'Непонятно' },
+        info: { icon: '🔵', text: 'Потерпим' }
+      };
+      
+      const config = priorityConfig[alert.priority] || priorityConfig.info;
+      
+      tableHTML += `
+        <tr>
+          <td class="car-name">${carName}</td>
+          <td class="alert-date">${alert.date}</td>
+          <td class="alert-subsystem">${alert.subsystem}</td>
+          <td class="alert-priority">
+            <span class="priority-badge ${alert.priority}">
+              ${config.icon} ${config.text}
+            </span>
+          </td>
+          <td class="alert-description">${alert.description}</td>
+          <td class="alert-mileage">${alert.mileage ? `${alert.mileage} км` : '-'}</td>
+          <td class="alert-actions">
+            <button class="btn btn-sm btn-primary recall-from-archive-btn" onclick="recallAlertFromArchive(${alert.id})" title="Восстановить из архива">
+              <span class="icon">↩️</span>
+              Восстановить
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  });
+  
+  tableHTML += `
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  archiveContent.innerHTML = tableHTML;
 }
 
 // Setup alert list event listeners
@@ -916,99 +1088,62 @@ async function handleAlertFilter(event) {
   await loadAlertList(document.getElementById('sort-select')?.value || 'date-desc', filterType);
 }
 
-// Add alert to service plan
-window.addAlertToPlan = async function(alertId) {
+// Toggle alert archive status
+window.toggleAlertArchive = async function(alertId) {
   try {
     const alerts = await getUserAlerts();
-    const alert = alerts.find(a => a.id == alertId);
+    const alertItem = alerts.find(a => a.id == alertId);
     
-    if (!alert) {
-      alert('Проблема не найдена');
+    if (!alertItem) {
+      window.alert('Проблема не найдена');
       return;
     }
     
-    // Get existing service plan
-    let servicePlan = localStorage.getItem('servicePlan');
-    if (!servicePlan) {
-      servicePlan = [];
-    } else {
-      servicePlan = JSON.parse(servicePlan);
-    }
-    
-    // Check if alert is already in plan
-    const existingIndex = servicePlan.findIndex(item => item.alertId == alertId);
-    if (existingIndex !== -1) {
-      // Remove from plan
-      servicePlan.splice(existingIndex, 1);
-      localStorage.setItem('servicePlan', JSON.stringify(servicePlan));
-      
-      // Update button appearance
-      const button = event.target.closest('.add-to-plan');
-      if (button) {
-        button.classList.remove('added');
-        button.innerHTML = '<span class="icon">📋</span>В план';
-        button.title = 'Добавить в план';
-      }
-      
-      alert('Проблема удалена из плана');
-    } else {
-      // Add to plan
-      const planItem = {
-        id: Date.now(),
-        alertId: alertId,
-        type: 'alert',
-        description: alert.description,
-        priority: alert.priority,
-        carId: alert.carId,
-        date: alert.date,
-        addedDate: new Date().toISOString()
-      };
-      
-      servicePlan.push(planItem);
-      localStorage.setItem('servicePlan', JSON.stringify(servicePlan));
-      
-      // Update button appearance
-      const button = event.target.closest('.add-to-plan');
-      if (button) {
-        button.classList.add('added');
-        button.innerHTML = '<span class="icon">✅</span>В плане';
-        button.title = 'Удалить из плана';
-      }
-      
-      alert('Проблема добавлена в план');
-    }
-    
-  } catch (error) {
-    console.error('Error adding alert to plan:', error);
-    alert('Ошибка добавления в план: ' + error.message);
-  }
-};
-
-// Toggle alert completion status
-window.toggleAlertComplete = async function(alertId) {
-  try {
-    const alerts = await getUserAlerts();
-    const alert = alerts.find(a => a.id == alertId);
-    
-    if (!alert) {
-      alert('Проблема не найдена');
-      return;
-    }
-    
-    // Toggle completion status
-    alert.completed = !alert.completed;
+    // Toggle archive status
+    alertItem.archived = !alertItem.archived;
     
     // Update in storage
-    await updateUserAlert(alert);
+    await updateUserAlert(alertItem);
     
     // Reload alert list
     loadAlertList();
     
   } catch (error) {
-    console.error('Error toggling alert completion:', error);
-    alert('Ошибка обновления статуса: ' + error.message);
+    console.error('Error toggling alert archive:', error);
+    window.alert('Ошибка обновления статуса архива: ' + error.message);
   }
 };
+
+// Recall alert from archive
+window.recallAlertFromArchive = async function(alertId) {
+  try {
+    const alerts = await getUserAlerts();
+    const alertItem = alerts.find(a => a.id == alertId);
+    
+    if (!alertItem) {
+      window.alert('Проблема не найдена');
+      return;
+    }
+    
+    // Remove from archive
+    alertItem.archived = false;
+    
+    // Update in storage
+    await updateUserAlert(alertItem);
+    
+    // Reload archive view
+    loadArchiveView();
+    
+    // Show success message
+    window.alert('Проблема восстановлена из архива');
+    
+  } catch (error) {
+    console.error('Error recalling alert from archive:', error);
+    window.alert('Ошибка восстановления из архива: ' + error.message);
+  }
+};
+
+
 
 // Update user alert in storage
 async function updateUserAlert(updatedAlert) {
@@ -1044,7 +1179,7 @@ export async function updateProblemsButtonColor() {
     if (!problemsButton) return;
     
     const alerts = await getUserAlerts();
-    const activeAlerts = alerts.filter(alert => !alert.completed);
+    const activeAlerts = alerts.filter(alert => !alert.archived);
     
     // Remove all existing color classes
     problemsButton.classList.remove('problems-red', 'problems-yellow', 'problems-blue-green', 'problems-grey');
