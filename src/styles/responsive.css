@@ -696,6 +696,32 @@
     width: 100%;
   }
 
+  /* Mileage confirmation popup */
+  .mileage-confirmation-popup {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .mileage-confirmation-popup .popup-header {
+    padding: 1rem;
+  }
+  
+  .mileage-confirmation-popup .popup-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .mileage-confirmation-popup .popup-body {
+    padding: 1rem;
+  }
+  
+  .mileage-confirmation-popup .popup-footer {
+    flex-direction: column;
+  }
+  
+  .mileage-confirmation-popup .popup-footer .btn {
+    width: 100%;
+  }
+
   /* Utilities for mobile */
   .mobile\:hidden {
     display: none;

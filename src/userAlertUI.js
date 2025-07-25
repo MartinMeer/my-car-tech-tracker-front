@@ -93,18 +93,7 @@ async function showUserAlertPopup() {
             </div>
           </div>
           
-          <div class="form-section">
-            <h3>Текущий пробег</h3>
-            <div class="input-group">
-              <label for="alert-mileage-input">
-                <span class="icon">🛣️</span>
-                Пробег (км):
-              </label>
-              <input type="number" id="alert-mileage-input" 
-                     placeholder="Введите текущий пробег" 
-                     min="0" required>
-            </div>
-          </div>
+
           
           <div class="popup-footer">
             <button onclick="confirmUserAlert()" class="btn-primary">Продолжить</button>
@@ -176,20 +165,8 @@ async function selectCarForAlert(carId) {
         currentAlertData.date = dateInput.value;
       }
       
-      // Update mileage input with car's current mileage
-      const mileageInput = document.getElementById('alert-mileage-input');
-      if (mileageInput) {
-        mileageInput.value = car.mileage || '';
-        currentAlertData.mileage = car.mileage || null;
-        
-        // Suggest current mileage from mileage handler
-        try {
-          const { mileageHandler } = await import('./mileageHandler.js');
-          await mileageHandler.suggestMileageForInput('alert-mileage-input', carId);
-        } catch (error) {
-          console.error('Failed to suggest mileage:', error);
-        }
-      }
+      // Store car's current mileage for later use
+      currentAlertData.mileage = car.mileage || null;
     }
     
   } catch (error) {
@@ -197,13 +174,11 @@ async function selectCarForAlert(carId) {
   }
 }
 
-// Confirm user alert and navigate to user-alert page
+// Confirm user alert and show mileage confirmation popup
 async function confirmUserAlert() {
   try {
     const dateInput = document.getElementById('alert-date-input');
-    const mileageInput = document.getElementById('alert-mileage-input');
     const date = dateInput ? dateInput.value : '';
-    const mileage = mileageInput ? mileageInput.value : '';
     
     // Validate date format
     if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
@@ -212,6 +187,106 @@ async function confirmUserAlert() {
       return;
     }
     
+    if (!currentAlertData.carId) {
+      alert('Пожалуйста, выберите автомобиль');
+      return;
+    }
+    
+    // Update current alert data with date
+    currentAlertData.date = date;
+    
+    // Show mileage confirmation popup
+    showMileageConfirmationPopup();
+    
+  } catch (error) {
+    console.error('Error confirming user alert:', error);
+    alert('Ошибка: ' + error.message);
+  }
+}
+
+// Show mileage confirmation popup
+async function showMileageConfirmationPopup() {
+  try {
+    const cars = await DataService.getCars();
+    const car = cars.find(c => c.id == currentAlertData.carId);
+    
+    if (!car) {
+      alert('Автомобиль не найден');
+      return;
+    }
+    
+    const currentMileage = car.mileage || 0;
+    
+    let popupHtml = `
+      <div class="mileage-confirmation-popup">
+        <div class="popup-header">
+          <h2>Подтверждение пробега</h2>
+          <button class="close-btn" onclick="closeMileageConfirmationPopup()">&times;</button>
+        </div>
+        <div class="popup-body">
+          <div class="form-section">
+            <h3>Введите актуальный пробег. Или оставим текущий?</h3>
+            <div class="input-group">
+              <label for="mileage-confirmation-input">
+                <span class="icon">🛣️</span>
+                Пробег (км):
+              </label>
+              <input type="number" id="mileage-confirmation-input" 
+                     value="${currentMileage}"
+                     placeholder="Введите текущий пробег" 
+                     min="0" required>
+            </div>
+          </div>
+          
+          <div class="popup-footer">
+            <button onclick="saveMileageAndContinue()" class="btn-primary">Сохранить пробег</button>
+            <button onclick="keepCurrentMileage()" class="btn-secondary">Оставить текущий</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Create and show popup
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.id = 'mileage-confirmation-overlay';
+    overlay.innerHTML = popupHtml;
+    
+    document.body.appendChild(overlay);
+    
+    // Make functions globally available
+    window.closeMileageConfirmationPopup = closeMileageConfirmationPopup;
+    window.saveMileageAndContinue = saveMileageAndContinue;
+    window.keepCurrentMileage = keepCurrentMileage;
+    
+    // Suggest current mileage from mileage handler
+    try {
+      const { mileageHandler } = await import('./mileageHandler.js');
+      await mileageHandler.suggestMileageForInput('mileage-confirmation-input', currentAlertData.carId);
+    } catch (error) {
+      console.error('Failed to suggest mileage:', error);
+    }
+    
+  } catch (error) {
+    console.error('Error showing mileage confirmation popup:', error);
+    alert('Ошибка: ' + error.message);
+  }
+}
+
+// Close mileage confirmation popup
+function closeMileageConfirmationPopup() {
+  const overlay = document.getElementById('mileage-confirmation-overlay');
+  if (overlay) {
+    document.body.removeChild(overlay);
+  }
+}
+
+// Save mileage and continue to user-alert page
+async function saveMileageAndContinue() {
+  try {
+    const mileageInput = document.getElementById('mileage-confirmation-input');
+    const mileage = mileageInput ? mileageInput.value : '';
+    
     // Validate mileage
     if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
       alert('Пожалуйста, введите корректный пробег');
@@ -219,24 +294,44 @@ async function confirmUserAlert() {
       return;
     }
     
-    if (!currentAlertData.carId) {
-      alert('Пожалуйста, выберите автомобиль');
-      return;
-    }
-    
-    // Update current alert data
-    currentAlertData.date = date;
+    // Update current alert data with new mileage
     currentAlertData.mileage = Number(mileage);
     
     // Store alert data in session storage for the user-alert page
     sessionStorage.setItem('userAlertData', JSON.stringify(currentAlertData));
     
-    // Close popup and navigate to user-alert page
+    // Close both popups and navigate to user-alert page
+    closeMileageConfirmationPopup();
     closeUserAlertPopup();
     window.location.hash = '#user-alert';
     
   } catch (error) {
-    console.error('Error confirming user alert:', error);
+    console.error('Error saving mileage and continuing:', error);
+    alert('Ошибка: ' + error.message);
+  }
+}
+
+// Keep current mileage and continue to user-alert page
+async function keepCurrentMileage() {
+  try {
+    // Keep the current mileage from the car data
+    const cars = await DataService.getCars();
+    const car = cars.find(c => c.id == currentAlertData.carId);
+    
+    if (car) {
+      currentAlertData.mileage = car.mileage || null;
+    }
+    
+    // Store alert data in session storage for the user-alert page
+    sessionStorage.setItem('userAlertData', JSON.stringify(currentAlertData));
+    
+    // Close both popups and navigate to user-alert page
+    closeMileageConfirmationPopup();
+    closeUserAlertPopup();
+    window.location.hash = '#user-alert';
+    
+  } catch (error) {
+    console.error('Error keeping current mileage:', error);
     alert('Ошибка: ' + error.message);
   }
 }

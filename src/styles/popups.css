@@ -566,4 +566,58 @@
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border-color);
+}
+
+/* Mileage Confirmation Popup */
+.mileage-confirmation-popup {
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.mileage-confirmation-popup .popup-header {
+  background: var(--info-color);
+  color: #0c5460;
+  padding: 1.5rem;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mileage-confirmation-popup .popup-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.mileage-confirmation-popup .popup-body {
+  padding: 2rem;
+}
+
+.mileage-confirmation-popup .form-section {
+  margin-bottom: 2rem;
+}
+
+.mileage-confirmation-popup .form-section h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.mileage-confirmation-popup .popup-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
 } 
