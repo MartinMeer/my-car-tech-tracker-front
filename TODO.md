@@ -6,3 +6,5 @@
 ## FEAT IT! ##
 1. in consumablesList add a inline label for each entry: Название // Кол-во // Стоимость
 2. In consumablesList add 'Добавить +' to popup contains a custom fields group for user's input items, that not exists in maintenance reglament.
+## IMPLEMENT IT! ##
+Обзор готовности автопарка
