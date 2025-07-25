@@ -38,7 +38,7 @@ Page Load → Check Authentication → Load Current Car → Update UI → Setup 
 
 #### **Key Components**
 - **Car Selection**: Dropdown with user's cars
-- **Main Action Buttons**: Service card, problems, planning, history
+- **Main Action Buttons**: Service card, problems, history
 - **Navigation**: Sidebar with feature access
 - **Mobile Menu**: Responsive navigation
 
@@ -211,32 +211,7 @@ DataService.deleteRepair(recordId) → Remove from list
 
 ### **4. Planning & Alerts Views**
 
-#### **4.1 Service Plan (`service-plan.html`)**
 
-**View Purpose**: Plan future maintenance and track upcoming service needs
-
-**Data Flow**:
-```
-Load Current Mileage → Calculate Next Service → Display Plan → Add Custom Operations
-```
-
-**Key Features**:
-- Next maintenance calculations
-- Custom service plan items
-- Mileage tracking
-- Due date alerts
-
-**Data Interactions**:
-```javascript
-// Load current mileage
-DataService.getCurrentMileage() → Calculate next service
-
-// Add mileage entry
-DataService.saveMileage(mileageData) → Update calculations
-
-// Add custom operation
-DataService.saveServicePlan(planItem) → Add to plan
-```
 
 #### **4.2 User Alerts (`user-alert.html`)**
 

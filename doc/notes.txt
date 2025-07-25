@@ -40,7 +40,7 @@ Four buttons:
                             each entry:
                             date | priority mark| description                                                  
                             
-                            to each line append a checkbox Добавить в план, when filled -> add to next-service-plan (not visible here)
+
                             to each line add a button whith 'checked' symbol. on click cross out this line
                             lines must grupped by car, on click to car, show the same for concrete car
                             sortable for field date or priority,
@@ -57,7 +57,7 @@ Four buttons:
                             using reglament counting based on current date or mileage,
                             sort the list by this fields.
                             red font for first line by date and first line by mileage
-                            to each line append a checkbox Добавить в план, when filled -> add to next-service-plan
+
                             header2 Сервис-план
                             Pre-filled from alert-list checkboxes,
                             dynamically continue filling by Следующее тех.обслуживание checkboxes,

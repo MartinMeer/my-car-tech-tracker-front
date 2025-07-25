@@ -128,7 +128,7 @@ src/
 ├── 📄 carsUI.js                         # Car management UI
 ├── 📄 maintenanceUI.js                  # Maintenance tracking UI
 ├── 📄 repairUI.js                       # Repair management UI
-├── 📄 servicePlanUI.js                  # Service planning UI
+
 ├── 📄 serviceRecordManager.js           # Service record system
 ├── 📄 mileageHandler.js                 # Mileage tracking
 ├── 📄 mileageHistoryUI.js               # Mileage history UI
@@ -153,7 +153,7 @@ public/
 ├── 📄 cover.html                        # Landing page
 ├── 📄 service-card.html                 # Service card interface
 ├── 📄 service-history.html              # Service history view
-├── 📄 service-plan.html                 # Service planning
+
 ├── 📄 mileage-history.html              # Mileage tracking
 ├── 📄 user-alert.html                   # User alerts
 ├── 📄 alert-list.html                   # Alert management
@@ -530,7 +530,7 @@ Page Load → Check Authentication → Load Current Car → Update UI → Setup 
 
 #### **Key Components**
 - **Car Selection**: Dropdown with user's cars
-- **Main Action Buttons**: Service card, problems, planning, history
+- **Main Action Buttons**: Service card, problems, history
 - **Navigation**: Sidebar with feature access
 - **Mobile Menu**: Responsive navigation
 
@@ -703,32 +703,7 @@ DataService.deleteRepair(recordId) → Remove from list
 
 ### **4. Planning & Alerts Views**
 
-#### **4.1 Service Plan (`service-plan.html`)**
 
-**View Purpose**: Plan future maintenance and track upcoming service needs
-
-**Data Flow**:
-```
-Load Current Mileage → Calculate Next Service → Display Plan → Add Custom Operations
-```
-
-**Key Features**:
-- Next maintenance calculations
-- Custom service plan items
-- Mileage tracking
-- Due date alerts
-
-**Data Interactions**:
-```javascript
-// Load current mileage
-DataService.getCurrentMileage() → Calculate next service
-
-// Add mileage entry
-DataService.saveMileage(mileageData) → Update calculations
-
-// Add custom operation
-DataService.saveServicePlan(planItem) → Add to plan
-```
 
 #### **4.2 User Alerts (`user-alert.html`)**
 
@@ -1036,7 +1011,7 @@ Perfect! I've successfully created a comprehensive documentation of all views an
    - **Repair History**: Repair records with cost tracking
 
 4. **Planning & Alerts Views**
-   - **Service Plan**: Future maintenance planning
+   
    - **User Alerts**: Problem reporting with priority levels
    - **Alert List**: Problem management interface
 
