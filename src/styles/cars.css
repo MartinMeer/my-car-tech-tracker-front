@@ -81,7 +81,7 @@
   margin-bottom: 0.3rem;
 }
 
-.car-year, .car-vin, .car-mileage {
+.car-year, .car-vin, .car-mileage, .car-license-plate {
   font-size: 1rem;
   color: var(--text-muted);
   margin-bottom: 0.2rem;

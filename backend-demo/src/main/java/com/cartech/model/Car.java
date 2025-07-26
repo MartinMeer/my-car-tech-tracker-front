@@ -1,12 +1,13 @@
 package com.cartech.model;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-
-import java.time.LocalDateTime;
 
 public class Car {
     private Long id;
@@ -29,6 +30,9 @@ public class Car {
     private Integer mileage;
     
     private String nickname;
+    
+    @Pattern(regexp = "^$|^[АВЕКМНОРСТУХ]\\d{3}[АВЕКМНОРСТУХ]{2}\\d{2,3}$", message = "Invalid Russian license plate format")
+    private String licensePlate;
     private String img;
     private Integer price;
     
@@ -69,6 +73,9 @@ public class Car {
     
     public String getNickname() { return nickname; }
     public void setNickname(String nickname) { this.nickname = nickname; }
+    
+    public String getLicensePlate() { return licensePlate; }
+    public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
     
     public String getImg() { return img; }
     public void setImg(String img) { this.img = img; }

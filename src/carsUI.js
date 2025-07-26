@@ -76,6 +76,7 @@ function setupAddCarForm() {
     const mileage = form['mileage'].value.trim();
     const price = form['price'].value.trim();
     const nickname = form['nickname'].value.trim();
+    const licensePlate = form['licensePlate'].value.trim();
     const name = [brand, model, nickname].filter(Boolean).join(' ');
     let img = '🚗';
     let imageBase64 = '';
@@ -93,6 +94,12 @@ function setupAddCarForm() {
       }
     }
     if (!brand || !model || !year || !vin || !mileage) return;
+    
+    // Validate license plate format if provided
+    if (licensePlate && !/^[АВЕКМНОРСТУХ]\d{3}[АВЕКМНОРСТУХ]{2}\d{2,3}$/.test(licensePlate)) {
+      alert('Неверный формат государственного номера. Используйте формат: А123БВ77');
+      return;
+    }
     const editId = form.getAttribute('data-edit-id');
     if (editId) {
       // Edit mode: check if required fields changed
@@ -100,7 +107,7 @@ function setupAddCarForm() {
       const car = cars.find(c => c.id == editId);
       let changed = false;
       if (car) {
-        changed = car.brand !== brand || car.model !== model || car.year != year || car.vin !== vin || car.mileage != mileage;
+        changed = car.brand !== brand || car.model !== model || car.year != year || car.vin !== vin || car.mileage != mileage || car.licensePlate !== licensePlate;
       }
       const doSave = async () => {
         // Update car object
@@ -112,6 +119,7 @@ function setupAddCarForm() {
           car.mileage = mileage;
           car.price = price;
           car.nickname = nickname;
+          car.licensePlate = licensePlate;
           if (imageBase64) car.img = imageBase64;
           await DataService.saveCars(cars);
         }
@@ -141,6 +149,7 @@ function setupAddCarForm() {
           mileage,
           price,
           nickname,
+          licensePlate,
           img,
           imageBase64
         })
@@ -304,6 +313,7 @@ export function initializeAddCarUI() {
       form['mileage'].value = car.mileage || '';
       form['price'].value = car.price || '';
       form['nickname'].value = car.nickname || '';
+      form['licensePlate'].value = car.licensePlate || '';
       // Show image preview if present
       const imagePreview = document.getElementById('image-preview');
       if (car.img && imagePreview) {
@@ -411,6 +421,7 @@ function checkUnsavedAndMaybeClose(form, original) {
   const mileage = form['mileage'].value.trim();
   const price = form['price'].value.trim();
   const nickname = form['nickname'].value.trim();
+  const licensePlate = form['licensePlate'].value.trim();
   const imageInput = form['image'];
   let changed = false;
   if (original) {
@@ -422,9 +433,10 @@ function checkUnsavedAndMaybeClose(form, original) {
       mileage !== String(original.mileage || '') ||
       price !== String(original.price || '') ||
       nickname !== (original.nickname || '') ||
+      licensePlate !== (original.licensePlate || '') ||
       (imageInput && imageInput.value); // if a new image is selected
   } else {
-    changed = [brand, model, year, vin, mileage, price, nickname].some(v => v) || (imageInput && imageInput.value);
+    changed = [brand, model, year, vin, mileage, price, nickname, licensePlate].some(v => v) || (imageInput && imageInput.value);
   }
   if (changed && window.showConfirmationDialog) {
     window.showConfirmationDialog(

@@ -57,6 +57,18 @@ export function initializeCarOverviewUI() {
     const mileageDiv = document.getElementById('car-mileage');
     if (mileageDiv) mileageDiv.textContent = car.mileage ? `Пробег: ${car.mileage} км` : '';
     
+    // License Plate
+    const licensePlateDiv = document.getElementById('car-license-plate');
+    if (licensePlateDiv) {
+      if (car.licensePlate) {
+        licensePlateDiv.textContent = `Гос. номер: ${car.licensePlate}`;
+        licensePlateDiv.style.display = '';
+      } else {
+        licensePlateDiv.textContent = '';
+        licensePlateDiv.style.display = 'none';
+      }
+    }
+    
     // --- Finance totals ---
     const maintenField = document.getElementById('total-mainten-cost');
     const repairField = document.getElementById('total-repair-cost');
