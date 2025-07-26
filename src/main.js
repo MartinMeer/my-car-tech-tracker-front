@@ -13,6 +13,7 @@ import {
 } from './maintenanceUI.js';
 import { initializeUserAlertUI, setupUserAlertForm, initializeAlertListUI, updateProblemsButtonColor } from './userAlertUI.js';
 import { initializeMileageHistoryUI } from './mileageHistoryUI.js';
+import { ReglamentUI } from './reglamentUI.js';
 
 import {
   renderRepairHistory,
@@ -98,6 +99,10 @@ function initializePageUI(page) {
     case 'alert-list':
       // Initialize alert list UI
       initializeAlertListUI();
+      break;
+    case 'reglament':
+      // Initialize reglament UI
+      new ReglamentUI();
       break;
     case 'mainten-history':
       renderMaintenHistory();

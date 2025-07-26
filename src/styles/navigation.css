@@ -384,6 +384,8 @@
   border-color: var(--secondary-hover);
 }
 
+
+
 /* Responsive adjustments for sidebar buttons */
 @media (max-width: 768px) {
   .sidebar-buttons {

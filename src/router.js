@@ -20,6 +20,7 @@ export const pageMap = {
   'register': 'auth/register.html',
   'contacts': 'info/contacts.html',
   'privacy': 'info/privacy.html',
+  'reglament': 'car-info/reglament.html',
   'cover': 'cover.html', // stays in public/
 };
 
