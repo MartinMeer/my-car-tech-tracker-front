@@ -57,7 +57,7 @@
 .vstack {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs) !important;
+  gap: var(--space-xs);
 }
 
 .vstack-sm {
