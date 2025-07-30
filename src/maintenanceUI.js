@@ -8,8 +8,22 @@ import { CONFIG } from './config.js';
 let currentOperation = null;
 
 export function initializeCarOverviewUI() {
-  // Get selected car ID
-  const carId = localStorage.getItem('currentCarId');
+  // Get selected car ID - check URL parameters first, then localStorage
+  let carId = null;
+  
+  // Check if there's a car parameter in the URL
+  const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+  const carParam = urlParams.get('car');
+  
+  if (carParam) {
+    carId = carParam;
+    // Set the car ID in localStorage for consistency
+    DataService.setCurrentCarId(carId);
+  } else {
+    // Fall back to localStorage
+    carId = localStorage.getItem('currentCarId');
+  }
+  
   if (!carId) return;
   
   // Set up button event listeners

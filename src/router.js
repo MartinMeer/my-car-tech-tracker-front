@@ -1,4 +1,5 @@
 export const pageMap = {
+  '': 'index.html', // Root page - fleet overview
   'my-car-overview': 'cars/my-car-overview.html',
   'next-mainten-alert': 'maintenance/next-mainten-alert.html',
   'next-repair-alert': 'repair/next-repair-alert.html',
@@ -28,6 +29,24 @@ export function loadPage(hash, mainContent, initializePageUI) {
   // Extract page name before '?' (for hash like #add-car?edit=123)
   const hashValue = hash.replace('#', '');
   const page = hashValue.split('?')[0];
+  
+  // For root page (empty hash), show fleet overview directly
+  if (page === '') {
+    mainContent.innerHTML = `
+      <div id="fleet-overview" class="fleet-overview">
+        <div class="fleet-header">
+          <h1>Мой автопарк</h1>
+          <p>Обзор всех автомобилей в вашем парке</p>
+        </div>
+        <div id="fleet-cars-list" class="fleet-cars-list">
+          <!-- Cars will be loaded here dynamically -->
+        </div>
+      </div>
+    `;
+    if (initializePageUI) initializePageUI('');
+    return;
+  }
+  
   const file = pageMap[page] || 'cars/my-car-overview.html';
   mainContent.innerHTML = '<div class="loading">Загрузка...</div>';
   fetch(file)

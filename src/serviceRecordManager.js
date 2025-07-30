@@ -110,6 +110,26 @@ function stopAutoSave() {
 export function initializeServiceRecord() {
   console.log('🚗 Service Record Manager: Initializing...');
   
+  // Check for service flow data first
+  const serviceCarId = sessionStorage.getItem('serviceCarId');
+  const serviceDate = sessionStorage.getItem('serviceDate');
+  const serviceMileage = sessionStorage.getItem('serviceMileage');
+  
+  if (serviceCarId && serviceDate) {
+    // Handle service flow data
+    console.log('🚗 Service Record Manager: Found service flow data');
+    
+    // Create service record with the data
+    createServiceRecordWithCar(serviceCarId, serviceDate, serviceMileage ? parseInt(serviceMileage) : null);
+    
+    // Clear service flow data
+    sessionStorage.removeItem('serviceCarId');
+    sessionStorage.removeItem('serviceDate');
+    sessionStorage.removeItem('serviceMileage');
+    
+    return;
+  }
+  
   // Check if there's a draft and offer to load it
   if (hasDraft()) {
     showDraftLoadDialog();

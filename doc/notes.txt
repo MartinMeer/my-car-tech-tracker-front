@@ -1,51 +1,6 @@
 cd /home/oleg/my-car-tech-tracker-front/my-car-tech-tracker-front && python3 -m http.server 8000
 
 
-Feature: Privacy Policy
-    https://termly.io/
-
-
-Feature:"Регламент тех. обслуживания"
-    Load from outer json (for easy connection to AI API)
-    Or table filled by user
-    Editable by user
-    View - from backend
-    Anchored:my-car, side-bar
-
-Module:"Всё, что нужно для тех. обслуживания"
-    Load from outer json (for easy connection to AI API)
-    Or table filled by user
-    Editable by user
-    View - from backend
-    Anchored:my-car, right icon area
-
-Alerts: add priority selector:
-                        Совсем плохо/совсем страшно (red - round mark, plus folded hands emoji)
-                        Непонятно (yellow - round mark, plus woman shrugging emoji)
-                        Потерпим (blue-green - round mark, plus writing hand emoji)
-                        У нас проблемы! 
-Side-bar divisions:
-Four buttons:
-Был на сервисе? Заполни отчет! (two lines) (color:green)
-    |__________ to service-card (as exist)
-
-У нас проблемы! (color:depends on alerts priority logic:
-    |                    if no not crossed out alerts: button not clicable, grey
-    |                    if one or more red exist: red
-    |                    if no one red exist: depends on quantity of yellow vs blue-green)
-    |
-    |_____ to alert-list:
-                            prod-mode: Content come from backend html
-                            dev-mode: alerts for all cars by def,
-                            each entry:
-                            date | priority mark| description                                                  
-                            
-
-                            to each line add a button whith 'checked' symbol. on click cross out this line
-                            lines must grupped by car, on click to car, show the same for concrete car
-                            sortable for field date or priority,
-                            must be editable.
-                            
 
 Когда на сервис? -> to next-service-list:
                             prod-mode: Content come from backend html
@@ -72,15 +27,18 @@ Four buttons:
                                                             continue filling next line here.
                                                             
 
-История тех.обслуживания и ремонтов (two lines)
-    |_____ to service-history:
-                            prod-mode: Content come from backend html
-                            
+CarStateModule
+-CSM-
+--------------------------
 
+1. add new button on left sidebar in index.html Мониторинг автопарка -> #allcars-state-preview
+2. #allcars-state-preview contetnt:
+Flow: when allcars-state-preview requested -> fetch needed data from backend-> render car-state-preview
 
-Right side buttons:
-
-add as first img/checklist-car2.jpeg, Регламент тех.обслуживания alt
-    |_____ Выбери автомобиль popup
-            when select -> to mainten-operations-list for selected car
-                            if not exist Создать новый button
+header: Техническое состояние автопарка
+<p>Дата: field for input dd.mm.yyyy, filled with current date by default
+<table> data for all cars
+Row for each car:
+car-name | user-alerts:three round icons represent three categories of user-alert. grey by default, or become red, yellow, blue with number of existing corresp. user-alerts. | mainten:one round icon, grey by default, colored red or yellow or green depends on current maint-state from backend
+actions:
+on click to car entry-> Open allcars-mileage-input-popup: [renew mileage input]^ on top left, near the header

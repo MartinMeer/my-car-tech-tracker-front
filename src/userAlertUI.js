@@ -12,8 +12,7 @@ export function initializeUserAlertUI() {
   // Set up new alert button on alert-list page
   setupNewAlertButton();
   
-  // Update problems button color
-  updateProblemsButtonColor();
+
   
   console.log('User alert UI initialized successfully');
 }
@@ -394,6 +393,44 @@ export function setupUserAlertForm() {
 // Load alert data and populate the form
 async function loadAlertData() {
   try {
+    // Check for problems flow data first
+    const problemsCarId = sessionStorage.getItem('problemsCarId');
+    const problemsDate = sessionStorage.getItem('problemsDate');
+    const problemsMileage = sessionStorage.getItem('problemsMileage');
+    
+    if (problemsCarId && problemsDate) {
+      // Handle problems flow data
+      const cars = await DataService.getCars();
+      const car = cars.find(c => c.id == problemsCarId);
+      
+      if (!car) {
+        window.alert('Автомобиль не найден');
+        window.location.hash = '#';
+        return;
+      }
+      
+      // Populate alert info from problems flow
+      const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+      document.getElementById('alert-car-name').textContent = carName;
+      document.getElementById('alert-date').textContent = problemsDate;
+      document.getElementById('alert-mileage').textContent = problemsMileage ? `${problemsMileage} км` : 'Не указан';
+      
+      // Store current alert data
+      currentAlertData = {
+        carId: problemsCarId,
+        date: problemsDate,
+        mileage: problemsMileage ? parseInt(problemsMileage) : null
+      };
+      
+      // Clear problems flow data
+      sessionStorage.removeItem('problemsCarId');
+      sessionStorage.removeItem('problemsDate');
+      sessionStorage.removeItem('problemsMileage');
+      
+      return;
+    }
+    
+    // Handle regular alert data
     const alertDataStr = sessionStorage.getItem('userAlertData');
     if (!alertDataStr) {
       // No alert data, redirect to main page
@@ -592,8 +629,7 @@ async function saveUserAlert(alertData) {
       }
     }
     
-    // Update problems button color after saving
-    await updateProblemsButtonColor();
+
     
   } catch (error) {
     console.error('Error saving user alert:', error);
@@ -1163,8 +1199,7 @@ async function updateUserAlert(updatedAlert) {
       localStorage.setItem('userAlerts', JSON.stringify(updatedAlerts));
     }
     
-    // Update problems button color after updating
-    await updateProblemsButtonColor();
+
     
   } catch (error) {
     console.error('Error updating user alert:', error);
@@ -1172,49 +1207,4 @@ async function updateUserAlert(updatedAlert) {
   }
 } 
 
-// Update problems button color based on alert priorities
-export async function updateProblemsButtonColor() {
-  try {
-    const problemsButton = document.getElementById('problems-button');
-    if (!problemsButton) return;
-    
-    const alerts = await getUserAlerts();
-    const activeAlerts = alerts.filter(alert => !alert.archived);
-    
-    // Remove all existing color classes
-    problemsButton.classList.remove('problems-red', 'problems-yellow', 'problems-blue-green', 'problems-grey');
-    
-    // Always enable the button
-    problemsButton.disabled = false;
-    
-    if (activeAlerts.length === 0) {
-      // No active alerts - grey button, but still clickable
-      problemsButton.classList.add('problems-grey');
-      problemsButton.title = 'Нет активных проблем';
-    } else {
-      // Check for critical alerts first
-      const criticalAlerts = activeAlerts.filter(alert => alert.priority === 'critical');
-      if (criticalAlerts.length > 0) {
-        // Red for critical alerts
-        problemsButton.classList.add('problems-red');
-        problemsButton.title = `${criticalAlerts.length} критичных проблем!`;
-      } else {
-        // Check for warning vs info alerts
-        const warningAlerts = activeAlerts.filter(alert => alert.priority === 'warning');
-        const infoAlerts = activeAlerts.filter(alert => alert.priority === 'info');
-        
-        if (warningAlerts.length > infoAlerts.length) {
-          // Yellow for more warnings
-          problemsButton.classList.add('problems-yellow');
-          problemsButton.title = `${warningAlerts.length} проблем требуют внимания`;
-        } else {
-          // Blue-green for more info alerts
-          problemsButton.classList.add('problems-blue-green');
-          problemsButton.title = `${infoAlerts.length} незначительных проблем`;
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error updating problems button color:', error);
-  }
-} 
+ 
