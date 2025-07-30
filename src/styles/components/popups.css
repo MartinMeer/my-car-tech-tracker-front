@@ -1,6 +1,6 @@
 /* ==========================================================================
    POPUP COMPONENT STYLES
-   Extracted from popups.css
+   Consolidated from popups.css and components/popups.css
    ========================================================================== */
 
 /* Popup Overlay */
@@ -15,6 +15,7 @@
   align-items: center;
   justify-content: center;
   z-index: var(--z-overlay);
+  padding: 1rem;
 }
 
 .popup-content {
@@ -22,7 +23,7 @@
   border-radius: var(--border-radius-lg);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   max-width: 600px;
-  width: 90%;
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -128,4 +129,471 @@
   padding: 0 var(--space-md);
   position: relative;
   z-index: var(--z-dropdown);
+}
+
+/* Consumable Items */
+.consumable-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-sm);
+  background: var(--surface);
+  transition: border-color var(--transition-fast);
+}
+
+.consumable-item:hover {
+  border-color: var(--primary-color);
+  background: var(--surface-hover);
+}
+
+.consumable-name {
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+  flex: 1;
+  margin-right: var(--space-md);
+}
+
+/* Spare Items */
+.spare-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-sm);
+  background: var(--surface);
+  transition: border-color var(--transition-fast);
+}
+
+.spare-item:hover {
+  border-color: var(--primary-color);
+  background: var(--surface-hover);
+}
+
+.spare-item span:first-child {
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+  flex: 1;
+  margin-right: var(--space-md);
+}
+
+.spare-item span:last-child {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  text-align: right;
+}
+
+/* Total Section */
+.total-section {
+  margin-top: var(--space-xl);
+  padding: var(--space-lg);
+  background: var(--surface-secondary);
+  border-radius: var(--border-radius-lg);
+  border: 2px solid var(--border-color);
+}
+
+.total-section h3 {
+  color: var(--primary-color);
+  margin-bottom: var(--space-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+
+.total-amount {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  text-align: center;
+  padding: var(--space-md);
+  background: var(--surface);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  margin-top: var(--space-md);
+}
+
+/* Service Record Details Popup */
+.service-record-details-popup {
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.service-record-details-popup .popup-header {
+  background: var(--primary-color);
+  color: white;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding: var(--space-xl);
+}
+
+.service-record-details-popup .popup-header h2 {
+  color: white;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.service-record-details-popup .popup-body {
+  padding: var(--space-xl);
+}
+
+/* Detail Sections */
+.detail-section {
+  margin-bottom: var(--space-xl);
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.detail-section h3 {
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+}
+
+.detail-value {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+}
+
+/* Consumables List */
+.consumables-list,
+.spares-list {
+  margin-top: var(--space-md);
+}
+
+.consumable-detail,
+.spare-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-sm);
+  background: var(--surface-secondary);
+}
+
+.consumable-name,
+.spare-name {
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+  flex: 1;
+}
+
+.consumable-item,
+.spare-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-sm);
+  background: var(--surface);
+}
+
+.consumable-cost,
+.spare-cost {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  text-align: right;
+}
+
+/* Work Cost */
+.work-cost {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg);
+  background: var(--surface-secondary);
+  border-radius: var(--border-radius-lg);
+  border: 2px solid var(--border-color);
+  margin-top: var(--space-xl);
+}
+
+.work-cost-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+}
+
+.work-cost-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+}
+
+/* Service Record Edit Popup */
+.service-record-edit-popup {
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.service-record-edit-popup .popup-header {
+  background: var(--primary-color);
+  color: white;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding: var(--space-xl);
+}
+
+.service-record-edit-popup .popup-header h2 {
+  color: white;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.service-record-edit-popup .popup-body {
+  padding: var(--space-xl);
+}
+
+.service-record-edit-popup .form-section {
+  margin-bottom: var(--space-xl);
+}
+
+.service-record-edit-popup .form-section:last-child {
+  margin-bottom: 0;
+}
+
+.service-record-edit-popup .form-section h3 {
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.service-record-edit-popup .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+.service-record-edit-popup .input-group {
+  margin-bottom: var(--space-lg);
+}
+
+.service-record-edit-popup .input-group label {
+  display: block;
+  margin-bottom: var(--space-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+}
+
+.service-record-edit-popup .input-group input,
+.service-record-edit-popup .input-group select,
+.service-record-edit-popup .input-group textarea {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 2px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition-normal) ease;
+  background: var(--surface);
+}
+
+.service-record-edit-popup .input-group input:focus,
+.service-record-edit-popup .input-group select:focus,
+.service-record-edit-popup .input-group textarea:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.consumable-edit-item,
+.spare-edit-item {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-bottom: var(--space-sm);
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--surface-secondary);
+}
+
+.consumable-edit-item input,
+.spare-edit-item input {
+  flex: 1;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+}
+
+.consumable-edit-item input:focus,
+.spare-edit-item input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(45, 62, 80, 0.1);
+}
+
+.service-record-edit-popup .form-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.service-record-edit-popup .btn-primary,
+.service-record-edit-popup .btn-secondary {
+  padding: var(--space-sm) var(--space-lg);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.service-record-edit-popup .btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.service-record-edit-popup .btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.service-record-edit-popup .btn-secondary {
+  background: var(--border-color);
+  color: var(--primary-color);
+}
+
+.service-record-edit-popup .btn-secondary:hover {
+  background: var(--border-dark);
+}
+
+/* User Alert Popup */
+.user-alert-popup {
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.user-alert-popup .popup-header {
+  background: var(--warning-color);
+  color: white;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding: var(--space-xl);
+}
+
+.user-alert-popup .popup-header h2 {
+  color: white;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.user-alert-popup .popup-body {
+  padding: var(--space-xl);
+}
+
+.user-alert-popup .form-section {
+  margin-bottom: var(--space-xl);
+}
+
+.user-alert-popup .form-section h3 {
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.user-alert-popup .popup-footer {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
+}
+
+/* Mileage Confirmation Popup */
+.mileage-confirmation-popup {
+  max-width: 600px;
+  width: 90%;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mileage-confirmation-popup .popup-header {
+  background: var(--info-color);
+  color: white;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding: var(--space-xl);
+}
+
+.mileage-confirmation-popup .popup-header h2 {
+  color: white;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.mileage-confirmation-popup .popup-body {
+  padding: var(--space-xl);
+}
+
+.mileage-confirmation-popup .form-section {
+  margin-bottom: var(--space-xl);
+}
+
+.mileage-confirmation-popup .form-section h3 {
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.mileage-confirmation-popup .popup-footer {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
 } 

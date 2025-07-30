@@ -38,10 +38,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f4f7fb;
+  background: var(--surface-secondary);
   border-radius: 50%;
   font-size: 5rem;
-  color: #bbb;
+  color: var(--border-color);
   box-shadow: 0 2px 8px var(--border-color);
 }
 
@@ -77,7 +77,7 @@
 
 .car-nickname {
   font-size: 1.1rem;
-  color: #4e6a8a;
+  color: var(--primary-light);
   margin-bottom: 0.3rem;
 }
 
@@ -128,7 +128,7 @@
 }
 
 .car-tech-links .car-link:hover {
-  background: #f4f7fb;
+  background: var(--surface-secondary);
 }
 
 /* Car Finance Row */
@@ -137,7 +137,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .car-row:last-child {
@@ -163,6 +163,60 @@
   margin-top: 2.2rem;
 }
 
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Car Info Display */
+.car-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface-secondary);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.car-image-container {
+  flex-shrink: 0;
+  width: 80px;
+  height: 60px;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  background: var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--border-radius-lg);
+}
+
+.car-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.car-details h3 {
+  margin: 0;
+  color: var(--primary-color);
+  word-wrap: break-word;
+}
+
+.car-details p {
+  margin: 0.25rem 0 0 0;
+  color: var(--text-muted);
+}
+
 /* Add New Car Button */
 .add-car-btn {
   display: inline-flex;
@@ -183,7 +237,7 @@
 }
 
 .add-car-btn:hover {
-  background: #3a4a5e;
+  background: var(--primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(45, 62, 80, 0.2);
 }
@@ -217,7 +271,7 @@
 }
 
 .car-action-btn:hover {
-  background: #4e6a8a;
+  background: var(--primary-light);
 }
 
 /* User Alert Form */
@@ -378,18 +432,18 @@
 }
 
 .priority-marker.critical {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  border: 3px solid #dc3545;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+  border: 3px solid var(--accent-color);
 }
 
 .priority-marker.warning {
-  background: linear-gradient(135deg, #ffc107, #e0a800);
-  border: 3px solid #ffc107;
+  background: linear-gradient(135deg, var(--warning-color), var(--warning-dark));
+  border: 3px solid var(--warning-color);
 }
 
 .priority-marker.info {
-  background: linear-gradient(135deg, #17a2b8, #138496);
-  border: 3px solid #17a2b8;
+  background: linear-gradient(135deg, var(--info-color), var(--info-dark));
+  border: 3px solid var(--info-color);
 }
 
 .priority-icon {
@@ -651,15 +705,15 @@
 }
 
 .alert-priority-marker.critical {
-  background: linear-gradient(135deg, #dc3545, #c82333);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
 }
 
 .alert-priority-marker.warning {
-  background: linear-gradient(135deg, #ffc107, #e0a800);
+  background: linear-gradient(135deg, var(--warning-color), var(--warning-dark));
 }
 
 .alert-priority-marker.info {
-  background: linear-gradient(135deg, #17a2b8, #138496);
+  background: linear-gradient(135deg, var(--info-color), var(--info-dark));
 }
 
 .alert-priority-icon {
@@ -705,17 +759,17 @@
 
 .alert-priority-text.critical {
   background: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
+  color: var(--accent-color);
 }
 
 .alert-priority-text.warning {
   background: rgba(255, 193, 7, 0.1);
-  color: #e0a800;
+  color: var(--warning-color);
 }
 
 .alert-priority-text.info {
   background: rgba(23, 162, 184, 0.1);
-  color: #138496;
+  color: var(--info-color);
 }
 
 .alert-subsystem {
@@ -761,7 +815,7 @@
 }
 
 .alert-action-btn.archive:hover {
-  background: #5a6268;
+  background: var(--border-dark);
 }
 
 .alert-action-btn.archive.archived {
@@ -770,7 +824,7 @@
 }
 
 .alert-action-btn.archive.archived:hover {
-  background: #1e7e34;
+  background: var(--success-hover);
 }
 
 .alert-list-empty {
@@ -955,19 +1009,19 @@
 
 .priority-badge.critical {
   background: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
+  color: var(--accent-color);
   border: 1px solid rgba(220, 53, 69, 0.3);
 }
 
 .priority-badge.warning {
   background: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
+  color: var(--warning-color);
   border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
 .priority-badge.info {
   background: rgba(23, 162, 184, 0.1);
-  color: #17a2b8;
+  color: var(--info-color);
   border: 1px solid rgba(23, 162, 184, 0.3);
 }
 
@@ -986,7 +1040,7 @@
 }
 
 .recall-from-archive-btn:hover {
-  background: #4e6a8a;
+  background: var(--primary-light);
   transform: translateY(-1px);
 }
 

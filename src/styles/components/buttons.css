@@ -50,4 +50,22 @@
 
 .btn-danger:hover {
   background: var(--accent-hover);
+}
+
+.btn-warning {
+  background: var(--warning-color);
+  color: white;
+}
+
+.btn-warning:hover {
+  background: var(--warning-hover);
+}
+
+.btn-info {
+  background: var(--info-color);
+  color: white;
+}
+
+.btn-info:hover {
+  background: var(--info-hover);
 } 

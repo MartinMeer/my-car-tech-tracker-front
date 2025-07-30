@@ -1,6 +1,6 @@
 /* ==========================================================================
    CARD COMPONENT STYLES
-   Extracted from utilities.css
+   Consolidated from utilities.css and components/cards.css
    ========================================================================== */
 
 .card {
@@ -29,6 +29,41 @@
   padding: var(--space-lg);
   border-top: 1px solid var(--border-color);
   background: var(--surface-secondary);
+}
+
+/* Service Card */
+.service-card {
+  max-width: 2000px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-light);
+}
+
+.service-card-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.service-card h2 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.service-card h3 {
+  color: var(--text-muted);
+  margin-bottom: 0;
+  font-size: 1.1rem;
+  font-weight: normal;
+}
+
+.service-card-content {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 

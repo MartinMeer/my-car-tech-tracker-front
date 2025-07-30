@@ -1,6 +1,6 @@
 /* ==========================================================================
    TABLE COMPONENT STYLES
-   Extracted from tables.css
+   Consolidated from tables.css and components/tables.css
    ========================================================================== */
 
 /* Table Base Styles */
@@ -11,6 +11,168 @@
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   box-shadow: 0 2px 8px var(--shadow);
+}
+
+/* Table Container */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* History Table */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+  margin: 1rem 0;
+}
+
+.history-table th, 
+.history-table td {
+  padding: var(--space-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.history-table th {
+  background: var(--surface-secondary);
+  color: var(--primary-color);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.history-table tr.alt-row {
+  background: var(--surface-secondary);
+}
+
+.history-table tr:last-child td {
+  border-bottom: none;
+}
+
+.history-table tr:hover {
+  background: var(--surface-hover);
+}
+
+.history-table .date-cell {
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+}
+
+.history-table .cost-cell {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  text-align: right;
+}
+
+.history-table .mileage-cell {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.history-table .operation-cell {
+  color: var(--text-color);
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+/* Service History Table */
+.service-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+  margin: 1rem 0;
+}
+
+.service-history-table th,
+.service-history-table td {
+  padding: var(--space-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.service-history-table th {
+  background: var(--surface-secondary);
+  color: var(--primary-color);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.service-history-table tr:hover {
+  background: var(--surface-hover);
+}
+
+.service-history-table .actions-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.service-history-table .actions-cell button {
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  margin: 0 var(--space-xs);
+}
+
+.service-history-table .btn-view {
+  background: var(--info-color);
+  color: white;
+}
+
+.service-history-table .btn-view:hover {
+  background: var(--info-hover);
+}
+
+.service-history-table .btn-edit {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.service-history-table .btn-edit:hover {
+  background: var(--secondary-hover);
+}
+
+.service-history-table .btn-delete {
+  background: var(--accent-color);
+  color: white;
+}
+
+.service-history-table .btn-delete:hover {
+  background: var(--accent-hover);
+}
+
+/* Maintenance Table */
+.maintenance-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  min-width: 600px;
+}
+
+.maintenance-table th,
+.maintenance-table td {
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.maintenance-table th {
+  background: var(--surface-secondary);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.maintenance-table tr:nth-child(even) {
+  background: var(--surface-secondary);
 }
 
 .table th {
@@ -58,4 +220,345 @@
 .table-lg th,
 .table-lg td {
   padding: var(--space-lg);
+}
+
+/* Car History Block */
+.car-history-block {
+  margin-bottom: 2rem;
+}
+
+.car-history-header {
+  background: var(--primary-color);
+  color: white;
+  padding: var(--space-md);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.car-history-header span {
+  font-weight: var(--font-weight-normal);
+  opacity: 0.9;
+}
+
+/* Table Empty State */
+.table-empty-state {
+  text-align: center;
+  padding: 3rem var(--space-lg);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.table-empty-state .icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-md);
+  opacity: 0.5;
+}
+
+.table-empty-state p {
+  margin: var(--space-xs) 0;
+  font-size: var(--font-size-base);
+}
+
+.table-empty-state p:first-of-type {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-color);
+}
+
+.table-empty-state p:last-of-type {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+}
+
+/* Table Pagination */
+.table-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+}
+
+.table-pagination button {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: var(--font-size-sm);
+}
+
+.table-pagination button:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary-color);
+}
+
+.table-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.table-pagination button.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Table Filters */
+.table-filters {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.table-filters select,
+.table-filters input {
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  background: var(--surface);
+}
+
+.table-filters select:focus,
+.table-filters input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(45, 62, 80, 0.1);
+}
+
+.table-filters label {
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+  font-size: var(--font-size-sm);
+}
+
+/* Table Search */
+.table-search {
+  position: relative;
+}
+
+.table-search input {
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) 2.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  background: var(--surface);
+  width: 250px;
+}
+
+.table-search input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(45, 62, 80, 0.1);
+}
+
+.table-search .search-icon {
+  position: absolute;
+  left: var(--space-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* Table Stats */
+.table-stats {
+  display: flex;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--surface-secondary);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.table-stats .stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.table-stats .stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+  display: block;
+}
+
+.table-stats .stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+}
+
+/* Table Loading */
+.table-loading {
+  text-align: center;
+  padding: 3rem var(--space-lg);
+  color: var(--text-muted);
+}
+
+.table-loading .spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--border-color);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mileage History */
+.mileage-history {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.car-selection-section {
+  margin-bottom: 2rem;
+  padding: var(--space-lg);
+  background: var(--surface);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.car-selection-section label {
+  display: block;
+  margin-bottom: var(--space-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+}
+
+.form-select {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 2px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-base);
+  background: var(--surface);
+  transition: border-color var(--transition-normal) ease;
+}
+
+.mileage-history-container {
+  background: var(--surface);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.mileage-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+  margin: 1rem 0;
+}
+
+.mileage-history-table th {
+  background: var(--surface-secondary);
+  color: var(--primary-color);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  padding: var(--space-md);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.mileage-history-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.mileage-history-table tr:hover {
+  background: var(--surface-hover);
+}
+
+.mileage-cell {
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+}
+
+.mileage-stats {
+  margin-bottom: 2rem;
+}
+
+.stats-card {
+  background: var(--surface);
+  padding: var(--space-lg);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.stats-card h3 {
+  color: var(--primary-color);
+  margin-bottom: var(--space-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+}
+
+.stat-item {
+  text-align: center;
+  padding: var(--space-md);
+  background: var(--surface-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-color);
+}
+
+.loading, .empty, .error {
+  text-align: center;
+  padding: 3rem var(--space-lg);
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--accent-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mileage-history {
+    padding: var(--space-sm);
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .mileage-history-table {
+    font-size: var(--font-size-sm);
+  }
+  
+  .mileage-history-table th,
+  .mileage-history-table td {
+    padding: var(--space-sm);
+  }
 } 

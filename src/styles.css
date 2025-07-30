@@ -4,10 +4,14 @@
    ========================================================================== */
 
 /* Base Styles - Reset, typography, colors, variables */
-@import url('./styles/base.css');
+@import url('./styles/base/variables.css');
+@import url('./styles/base/reset.css');
+@import url('./styles/base/utilities.css');
 
 /* Layout Styles - Header, sidebar, main content, footer */
-@import url('./styles/layout.css');
+@import url('./styles/layout/header.css');
+@import url('./styles/layout/sidebar.css');
+@import url('./styles/layout/main.css');
 
 /* Navigation Styles - Car selection menu, sidebar links, mobile nav */
 @import url('./styles/navigation.css');
@@ -19,29 +23,17 @@
 @import url('./styles/components/cards.css');
 @import url('./styles/components/tables.css');
 
-/* Form Styles - Input styling, form layouts */
-@import url('./styles/forms.css');
-
-/* Popup Styles - All popup overlays, dialogs, modals */
-@import url('./styles/popups.css');
-
 /* Car Styles - Car list, overview, images, actions */
 @import url('./styles/cars.css');
 
 /* Service Record Styles - Service card, operations, sub-records */
 @import url('./styles/service-record.css');
 
-/* Table Styles - History tables, data display */
-@import url('./styles/tables.css');
-
 /* Message Styles - Success/error messages, alerts */
 @import url('./styles/messages.css');
 
 /* Cover Page Styles - Landing page, authentication */
 @import url('./styles/cover-page.css');
-
-/* Utility Styles - Helper classes, animations, common patterns */
-@import url('./styles/utilities.css');
 
 /* Responsive Styles - All media queries and mobile styles */
 @import url('./styles/responsive.css');

@@ -1,6 +1,6 @@
 /* ==========================================================================
    FORM COMPONENT STYLES
-   Extracted from forms.css
+   Consolidated from forms.css and components/forms.css
    ========================================================================== */
 
 /* Add Car Form */
@@ -155,8 +155,6 @@
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-
-
 /* Form Utilities */
 .input-hint {
   font-size: var(--font-size-xs);
@@ -201,4 +199,95 @@
   content: 'Предварительный просмотр изображения';
   color: var(--text-light);
   font-style: italic;
+}
+
+/* Cost Input */
+.form-group .cost-input,
+.input-group .cost-input,
+.consumable-cost-input,
+.spare-cost-input {
+  border: 2px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-sm);
+  font-size: var(--font-size-sm);
+  transition: border-color var(--transition-normal) ease;
+  background: var(--surface);
+}
+
+.form-group .cost-input:focus,
+.input-group .cost-input:focus,
+.consumable-cost-input:focus,
+.spare-cost-input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Cost Input with Ruble Icon */
+.cost-input-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.cost-input-wrapper .cost-input,
+.cost-input-wrapper .consumable-cost-input,
+.cost-input-wrapper .spare-cost-input {
+  padding-right: var(--space-xl);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ruble-icon {
+  position: absolute;
+  right: var(--space-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Quantity Input */
+.form-group .quantity-input,
+.input-group .quantity-input,
+.consumable-quantity-input,
+.spare-quantity-input {
+  border: 2px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-sm);
+  font-size: var(--font-size-sm);
+  transition: border-color var(--transition-normal) ease;
+  background: var(--surface);
+  width: 80px;
+  text-align: center;
+}
+
+.form-group .quantity-input:focus,
+.input-group .quantity-input:focus,
+.consumable-quantity-input:focus,
+.spare-quantity-input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Item Input */
+.form-group .item-input,
+.input-group .item-input {
+  border: 2px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-sm);
+  font-size: var(--font-size-sm);
+  transition: border-color var(--transition-normal) ease;
+  background: var(--surface);
+}
+
+.form-group .item-input:focus,
+.input-group .item-input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 } 
