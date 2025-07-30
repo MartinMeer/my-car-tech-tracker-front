@@ -1,0 +1,13 @@
+Let's renew a default view:
+In left side-bar:
+Remove sidebar-btn-history
+Change flow for sidebar-btn-problems:
+1. Remove changing color logic, make color light red
+2. On click, opens car-selection-popup, alredy inplemented in sidebar-button-service call. Remove from it a date input field. Title: Выберите автомобиль
+3. When car was selected, open date-mileage-input popup.
+  It must has a date and mileage input fields and two buttons.
+  Date field: changeable, prefilled by current date dd.mm.yyyy.
+  Mileage field: changeable, prefilled by current mileage by selected car.
+  Buttons above: Save and Cancel When Save, if date or mileage not be changed by user, current values must still remain
+4. When Save, open existing user-alert page with all entire logic
+5. When user-alert saved or cancelled, return to deault view page
