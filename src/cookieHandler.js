@@ -177,13 +177,18 @@ export const CookieHandler = {
    * @param {Object} options - Additional options
    */
   setAuthToken(token, options = {}) {
-    const authOptions = {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours for auth tokens
-      secure: true,
-      sameSite: 'strict',
-      ...options
-    };
-    this.setCookie(this.COOKIE_NAMES.AUTH_TOKEN, token, authOptions);
+    if (CONFIG.useBackend) {
+      const authOptions = {
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours for auth tokens
+        secure: true,
+        sameSite: 'strict',
+        ...options
+      };
+      this.setCookie(this.COOKIE_NAMES.AUTH_TOKEN, token, authOptions);
+    } else {
+      // Development mode - store in localStorage
+      localStorage.setItem('auth_token', token);
+    }
   },
 
   /**
@@ -191,16 +196,29 @@ export const CookieHandler = {
    * @returns {string|null} - Auth token or null
    */
   getAuthToken() {
-    return this.getCookie(this.COOKIE_NAMES.AUTH_TOKEN);
+    if (CONFIG.useBackend) {
+      return this.getCookie(this.COOKIE_NAMES.AUTH_TOKEN);
+    } else {
+      // Development mode - get from localStorage
+      return localStorage.getItem('auth_token');
+    }
   },
 
   /**
    * Clear authentication data
    */
   clearAuth() {
-    this.deleteCookie(this.COOKIE_NAMES.AUTH_TOKEN);
-    this.deleteCookie(this.COOKIE_NAMES.SESSION_ID);
-    this.deleteCookie(this.COOKIE_NAMES.USER_ID);
+    if (CONFIG.useBackend) {
+      this.deleteCookie(this.COOKIE_NAMES.AUTH_TOKEN);
+      this.deleteCookie(this.COOKIE_NAMES.SESSION_ID);
+      this.deleteCookie(this.COOKIE_NAMES.USER_ID);
+    } else {
+      // Development mode - clear localStorage
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('session_id');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('currentUser');
+    }
   },
 
   /**
@@ -208,7 +226,14 @@ export const CookieHandler = {
    * @returns {boolean} - True if authenticated
    */
   isAuthenticated() {
-    return this.hasCookie(this.COOKIE_NAMES.AUTH_TOKEN);
+    if (CONFIG.useBackend) {
+      return this.hasCookie(this.COOKIE_NAMES.AUTH_TOKEN);
+    } else {
+      // Development mode - check localStorage for auth token
+      const authToken = localStorage.getItem('auth_token');
+      console.log('CookieHandler.isAuthenticated() - auth_token:', authToken);
+      return !!authToken;
+    }
   },
 
   // CSRF protection

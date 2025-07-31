@@ -315,6 +315,36 @@
     </form>
   </div>
 
-  <script type="module" src="../src/userAccountUI.js"></script>
+  <script type="module">
+    // Import AuthService
+    import { AuthService } from '../src/authService.js';
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('User account page loading...');
+      console.log('Current URL:', window.location.href);
+      
+      try {
+        // Check if user is authenticated
+        console.log('Checking authentication...');
+        const user = await AuthService.getCurrentUser();
+        console.log('Auth check result:', user);
+        
+        if (!user) {
+          console.log('User not authenticated, redirecting to login...');
+          window.location.href = 'auth/login.html';
+          return;
+        }
+        
+        console.log('User authenticated, loading user account page...');
+        // User is authenticated, load the userAccountUI.js
+        const userAccountModule = await import('../src/userAccountUI.js');
+        userAccountModule.UserAccountUI.init();
+        
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        window.location.href = 'auth/login.html';
+      }
+    });
+  </script>
 </body>
 </html> 

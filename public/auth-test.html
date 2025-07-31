@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auth Test — My Car Tech Tracker</title>
+  <link rel="icon" type="image/x-icon" href="/img/favicons/favicon.ico">
+  <link rel="stylesheet" href="../src/styles/styles.css">
+  <style>
+    .test-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-section {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+
+    .test-title {
+      color: #2d3748;
+      margin-bottom: 1rem;
+    }
+
+    .test-btn {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .test-btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .test-btn-secondary {
+      background: #e2e8f0;
+      color: #4a5568;
+    }
+
+    .test-btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .debug-info {
+      background: #f7fafc;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🔧 Authentication Test Page</h1>
+    
+    <div class="test-section">
+      <h2 class="test-title">Authentication Status</h2>
+      <div id="authStatus">Loading...</div>
+      <div id="debugInfo" class="debug-info"></div>
+    </div>
+
+    <div class="test-section">
+      <h2 class="test-title">Actions</h2>
+      <button class="test-btn test-btn-primary" onclick="checkAuth()">Check Auth Status</button>
+      <button class="test-btn test-btn-primary" onclick="loginDemo()">Login Demo User</button>
+      <button class="test-btn test-btn-secondary" onclick="logout()">Logout</button>
+      <button class="test-btn test-btn-secondary" onclick="clearStorage()">Clear Storage</button>
+    </div>
+
+    <div class="test-section">
+      <h2 class="test-title">Navigation</h2>
+      <a href="user-account.html" class="test-btn test-btn-primary">Go to User Account</a>
+      <a href="auth/login.html" class="test-btn test-btn-secondary">Go to Login</a>
+      <a href="index.html" class="test-btn test-btn-secondary">Go to Main App</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { AuthService } from '../src/authService.js';
+    import { CookieHandler } from '../src/cookieHandler.js';
+
+    let authStatusDiv, debugInfoDiv;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      authStatusDiv = document.getElementById('authStatus');
+      debugInfoDiv = document.getElementById('debugInfo');
+      
+      checkAuth();
+    });
+
+    window.checkAuth = async function() {
+      try {
+        console.log('=== Checking Authentication Status ===');
+        
+        // Check localStorage
+        const authToken = localStorage.getItem('auth_token');
+        const sessionId = localStorage.getItem('session_id');
+        const userId = localStorage.getItem('user_id');
+        const currentUser = localStorage.getItem('currentUser');
+        
+        console.log('localStorage auth_token:', authToken);
+        console.log('localStorage session_id:', sessionId);
+        console.log('localStorage user_id:', userId);
+        console.log('localStorage currentUser:', currentUser);
+        
+        // Check CookieHandler
+        const isAuth = CookieHandler.isAuthenticated();
+        const authTokenFromCookie = CookieHandler.getAuthToken();
+        
+        console.log('CookieHandler.isAuthenticated():', isAuth);
+        console.log('CookieHandler.getAuthToken():', authTokenFromCookie);
+        
+        // Check AuthService
+        const user = await AuthService.getCurrentUser();
+        console.log('AuthService.getCurrentUser():', user);
+        
+        // Update UI
+        authStatusDiv.innerHTML = `
+          <strong>Authentication Status:</strong> ${isAuth ? '✅ Authenticated' : '❌ Not Authenticated'}<br>
+          <strong>User:</strong> ${user ? JSON.stringify(user, null, 2) : 'None'}<br>
+          <strong>Auth Token:</strong> ${authToken ? 'Present' : 'Missing'}<br>
+          <strong>Session ID:</strong> ${sessionId ? 'Present' : 'Missing'}
+        `;
+        
+        debugInfoDiv.innerHTML = `
+          <strong>Debug Info:</strong><br>
+          localStorage.auth_token: ${authToken || 'null'}<br>
+          localStorage.session_id: ${sessionId || 'null'}<br>
+          localStorage.user_id: ${userId || 'null'}<br>
+          CookieHandler.isAuthenticated(): ${isAuth}<br>
+          CookieHandler.getAuthToken(): ${authTokenFromCookie || 'null'}
+        `;
+        
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        authStatusDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+      }
+    };
+
+    window.loginDemo = async function() {
+      try {
+        console.log('=== Logging in Demo User ===');
+        
+        const result = await AuthService.login('demo@example.com', 'demo123');
+        console.log('Login result:', result);
+        
+        if (result.success) {
+          alert('Demo login successful!');
+          checkAuth();
+        } else {
+          alert('Demo login failed: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Login error: ' + error.message);
+      }
+    };
+
+    window.logout = async function() {
+      try {
+        console.log('=== Logging out ===');
+        
+        await AuthService.logout();
+        console.log('Logout successful');
+        
+        alert('Logout successful!');
+        checkAuth();
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout error: ' + error.message);
+      }
+    };
+
+    window.clearStorage = function() {
+      console.log('=== Clearing localStorage ===');
+      
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('session_id');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('currentUser');
+      
+      console.log('localStorage cleared');
+      alert('localStorage cleared!');
+      checkAuth();
+    };
+  </script>
+</body>
+</html> 

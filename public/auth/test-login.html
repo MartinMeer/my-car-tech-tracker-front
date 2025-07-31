@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тест входа — My Car Tech Tracker</title>
+  <link rel="icon" type="image/x-icon" href="/img/favicons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="../../src/styles/styles.css">
+  <style>
+    .test-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-title {
+      text-align: center;
+      color: #2d3748;
+      margin-bottom: 2rem;
+    }
+
+    .test-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .test-btn {
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .test-btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .test-btn-secondary {
+      background: #e2e8f0;
+      color: #4a5568;
+    }
+
+    .test-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .features-list {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f7fafc;
+      border-radius: 8px;
+    }
+
+    .features-list h3 {
+      color: #2d3748;
+      margin-bottom: 1rem;
+    }
+
+    .features-list ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .features-list li {
+      padding: 0.5rem 0;
+      color: #4a5568;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .features-list li::before {
+      content: "✅";
+    }
+
+    .debug-section {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #fef5e7;
+      border-radius: 8px;
+      border: 1px solid #fed7aa;
+    }
+
+    .debug-section h3 {
+      color: #c05621;
+      margin-bottom: 1rem;
+    }
+
+    .debug-info {
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #744210;
+      background: #fef5e7;
+      padding: 1rem;
+      border-radius: 4px;
+      border: 1px solid #fed7aa;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1 class="test-title">🔧 Тест системы аутентификации</h1>
+    
+    <div class="test-buttons">
+      <a href="login.html" class="test-btn test-btn-primary">Тест страницы входа</a>
+      <a href="register.html" class="test-btn test-btn-secondary">Тест страницы регистрации</a>
+      <a href="../user-account.html" class="test-btn test-btn-secondary">Тест личного кабинета</a>
+      <a href="../index.html" class="test-btn test-btn-secondary">Тест главной страницы</a>
+      <a href="../cover.html" class="test-btn test-btn-secondary">Вернуться на главную</a>
+    </div>
+
+    <div class="features-list">
+      <h3>✨ Исправленные проблемы:</h3>
+      <ul>
+        <li>Интеграция с AuthService для всех страниц аутентификации</li>
+        <li>Исправлен поток аутентификации в демо-режиме</li>
+        <li>Улучшена обработка ошибок и валидация</li>
+        <li>Исправлена проверка аутентификации на защищенных страницах</li>
+        <li>Улучшена совместимость между разными методами аутентификации</li>
+        <li>Исправлена загрузка данных пользователя в личном кабинете</li>
+        <li>Добавлена поддержка демо-пользователя при наличии токена</li>
+        <li>Улучшена обработка сессий и токенов</li>
+      </ul>
+    </div>
+
+    <div class="debug-section">
+      <h3>🐛 Отладочная информация</h3>
+      <p>Проверьте консоль браузера для подробной информации об аутентификации.</p>
+      <div class="debug-info" id="debugInfo">
+        Загрузка информации...
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { AuthService } from '../../src/authService.js';
+    import { CookieHandler } from '../../src/cookieHandler.js';
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      const debugInfo = document.getElementById('debugInfo');
+      
+      try {
+        // Check authentication status
+        const isAuth = AuthService.isAuthenticated();
+        const authToken = localStorage.getItem('auth_token');
+        const currentUser = localStorage.getItem('currentUser');
+        const cookies = CookieHandler.getAllCookies();
+        
+        const debugData = {
+          'AuthService.isAuthenticated()': isAuth,
+          'localStorage.auth_token': authToken ? 'Present' : 'Not found',
+          'localStorage.currentUser': currentUser ? 'Present' : 'Not found',
+          'Cookies': Object.keys(cookies).length > 0 ? Object.keys(cookies) : 'No cookies',
+          'Config.useBackend': false,
+          'Config.demoMode': true
+        };
+        
+        debugInfo.innerHTML = Object.entries(debugData)
+          .map(([key, value]) => `<strong>${key}:</strong> ${JSON.stringify(value)}`)
+          .join('<br>');
+          
+      } catch (error) {
+        debugInfo.innerHTML = `Ошибка: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html> 

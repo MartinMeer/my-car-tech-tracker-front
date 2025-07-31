@@ -642,14 +642,17 @@ async function checkAuthentication() {
   
   const currentPage = window.location.pathname.split('/').pop();
   const isPublic = publicPages.includes(currentPage);
-  const devMode = localStorage.getItem('devMode') === 'true';
   
-  if (!isPublic && !devMode) {
-    // Check both AuthService and direct localStorage for demo mode
+  if (!isPublic) {
+    // Check authentication using AuthService
     const isAuthServiceAuthenticated = AuthService.isAuthenticated();
     const hasDirectAuthToken = localStorage.getItem('auth_token');
     
+    console.log('Auth check - AuthService:', isAuthServiceAuthenticated);
+    console.log('Auth check - Direct token:', hasDirectAuthToken);
+    
     if (!isAuthServiceAuthenticated && !hasDirectAuthToken) {
+      console.log('User not authenticated, redirecting to cover page');
       window.location.href = 'cover.html';
       return;
     }

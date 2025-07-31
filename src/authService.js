@@ -211,7 +211,12 @@ export const AuthService = {
    */
   async getCurrentUser() {
     try {
-      if (!CookieHandler.isAuthenticated()) {
+      console.log('AuthService.getCurrentUser() called');
+      const isAuth = CookieHandler.isAuthenticated();
+      console.log('isAuthenticated:', isAuth);
+      
+      if (!isAuth) {
+        console.log('User not authenticated');
         return null;
       }
 
@@ -237,6 +242,19 @@ export const AuthService = {
         // Development mode - get from localStorage
         const userData = localStorage.getItem('currentUser');
         if (!userData) {
+          // Try to get from auth_token and create user object
+          const authToken = localStorage.getItem('auth_token');
+          if (authToken) {
+            // Create a demo user object
+            const demoUser = {
+              id: 1,
+              email: 'demo@example.com',
+              name: 'Demo User',
+              role: 'user'
+            };
+            localStorage.setItem('currentUser', JSON.stringify(demoUser));
+            return demoUser;
+          }
           CookieHandler.clearAuth();
           return null;
         }

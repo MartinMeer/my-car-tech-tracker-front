@@ -20,11 +20,15 @@ export const UserAccountUI = {
    */
   async loadUserData() {
     try {
+      console.log('Loading user data...');
       const user = await AuthService.getCurrentUser();
-      if (!user) {
-        window.location.href = 'auth/login.html';
-        return;
-      }
+      console.log('User data:', user);
+      
+              if (!user) {
+          console.log('No user found, redirecting to login...');
+          window.location.href = 'auth/login.html';
+          return;
+        }
 
       // Set user image
       const userImage = document.getElementById('userImage');
@@ -43,15 +47,21 @@ export const UserAccountUI = {
       const roleLabels = {
         'fleet_manager': 'Fleet Manager',
         'technician': 'Technician', 
-        'driver': 'Driver'
+        'driver': 'Driver',
+        'user': 'User' // Add support for demo user role
       };
 
-      roleSelect.value = user.role || 'driver';
-      roleText.textContent = roleLabels[user.role] || 'Driver';
+      roleSelect.value = user.role || 'user';
+      roleText.textContent = roleLabels[user.role] || 'User';
 
     } catch (error) {
-      this.showAlert('Ошибка загрузки данных пользователя', 'error');
       console.error('Error loading user data:', error);
+      this.showAlert('Ошибка загрузки данных пользователя', 'error');
+      
+              // If there's an error, try to redirect to login
+        setTimeout(() => {
+          window.location.href = 'auth/login.html';
+        }, 2000);
     }
   },
 
@@ -274,11 +284,6 @@ export const UserAccountUI = {
     }
   }
 };
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  UserAccountUI.init();
-});
 
 // Make togglePassword globally available
 window.togglePassword = UserAccountUI.togglePassword.bind(UserAccountUI);
