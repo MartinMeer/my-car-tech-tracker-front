@@ -158,13 +158,7 @@ export const DataService = {
         return response.json();
       } else {
         try {
-          const stored = localStorage.getItem('cars');
-          if (stored) return JSON.parse(stored);
-          return [
-            { id: 1, name: 'Toyota Camry', img: '🚗' },
-            { id: 2, name: 'Lada Vesta', img: '🚙' },
-            { id: 3, name: 'BMW X5', img: '🚘' }
-          ];
+          return JSON.parse(localStorage.getItem('cars') || '[]');
         } catch (e) {
           alert('Ошибка чтения localStorage для автомобилей.');
           localStorage.removeItem('cars');
@@ -173,6 +167,16 @@ export const DataService = {
       }
     } catch (error) {
       throw new Error('Ошибка загрузки автомобилей: ' + error.message);
+    }
+  },
+
+  async getCar(carId) {
+    try {
+      const cars = await this.getCars();
+      return cars.find(car => car.id == carId) || null;
+    } catch (error) {
+      console.error('Error getting car by ID:', error);
+      return null;
     }
   },
 

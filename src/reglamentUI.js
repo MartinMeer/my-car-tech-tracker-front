@@ -19,13 +19,17 @@ export class ReglamentUI {
 
     async autoSelectFirstCar() {
         try {
+            console.log('Auto-selecting first car...');
             const cars = await DataService.getCars();
+            console.log('Available cars:', cars);
+            
             if (cars && cars.length > 0) {
                 console.log('Auto-selecting first car for testing:', cars[0]);
                 await this.selectCar(cars[0].id);
             } else {
                 // Use test data
                 const testCars = this.getTestCars();
+                console.log('No cars found, using test cars:', testCars);
                 if (testCars.length > 0) {
                     console.log('Auto-selecting first test car:', testCars[0]);
                     await this.selectCar(testCars[0].id);
@@ -129,9 +133,9 @@ export class ReglamentUI {
 
     getTestCars() {
         return [
-            { id: 1, name: "Honda Accord 2004", year: "2004", icon: "🚗" },
-            { id: 2, name: "Toyota Camry 2010", year: "2010", icon: "🚙" },
-            { id: 3, name: "BMW 320i 2015", year: "2015", icon: "🏎️" }
+            { id: 1, name: "Honda Accord 2004", year: "2004", img: "🚗" },
+            { id: 2, name: "Toyota Camry 2010", year: "2010", img: "🚙" },
+            { id: 3, name: "BMW 320i 2015", year: "2015", img: "🏎️" }
         ];
     }
 
@@ -179,17 +183,21 @@ export class ReglamentUI {
     }
 
     async selectCar(carId) {
-        console.log('selectCar called with carId:', carId);
+        console.log('selectCar called with carId:', carId, 'type:', typeof carId);
         
         try {
             const cars = await DataService.getCars();
             console.log('Loaded cars:', cars);
-            this.selectedCar = cars.find(car => car.id === carId);
+            console.log('Looking for car with ID:', carId);
+            this.selectedCar = cars.find(car => {
+                console.log('Checking car:', car.id, 'against', carId, 'result:', car.id == carId);
+                return car.id == carId;
+            });
             console.log('Found selected car:', this.selectedCar);
         } catch (error) {
             console.error('Error loading cars:', error);
             const testCars = this.getTestCars();
-            this.selectedCar = testCars.find(car => car.id === carId);
+            this.selectedCar = testCars.find(car => car.id == carId);
             console.log('Using test car:', this.selectedCar);
         }
 
@@ -226,7 +234,12 @@ export class ReglamentUI {
                 carImage.alt = 'car image';
             }
         }
-        document.getElementById('car-name').textContent = this.selectedCar.name;
+        const carNameElement = document.getElementById('car-name');
+        if (carNameElement) {
+            carNameElement.textContent = this.selectedCar.name;
+        } else {
+            console.warn('Car name element not found');
+        }
 
         // Update UI state
         this.updateUIState();

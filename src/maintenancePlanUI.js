@@ -21,8 +21,14 @@ class MaintenancePlanUI {
     async loadCarData() {
         try {
             const carId = this.getCarIdFromUrl();
+            console.log('MaintenancePlanUI: carId from URL:', carId);
+            
             if (carId) {
+                console.log('MaintenancePlanUI: Loading car data for ID:', carId);
                 this.currentCar = await DataService.getCar(carId);
+                console.log('MaintenancePlanUI: Loaded car:', this.currentCar);
+            } else {
+                console.log('MaintenancePlanUI: No carId found in URL');
             }
         } catch (error) {
             console.error('Error loading car data:', error);
@@ -101,6 +107,43 @@ class MaintenancePlanUI {
         // Set current date
         const currentDate = new Date().toLocaleDateString('ru-RU');
         document.getElementById('current-date').textContent = currentDate;
+
+        // Set car information
+        if (this.currentCar) {
+            // Car name (full name)
+            const carNameElement = document.getElementById('car-name');
+            if (carNameElement) {
+                carNameElement.textContent = this.currentCar.name || '';
+            }
+
+            // Year
+            const carYearElement = document.getElementById('car-year');
+            if (carYearElement) {
+                const year = this.currentCar.year || '';
+                carYearElement.textContent = year ? `Год: ${year}` : '';
+            }
+
+            // VIN
+            const carVinElement = document.getElementById('car-vin');
+            if (carVinElement) {
+                const vin = this.currentCar.vin || '';
+                carVinElement.textContent = vin ? `VIN: ${vin}` : '';
+            }
+
+            // License plate
+            const carLicensePlateElement = document.getElementById('car-license-plate');
+            if (carLicensePlateElement) {
+                const licensePlate = this.currentCar.licensePlate || '';
+                carLicensePlateElement.textContent = licensePlate ? `№${licensePlate}` : '';
+            }
+        } else {
+            // Clear car information if no car is selected
+            const carElements = ['car-name', 'car-year', 'car-vin', 'car-license-plate'];
+            carElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = '';
+            });
+        }
 
         // Set current mileage
         if (this.currentCar && this.currentCar.currentMileage) {
@@ -553,12 +596,29 @@ class MaintenancePlanUI {
     }
 
     createPDFHTML(currentDate, carName, currentMileage) {
+        // Prepare car information for PDF
+        let carInfo = '';
+        if (this.currentCar) {
+            const year = this.currentCar.year || '';
+            const vin = this.currentCar.vin || '';
+            const licensePlate = this.currentCar.licensePlate || '';
+            
+            carInfo = `
+                <p style="margin: 5px 0;"><strong>Автомобиль:</strong> ${carName}</p>
+                ${year ? `<p style="margin: 5px 0;"><strong>Год:</strong> ${year}</p>` : ''}
+                ${vin ? `<p style="margin: 5px 0;"><strong>VIN:</strong> ${vin}</p>` : ''}
+                ${licensePlate ? `<p style="margin: 5px 0;"><strong>Номер:</strong> ${licensePlate}</p>` : ''}
+            `;
+        } else {
+            carInfo = `<p style="margin: 5px 0;"><strong>Автомобиль:</strong> ${carName}</p>`;
+        }
+
         let html = `
             <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; background-color: white; color: black;">
                 <div style="text-align: center; margin-bottom: 30px;">
                     <h1 style="color: #333; margin-bottom: 10px; font-size: 24px;">План технического обслуживания</h1>
                     <div style="color: #666; font-size: 14px;">
-                        <p style="margin: 5px 0;"><strong>Автомобиль:</strong> ${carName}</p>
+                        ${carInfo}
                         <p style="margin: 5px 0;"><strong>Дата:</strong> ${currentDate}</p>
                         <p style="margin: 5px 0;"><strong>Текущий пробег:</strong> ${currentMileage} км</p>
                     </div>
