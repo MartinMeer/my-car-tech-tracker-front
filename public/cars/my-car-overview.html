@@ -1,47 +1,57 @@
-<section class="car-overview">
-  <div class="car-overview-header">
-    <img id="car-overview-img" class="car-overview-img" src="" alt="car image" />
-    <h1 id="car-title">[Car Name]</h1>
-    <div id="car-nickname" class="car-nickname" style="display:none;"></div>
-    <div id="car-year" class="car-year"></div>
-    <div id="car-vin" class="car-vin"></div>
-    <div id="car-mileage" class="car-mileage"></div>
-    <div id="car-license-plate" class="car-license-plate"></div>
-  </div>
-  <div class="car-sections">
-    <div class="car-section tech-section">
-      <h2>Техническое состояние</h2>
-      <div class="car-tech-links">
-        <a class="car-link" href="#next-mainten-alert">Ближайшее ТО</a>
-        <a class="car-link" href="#next-repair-alert">Ближайший ремонт</a>
-        <a id="car-maint-history-link" class="car-link" href="#mainten-history">История ТО</a>
-        <a id="car-repair-history-link" class="car-link" href="#repair-history">История ремонтов</a>
-      </div>
+<!-- Car Info Section - Full Width -->
+<div class="car-info-section-full">
+  <!-- Car Header Row -->
+  <div class="car-header-row">
+    <!-- Car Image -->
+    <div class="car-header-image">
+      <img id="car-overview-img" class="car-overview-img" src="../../img/car-by-deault.png" alt="Car Image" />
     </div>
-    <div class="car-section finance-section">
-      <h2>Финансы</h2>
-      <div class="car-row">
-        <span class="car-icon">💸</span>
-        <span>Общие расходы на ТО</span>
-        <span class="car-total-field" id="total-mainten-cost">—</span>
+    
+    <!-- Car Info -->
+    <div class="car-header-info">
+      <h1 id="car-title" class="car-title">[Car Brand] [Car Model]</h1>
       
-      </div>
-      <div class="car-row">
-        <span class="car-icon">💰</span>
-        <span>Общие расходы на ремонт</span>
-        <span class="car-total-field" id="total-repair-cost">—</span>
-        
-      </div>
-      <div class="car-row">
-        <span class="car-icon">🚗</span>
-        <span>Общая стоимость владения</span>
-        <span class="car-total-field" id="total-own-cost">—</span>
-        
+      <div class="car-details">
+        <div id="car-nickname" class="car-nickname" style="display:none;"></div>
+        <div id="car-license-plate" class="car-license-plate" style="display:none;"></div>
+        <div id="car-vin" class="car-vin"></div>
       </div>
     </div>
+    
+    <!-- Action Buttons -->
+    <div class="car-header-actions">
+      <button class="car-info-btn round-btn" id="maintenance-guide-btn" title="Справочник тех. обслуживания">
+        <img src="../../img/checklist-car2.jpeg" alt="Maintenance Guide" class="btn-icon" />
+      </button>
+      
+      <button class="car-info-btn round-btn" id="car-documents-btn" title="Документы на авто">
+        <span class="btn-icon-text">📄</span>
+      </button>
+    </div>
   </div>
-  <div class="car-actions">
-    <button class="car-action-btn" id="edit-car-btn" title="Изменить сведения о машине">Изменить</button>
-    <button class="car-action-btn" id="delete-car-btn" title="Удалить машину">Удалить</button>
+</div>
+
+<section class="car-overview-container">
+  <!-- Car Action Buttons -->
+  <div class="car-overview-left">
+    <div class="car-action-buttons">
+      <button class="car-action-btn round-btn" id="maintenance-plan-btn" title="План тех.обслуживания">
+        <img src="../../img/checklist-car3.jpeg" alt="Maintenance Plan" class="btn-icon" />
+      </button>
+      
+      <button class="car-action-btn round-btn" id="maintenance-history-btn" title="История тех.обслуживания">
+        <img src="../../img/master.jpeg" alt="Maintenance History" class="btn-icon" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Technical State Section -->
+  <div class="technical-state-section">
+    <h2 class="section-title">Текущее техническое состояние</h2>
+    <div class="tech-state-content">
+      <div class="tech-state-placeholder">
+        <p>Информация о техническом состоянии автомобиля будет отображаться здесь</p>
+      </div>
+    </div>
   </div>
 </section> 

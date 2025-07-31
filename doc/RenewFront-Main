@@ -40,7 +40,7 @@ Let's create a new my-car-overview view, represents a concrete car technical sta
         left to right, with suggestions when hover:
     3.2.1 Img: checklis-car2. Suggest: Справочник тех. обслуживания
     3.2.2 Img: undefined. Suggest: Документы на авто
-4. On remain area place a section for representing a current technical state (we fill it later)
+4. On remain area place a section for representing a current technical state (we fill inmlement it later)
     
   
 

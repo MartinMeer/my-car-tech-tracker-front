@@ -57,7 +57,413 @@
   color: var(--primary-color);
 }
 
-/* Car Overview */
+/* New Car Overview Layout */
+.car-overview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.car-overview-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.car-image-section {
+  display: flex;
+  justify-content: center;
+}
+
+.car-overview-img {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 4px 16px var(--shadow);
+  background: var(--surface);
+}
+
+.car-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.round-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface);
+  box-shadow: 0 2px 8px var(--shadow);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.round-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow);
+  background: var(--surface-secondary);
+}
+
+.round-btn .btn-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.round-btn .btn-icon-text {
+  font-size: 1.5rem;
+}
+
+.car-info-btn .btn-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.car-info-btn .btn-icon-text {
+  font-size: 1.75rem;
+}
+
+.car-action-btn .btn-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.car-info-section-full {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.car-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.car-header-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 2px 8px var(--shadow);
+  border: 1px solid var(--border-light);
+}
+
+.car-header-image {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-header-image .car-overview-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 4px 16px var(--shadow);
+  background: var(--surface);
+}
+
+.car-header-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.car-header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.car-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.car-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.car-nickname {
+  font-size: 1.1rem;
+  color: var(--primary-light);
+  font-weight: 500;
+}
+
+.car-license-plate {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.car-vin {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.car-info-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.car-info-btn {
+  width: 48px;
+  height: 48px; 
+}
+
+.technical-state-section {
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px var(--shadow);
+  border: 1px solid var(--border-light);
+  width: 100%;
+}
+
+.section-title {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.tech-state-content {
+  min-height: 150px;
+}
+
+.tech-state-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  background: var(--surface-secondary);
+  border-radius: var(--border-radius-lg);
+  border: 2px dashed var(--border-color);
+}
+
+.tech-state-placeholder p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  text-align: center;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .car-overview-container {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  .car-overview-left {
+    flex-shrink: 0;
+    width: 180px;
+  }
+  
+  .car-info-section {
+    flex: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .car-overview-container {
+    padding: 0 0.75rem 0.75rem 0.75rem;
+  }
+  
+  .car-overview-left {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .car-action-buttons {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+  
+  .car-overview-img {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .round-btn {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .round-btn .btn-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .car-info-btn {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .car-info-btn .btn-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .car-info-btn .btn-icon-text {
+    font-size: 1.5rem;
+  }
+  
+  .car-action-btn .btn-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .car-title {
+    font-size: 1.25rem;
+  }
+  
+  .car-header-row {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  
+  .car-header-image .car-overview-img {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .car-header-actions {
+    justify-content: center;
+  }
+  
+  .technical-state-section {
+    padding: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
+    margin: 0 0 0.75rem 0;
+  }
+  
+  .tech-state-content {
+    min-height: 120px;
+  }
+  
+  .tech-state-placeholder {
+    height: 120px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .car-overview-container {
+    padding: 0 0.5rem 0.5rem 0.5rem;
+  }
+  
+  .car-overview-left {
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .car-action-buttons {
+    gap: 1rem;
+  }
+  
+  .car-overview-img {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .round-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .round-btn .btn-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .car-info-btn {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .car-info-btn .btn-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .car-info-btn .btn-icon-text {
+    font-size: 1.25rem;
+  }
+  
+  .car-action-btn .btn-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .car-title {
+    font-size: 1.1rem;
+  }
+  
+  .car-header-row {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  .car-header-image .car-overview-img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .technical-state-section {
+    padding: 0.75rem;
+  }
+  
+  .section-title {
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .tech-state-content {
+    min-height: 100px;
+  }
+  
+  .tech-state-placeholder {
+    height: 100px;
+  }
+}
+
+/* Car Overview - Legacy Styles (keeping for compatibility) */
 .car-overview-header {
   display: flex;
   flex-direction: column;
