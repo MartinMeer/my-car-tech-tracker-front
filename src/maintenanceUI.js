@@ -108,6 +108,8 @@ export function initializeCarOverviewUI() {
 function setupCarActionButtons(carId) {
   const editBtn = document.getElementById('edit-car-btn');
   const deleteBtn = document.getElementById('delete-car-btn');
+  const maintenancePlanBtn = document.getElementById('maintenance-plan-btn');
+  const maintenanceHistoryBtn = document.getElementById('maintenance-history-btn');
   
   if (editBtn) {
     editBtn.addEventListener('click', () => {
@@ -141,6 +143,20 @@ function setupCarActionButtons(carId) {
           }
         );
       });
+    });
+  }
+  
+  if (maintenancePlanBtn) {
+    maintenancePlanBtn.addEventListener('click', () => {
+      // Navigate to maintenance plan page using hash routing
+      window.location.hash = `#maintenance-plan?carId=${carId}`;
+    });
+  }
+  
+  if (maintenanceHistoryBtn) {
+    maintenanceHistoryBtn.addEventListener('click', () => {
+      // Navigate to maintenance history page
+      window.location.href = `../maintenance/mainten-history.html?carId=${carId}`;
     });
   }
 }

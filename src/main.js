@@ -15,6 +15,7 @@ import { initializeUserAlertUI, setupUserAlertForm, initializeAlertListUI } from
 import { initializeMileageHistoryUI } from './mileageHistoryUI.js';
 import { ReglamentUI } from './reglamentUI.js';
 import { fleetUI } from './fleetUI.js';
+import { MaintenancePlanUI } from './maintenancePlanUI.js';
 
 import {
   renderRepairHistory,
@@ -549,6 +550,10 @@ function initializePageUI(page) {
       break;
     case 'repair-history':
       renderRepairHistory();
+      break;
+    case 'maintenance-plan':
+      // Initialize maintenance plan UI
+      new MaintenancePlanUI();
       break;
     case 'mileage-history':
       initializeMileageHistoryUI();

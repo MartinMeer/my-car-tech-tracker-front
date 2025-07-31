@@ -124,6 +124,15 @@
     <button id="cookie-accept" class="cookie-btn">Принять</button>
     <button id="cookie-reject" class="cookie-btn cookie-btn-reject">Отклонить</button>
   </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    // Ensure html2pdf is globally available
+    window.addEventListener('load', function() {
+      if (window.html2pdf) {
+        console.log('html2pdf.js loaded successfully');
+      }
+    });
+  </script>
   <script type="module" src="../src/main.js"></script>
   <script>
     // Make the car image a home button to fleet overview

@@ -7,6 +7,7 @@ export const pageMap = {
   'next-repair-list': 'repair/next-repair-list.html',
   'mainten-history': 'maintenance/mainten-history.html',
   'repair-history': 'repair/repair-history.html',
+  'maintenance-plan': 'maintenance/maintenance-plan.html',
   'service-history': 'service-history.html', // stays in public/
 
   'user-alert': 'user-alert.html',

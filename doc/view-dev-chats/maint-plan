@@ -1,0 +1,25 @@
+Let's create a maintenance plan template, named План технического обслуживания.
+Link it to maintenance-plan-btn in my-car-overview.
+Data for the template will become from my-car-overview.
+Don't fill now this template, just create it.
+Make the plan transactional with the ability to autosaving draft.
+
+
+Place a current date and current mileage below the title.
+Add a two main tables, one below another: periodical maintenance and repairs.
+1. Periodical maintenance table:
+1.1. Add a table header with columns: Number, Operation, Resources, Notes, Actions
+2. Repairs table:
+2.1. Add a table header with columns: Number, Operation, Resources, Notes, Actions
+To each table add a button to add a new row.
+In each row in Actions column add a two buttons: to change the row and to delete the row.
+On click change, make the row for editing. On click delete, delete the row with confirmation.
+
+On bottom of the page add a button to save the plan, and the cancel button.
+
+
+
+
+
+
+

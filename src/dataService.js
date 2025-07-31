@@ -440,5 +440,69 @@ export const DataService = {
     } catch (error) {
       throw new Error('Ошибка сохранения регламента: ' + error.message);
     }
+  },
+
+  async saveMaintenancePlan(planData) {
+    try {
+      if (CONFIG.useBackend) {
+        const response = await fetch(`${CONFIG.apiUrl}/maintenance-plans`, {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          credentials: 'include',
+          body: JSON.stringify(planData)
+        });
+        if (!response.ok) throw new Error('Ошибка сохранения плана ТО');
+        return response.json();
+      } else {
+        // Store in localStorage for demo
+        let existing = [];
+        try {
+          existing = JSON.parse(localStorage.getItem('maintenance_plans') || '[]');
+        } catch (e) {
+          localStorage.removeItem('maintenance_plans');
+        }
+        
+        const planWithId = {
+          ...planData,
+          id: Date.now().toString(),
+          createdAt: new Date().toISOString()
+        };
+        
+        existing.push(planWithId);
+        localStorage.setItem('maintenance_plans', JSON.stringify(existing));
+        return { success: true, id: planWithId.id };
+      }
+    } catch (error) {
+      throw new Error('Ошибка сохранения плана ТО: ' + error.message);
+    }
+  },
+
+  async getMaintenancePlans(carId = null) {
+    try {
+      if (CONFIG.useBackend) {
+        const url = carId 
+          ? `${CONFIG.apiUrl}/maintenance-plans?carId=${carId}`
+          : `${CONFIG.apiUrl}/maintenance-plans`;
+        const response = await fetch(url, {
+          headers: this.getAuthHeaders(),
+          credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Ошибка загрузки планов ТО');
+        return response.json();
+      } else {
+        try {
+          const plans = JSON.parse(localStorage.getItem('maintenance_plans') || '[]');
+          if (carId) {
+            return plans.filter(plan => plan.carId === carId);
+          }
+          return plans;
+        } catch (e) {
+          localStorage.removeItem('maintenance_plans');
+          return [];
+        }
+      }
+    } catch (error) {
+      throw new Error('Ошибка загрузки планов ТО: ' + error.message);
+    }
   }
 }; 
