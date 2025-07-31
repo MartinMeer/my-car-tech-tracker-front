@@ -2,12 +2,48 @@ Let's renew a default view:
 In left side-bar:
 Remove sidebar-btn-history
 Change flow for sidebar-btn-problems:
-1. Remove changing color logic, make color light red
-2. On click, opens car-selection-popup, alredy inplemented in sidebar-button-service call. Remove from it a date input field. Title: Выберите автомобиль
-3. When car was selected, open date-mileage-input popup.
+1. Remove all changing color logic, make color light red
+2. On click, must open car-selection-popup, alredy inplemented in sidebar-button-service call.
+Remove from it a date input field. Change title to Выберите автомобиль
+3. When car was selected, open date-mileage-input popup (create a new one).
   It must has a date and mileage input fields and two buttons.
   Date field: changeable, prefilled by current date dd.mm.yyyy.
   Mileage field: changeable, prefilled by current mileage by selected car.
-  Buttons above: Save and Cancel When Save, if date or mileage not be changed by user, current values must still remain
+  Buttons above: Save and Cancel.
+  When Save, if date or mileage not be changed by user, current values must still remain
 4. When Save, open existing user-alert page with all entire logic
 5. When user-alert saved or cancelled, return to deault view page
+
+Let's create a new default view for index.html:
+In main view area, all cars in fleet must be represented as a row section for each car.
+Each row section must have four columns: (from left to right)
+1. A medium-small round image of car, loaded by user.
+  If not loaded yet, show a default image car-by-default.png.
+2. Car name, consists of
+  car-brand, car-model, nickname (if added by user), license-plate (if added by user), VIN.
+3.  Three round icons: red, yellow, blue,
+  represent three types of problems, added by user in user-alert page.
+  On each icon, show a number of problems of this type.
+4. One round icon for future maintenance preview module.
+
+Let's create a new my-car-overview view, represents a concrete car technical state.
+1/ In upper left corner place a medium-size round image of car, loaded by user.
+  If not loaded yet, show a default image car-by-default.png.
+2. On the left side of page, under the image, place two medium-small round buttons, one under one, with icons and suggestions when hover:
+  2.1. Img: checklist-car3.jpg Suggestion: План тех.обслуживания
+  2.2. img: master.jpeg Suggestion: История тех.обслуживания
+3. On right from the car image, place a row section with static info of concrete car:
+  In this section, left to right:
+  3.1. Car name, consists of
+  car-brand, car-model, nickname (if added by user), license-plate (if added by user), VIN.
+  3.2. Two medium-small round icons for static information of current car,
+        left to right, with suggestions when hover:
+    3.2.1 Img: checklis-car2. Suggest: Справочник тех. обслуживания
+    3.2.2 Img: undefined. Suggest: Документы на авто
+4. On remain area place a section for representing a current technical state (we fill it later)
+    
+  
+
+
+
+
