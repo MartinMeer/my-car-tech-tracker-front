@@ -67,6 +67,26 @@
   color: var(--primary-color);
 }
 
+/* User Account Button */
+.user-account-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 1rem;
+}
+
+.user-account-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-account-btn:hover .user-account-img {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
 /* Cover Banner */
 .cover-banner {
   display: flex;

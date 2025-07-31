@@ -33,4 +33,33 @@ body, .container, main#main-content {
   font-weight: 600;
   color: white;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-account-link {
+  display: flex;
+  align-items: center;
+  transition: opacity var(--transition-fast);
+}
+
+.user-account-link:hover {
+  opacity: 0.8;
+}
+
+.user-account-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: border-color var(--transition-fast);
+}
+
+.user-account-link:hover .user-account-icon {
+  border-color: rgba(255, 255, 255, 0.8);
 } 
