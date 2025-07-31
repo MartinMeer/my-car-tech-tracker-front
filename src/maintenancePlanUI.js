@@ -78,28 +78,7 @@ class MaintenancePlanUI {
             }
         });
 
-        // Test PDF button
-        document.getElementById('test-pdf-btn').addEventListener('click', async () => {
-            // First test the HTML content generation
-            const currentDate = new Date().toLocaleDateString('ru-RU');
-            const carName = this.currentCar?.name || 'Автомобиль';
-            const currentMileage = this.currentCar?.currentMileage || 0;
-            
-            const testContent = this.createPDFHTML(currentDate, carName, currentMileage);
-            console.log('Generated HTML content:', testContent);
-            
-            // Show content in a popup for debugging
-            const popup = window.open('', '_blank', 'width=800,height=600');
-            popup.document.write(testContent);
-            popup.document.close();
-            
-            const success = await this.testPDFExport();
-            if (success) {
-                this.showMessage('Тест PDF успешен!', 'success');
-            } else {
-                this.showMessage('Тест PDF не удался', 'error');
-            }
-        });
+
 
         // Confirmation modal
         document.getElementById('confirm-yes').addEventListener('click', () => {
@@ -672,91 +651,7 @@ class MaintenancePlanUI {
 
 
 
-    // Test function for debugging PDF export
-    async testPDFExport() {
-        try {
-            console.log('Testing PDF export...');
-            
-            // Check if html2pdf is available
-            if (typeof window.html2pdf === 'undefined') {
-                console.log('No html2pdf library found');
-                return false;
-            }
 
-            // Create a simple test HTML content
-            const testContent = `
-                <div style="font-family: Arial, sans-serif; padding: 20px; background-color: white; color: black;">
-                    <h1 style="color: #333; font-size: 24px;">Тест PDF экспорта</h1>
-                    <p style="color: #666;">Это тестовый документ для проверки работы html2pdf.js</p>
-                    <p style="color: #666;">Русский текст: План технического обслуживания</p>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                        <tr style="background-color: #f8f9fa;">
-                            <th style="border: 1px solid #dee2e6; padding: 8px;">№</th>
-                            <th style="border: 1px solid #dee2e6; padding: 8px;">Операция</th>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #dee2e6; padding: 8px;">1</td>
-                            <td style="border: 1px solid #dee2e6; padding: 8px;">Замена масла</td>
-                        </tr>
-                    </table>
-                </div>
-            `;
-
-            // Create a new window for PDF generation
-            const pdfWindow = window.open('', '_blank', 'width=800,height=600');
-            pdfWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Test PDF Export</title>
-                    <style>
-                        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-                    </style>
-                </head>
-                <body>
-                    ${testContent}
-                </body>
-                </html>
-            `);
-            pdfWindow.document.close();
-
-            // Wait for the window to load
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // Configure options
-            const options = {
-                margin: [10, 10, 10, 10],
-                filename: 'test.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2,
-                    useCORS: true,
-                    letterRendering: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: true
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'portrait' 
-                }
-            };
-
-            console.log('Starting test PDF generation from new window...');
-
-            // Generate PDF from the new window
-            await window.html2pdf().from(pdfWindow.document.body).set(options).save();
-            
-            console.log('PDF test successful');
-            pdfWindow.close();
-            return true;
-        } catch (error) {
-            console.error('PDF test failed:', error);
-            return false;
-        }
-    }
 }
 
 // Export the class for use in main.js
