@@ -562,6 +562,12 @@ function initializePageUI(page) {
       // Initialize maintenance plan UI
       new MaintenancePlanUI();
       break;
+    case 'maintenance-guide':
+      // Initialize maintenance guide UI
+      import('./maintenanceGuideUI.js').then(module => {
+        new module.MaintenanceGuideUI();
+      });
+      break;
     case 'mileage-history':
       initializeMileageHistoryUI();
       break;

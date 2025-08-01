@@ -2,6 +2,7 @@ import { DataService } from './dataService.js';
 import { getUserAlerts } from './userAlertUI.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { CONFIG } from './config.js';
+import { maintenanceDataService } from './maintenanceDataService.js';
 
 class CarOverviewMonitor {
     constructor() {
@@ -21,6 +22,12 @@ class CarOverviewMonitor {
         
         this.loadAlerts();
         this.loadMaintenanceData();
+        this.updateCarDisplay();
+        
+        // Subscribe to maintenance data changes
+        this.unsubscribeMaintenance = maintenanceDataService.subscribe(() => {
+            this.loadMaintenanceData();
+        });
     }
 
     async loadCarData() {
@@ -146,6 +153,20 @@ class CarOverviewMonitor {
             });
         } else {
             console.log('CarOverviewMonitor: View maintenance plan button not found');
+        }
+
+        // Dynamic monitor action buttons (created dynamically)
+        this.setupDynamicMonitorButtons();
+
+        // Maintenance guide button
+        const maintenanceGuideBtn = document.getElementById('maintenance-guide-btn');
+        if (maintenanceGuideBtn) {
+            console.log('CarOverviewMonitor: Found maintenance guide button');
+            maintenanceGuideBtn.addEventListener('click', () => {
+                this.navigateToMaintenanceGuide();
+            });
+        } else {
+            console.log('CarOverviewMonitor: Maintenance guide button not found');
         }
     }
 
@@ -493,9 +514,8 @@ class CarOverviewMonitor {
             }
 
             console.log('CarOverviewMonitor: Loading maintenance data for car:', this.currentCar.id);
-            // Load maintenance plan data
-            const maintenanceData = await this.getMaintenanceData();
-            this.displayMaintenanceData(maintenanceData);
+            // Always show the dynamic monitor content
+            await this.displayMaintenanceData(null);
         } catch (error) {
             console.error('Error loading maintenance data:', error);
             this.showMaintenanceError();
@@ -517,26 +537,120 @@ class CarOverviewMonitor {
         }
     }
 
-    displayMaintenanceData(maintenanceData) {
+    async displayMaintenanceData(maintenanceData) {
         const container = document.getElementById('maintenance-container');
         if (!container) return;
 
-        if (!maintenanceData || !maintenanceData.maintenance || maintenanceData.maintenance.length === 0) {
-            container.innerHTML = `
+        // Always show the dynamic monitor content
+        container.innerHTML = await this.createDynamicMonitorContent();
+        
+        // Setup event listeners for the dynamically created buttons
+        setTimeout(() => {
+            this.setupDynamicMonitorButtons();
+        }, 100);
+    }
+
+    async createDynamicMonitorContent() {
+        if (!this.currentCar) {
+            return `
                 <div class="maintenance-placeholder">
-                    <p>План обслуживания не найден</p>
+                    <p>Выберите автомобиль для просмотра плана обслуживания</p>
                 </div>
             `;
-            return;
         }
 
-        const itemsHTML = this.createMaintenanceItems(maintenanceData);
-        container.innerHTML = `
-            <div class="maintenance-items">
-                ${itemsHTML}
-            </div>
+        const maintenanceRows = await this.createMaintenanceScheduleRows();
+
+        return `
+            <div class="maintenance-guide-container">
+                <!-- Header -->
+                
+
+                <!-- Maintenance Schedule Table -->
+                <div class="schedule-section">
+                   
+                    <div class="table-container">
+                        <table id="maintenance-schedule-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Операция</th>
+                                    <th>Пробег (км)</th>
+                                    <th>Период (мес)</th>
+                                    <th>Статус</th>
+                                    <th>Примечания</th>
+                                </tr>
+                            </thead>
+                            <tbody id="maintenance-schedule-tbody">
+                                ${maintenanceRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend-section">
+                    <h3 class="legend-title">Условные обозначения:</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <span class="status-icon overdue">🔴</span>
+                            <span class="legend-text">Просрочено</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="status-icon due-soon">🟡</span>
+                            <span class="legend-text">Скоро потребуется</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="status-icon ok">🟢</span>
+                            <span class="legend-text">В порядке</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="status-icon completed">✅</span>
+                            <span class="legend-text">Выполнено</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                
         `;
     }
+
+    async createMaintenanceScheduleRows() {
+        try {
+            // Get maintenance schedule from data service
+            const maintenanceSchedule = maintenanceDataService.getMaintenanceSchedule();
+            const currentMileage = this.currentCar.mileage || 0;
+            let tableHTML = '';
+
+            maintenanceSchedule.forEach((item, index) => {
+                const status = maintenanceDataService.calculateMaintenanceStatus(item, currentMileage);
+                const statusIcon = maintenanceDataService.getStatusIcon(status);
+                const statusText = maintenanceDataService.getStatusText(status);
+                
+                tableHTML += `
+                    <tr class="maintenance-row ${status}">
+                        <td>${index + 1}</td>
+                        <td class="operation-name">${item.operation}</td>
+                        <td class="mileage">${item.mileage.toLocaleString()}</td>
+                        <td class="period">${item.period}</td>
+                        <td class="status">
+                            <span class="status-icon">${statusIcon}</span>
+                            <span class="status-text">${statusText}</span>
+                        </td>
+                        <td class="notes">${item.notes}</td>
+                    </tr>
+                `;
+            });
+
+            return tableHTML;
+        } catch (error) {
+            console.error('Error loading maintenance schedule:', error);
+            return '<tr><td colspan="6">Ошибка загрузки данных обслуживания</td></tr>';
+        }
+    }
+
+
 
     createMaintenanceItems(maintenanceData) {
         const items = maintenanceData.maintenance || [];
@@ -583,6 +697,147 @@ class CarOverviewMonitor {
     navigateToMaintenancePlan() {
         if (!this.currentCar) return;
         window.location.hash = `#maintenance-plan?carId=${this.currentCar.id}`;
+    }
+
+    navigateToMaintenanceGuide() {
+        if (!this.currentCar) return;
+        window.location.hash = `#maintenance-guide?carId=${this.currentCar.id}`;
+    }
+
+    setupDynamicMonitorButtons() {
+        // Create maintenance plan button
+        const createMaintenancePlanBtn = document.getElementById('create-maintenance-plan-btn');
+        if (createMaintenancePlanBtn) {
+            createMaintenancePlanBtn.addEventListener('click', () => {
+                this.createMaintenancePlan();
+            });
+        }
+
+        // Export guide button
+        const exportGuideBtn = document.getElementById('export-guide-btn');
+        if (exportGuideBtn) {
+            exportGuideBtn.addEventListener('click', () => {
+                this.exportGuide();
+            });
+        }
+
+        // Back to overview button
+        const backToOverviewBtn = document.getElementById('back-to-overview-btn');
+        if (backToOverviewBtn) {
+            backToOverviewBtn.addEventListener('click', () => {
+                this.goBackToOverview();
+            });
+        }
+    }
+
+    createMaintenancePlan() {
+        if (!this.currentCar) return;
+        window.location.hash = `#maintenance-plan?carId=${this.currentCar.id}`;
+    }
+
+    exportGuide() {
+        // TODO: Implement PDF export functionality
+        console.log('Export guide to PDF');
+        alert('Функция экспорта в разработке');
+    }
+
+    goBackToOverview() {
+        // Already on overview page, just refresh
+        window.location.reload();
+    }
+
+    updateCarDisplay() {
+        if (!this.currentCar) return;
+
+        // Update car title
+        const carTitle = document.getElementById('car-title');
+        if (carTitle) {
+            const carName = this.currentCar.nickname || `${this.currentCar.brand || ''} ${this.currentCar.model || ''}`.trim() || this.currentCar.name;
+            carTitle.textContent = carName;
+        }
+
+        // Update car image
+        const carImg = document.getElementById('car-overview-img');
+        if (carImg && this.currentCar.img) {
+            if (this.currentCar.img.startsWith('data:image/')) {
+                carImg.src = this.currentCar.img;
+            } else if (this.currentCar.img !== 'car-by-deault.png') {
+                carImg.src = this.currentCar.img;
+            }
+        }
+
+        // Update car details in the new format
+        const carBrand = document.getElementById('car-brand');
+        const carModel = document.getElementById('car-model');
+        const carYear = document.getElementById('car-year');
+        const carVin = document.getElementById('car-vin');
+        const carLicensePlate = document.getElementById('car-license-plate');
+        const carMileage = document.getElementById('car-mileage');
+
+        if (carBrand) {
+            carBrand.textContent = this.currentCar.brand || '';
+            carBrand.style.display = this.currentCar.brand ? 'inline' : 'none';
+        }
+
+        if (carModel) {
+            carModel.textContent = this.currentCar.model || '';
+            carModel.style.display = this.currentCar.model ? 'inline' : 'none';
+        }
+
+        if (carYear) {
+            carYear.textContent = this.currentCar.year || '';
+            carYear.style.display = this.currentCar.year ? 'inline' : 'none';
+        }
+
+        if (carVin) {
+            carVin.textContent = this.currentCar.vin || '';
+            carVin.style.display = this.currentCar.vin ? 'inline' : 'none';
+        }
+
+        if (carLicensePlate) {
+            carLicensePlate.textContent = this.currentCar.licensePlate || '';
+            carLicensePlate.style.display = this.currentCar.licensePlate ? 'inline' : 'none';
+        }
+
+        if (carMileage) {
+            carMileage.textContent = this.currentCar.mileage ? `${this.currentCar.mileage} км` : '';
+            carMileage.style.display = this.currentCar.mileage ? 'inline' : 'none';
+        }
+
+        // Update separators visibility
+        this.updateSeparatorsVisibility();
+    }
+
+    updateSeparatorsVisibility() {
+        const separators = document.querySelectorAll('.car-separator');
+        const detailsLine = document.querySelector('.car-details-line');
+        
+        if (!detailsLine) return;
+        
+        const visibleElements = [];
+        detailsLine.childNodes.forEach(child => {
+            if (child.nodeType === Node.ELEMENT_NODE && 
+                child.style.display !== 'none' && 
+                child.textContent.trim() !== '') {
+                visibleElements.push(child);
+            }
+        });
+        
+        // Show/hide separators based on visible elements
+        separators.forEach((separator, index) => {
+            const nextElement = separator.nextElementSibling;
+            const prevElement = separator.previousElementSibling;
+            
+            // Hide separator if next element is hidden or empty
+            if (!nextElement || 
+                nextElement.style.display === 'none' || 
+                nextElement.textContent.trim() === '' ||
+                nextElement.classList.contains('car-separator')) {
+                separator.style.display = 'none';
+            } else {
+                separator.style.display = 'inline';
+            }
+        });
     }
 
     showNoCarMessage() {
@@ -632,6 +887,13 @@ class CarOverviewMonitor {
     truncateText(text, maxLength) {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
+    }
+
+    destroy() {
+        // Unsubscribe from maintenance data changes
+        if (this.unsubscribeMaintenance) {
+            this.unsubscribeMaintenance();
+        }
     }
 }
 

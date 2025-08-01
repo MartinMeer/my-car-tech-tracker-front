@@ -50,38 +50,46 @@ export function initializeCarOverviewUI() {
     // Car name
     const title = document.getElementById('car-title');
     if (title) title.textContent = `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
-    // Nickname
-    const nicknameDiv = document.getElementById('car-nickname');
-    if (nicknameDiv) {
-      if (car.nickname) {
-        nicknameDiv.textContent = car.nickname;
-        nicknameDiv.style.display = '';
-      } else {
-        nicknameDiv.textContent = '';
-        nicknameDiv.style.display = 'none';
-      }
-    }
-    // Year
-    const yearDiv = document.getElementById('car-year');
-    if (yearDiv) yearDiv.textContent = car.year ? `Год выпуска: ${car.year}` : '';
-    // VIN
-    const vinDiv = document.getElementById('car-vin');
-    if (vinDiv) vinDiv.textContent = car.vin ? `VIN: ${car.vin}` : '';
-    // Mileage
-    const mileageDiv = document.getElementById('car-mileage');
-    if (mileageDiv) mileageDiv.textContent = car.mileage ? `Пробег: ${car.mileage} км` : '';
     
-    // License Plate
+    // Car details in new format
+    const brandDiv = document.getElementById('car-brand');
+    if (brandDiv) {
+      brandDiv.textContent = car.brand || '';
+      brandDiv.style.display = car.brand ? 'inline' : 'none';
+    }
+    
+    const modelDiv = document.getElementById('car-model');
+    if (modelDiv) {
+      modelDiv.textContent = car.model || '';
+      modelDiv.style.display = car.model ? 'inline' : 'none';
+    }
+    
+    const yearDiv = document.getElementById('car-year');
+    if (yearDiv) {
+      yearDiv.textContent = car.year || '';
+      yearDiv.style.display = car.year ? 'inline' : 'none';
+    }
+    
+    const vinDiv = document.getElementById('car-vin');
+    if (vinDiv) {
+      vinDiv.textContent = car.vin || '';
+      vinDiv.style.display = car.vin ? 'inline' : 'none';
+    }
+    
     const licensePlateDiv = document.getElementById('car-license-plate');
     if (licensePlateDiv) {
-      if (car.licensePlate) {
-        licensePlateDiv.textContent = `Гос. номер: ${car.licensePlate}`;
-        licensePlateDiv.style.display = '';
-      } else {
-        licensePlateDiv.textContent = '';
-        licensePlateDiv.style.display = 'none';
-      }
+      licensePlateDiv.textContent = car.licensePlate || '';
+      licensePlateDiv.style.display = car.licensePlate ? 'inline' : 'none';
     }
+    
+    const mileageDiv = document.getElementById('car-mileage');
+    if (mileageDiv) {
+      mileageDiv.textContent = car.mileage ? `${car.mileage} км` : '';
+      mileageDiv.style.display = car.mileage ? 'inline' : 'none';
+    }
+    
+    // Update separators visibility
+    updateSeparatorsVisibility();
     
     // --- Finance totals ---
     const maintenField = document.getElementById('total-mainten-cost');
@@ -1978,3 +1986,36 @@ async function updateRepairRecord(repairData) {
 
 // Make functions globally available for onclick handlers
 window.renderMaintenHistory = renderMaintenHistory; 
+
+// Function to update separators visibility
+function updateSeparatorsVisibility() {
+  const separators = document.querySelectorAll('.car-separator');
+  const detailsLine = document.querySelector('.car-details-line');
+  
+  if (!detailsLine) return;
+  
+  const visibleElements = [];
+  detailsLine.childNodes.forEach(child => {
+    if (child.nodeType === Node.ELEMENT_NODE && 
+        child.style.display !== 'none' && 
+        child.textContent.trim() !== '') {
+      visibleElements.push(child);
+    }
+  });
+  
+  // Show/hide separators based on visible elements
+  separators.forEach((separator, index) => {
+    const nextElement = separator.nextElementSibling;
+    const prevElement = separator.previousElementSibling;
+    
+    // Hide separator if next element is hidden or empty
+    if (!nextElement || 
+        nextElement.style.display === 'none' || 
+        nextElement.textContent.trim() === '' ||
+        nextElement.classList.contains('car-separator')) {
+      separator.style.display = 'none';
+    } else {
+      separator.style.display = 'inline';
+    }
+  });
+}

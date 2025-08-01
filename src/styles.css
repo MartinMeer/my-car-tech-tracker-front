@@ -29,6 +29,9 @@
 /* Service Record Styles - Service card, operations, sub-records */
 @import url('./styles/service-record.css');
 
+/* Maintenance Guide Styles - Periodic maintenance schedule */
+@import url('./styles/maintenance-guide.css');
+
 /* Message Styles - Success/error messages, alerts */
 @import url('./styles/messages.css');
 

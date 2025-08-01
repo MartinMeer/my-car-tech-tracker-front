@@ -23,6 +23,7 @@ export const pageMap = {
   'contacts': 'info/contacts.html',
   'privacy': 'info/privacy.html',
   'reglament': 'car-info/reglament.html',
+  'maintenance-guide': 'car-info/maintenance-guide.html',
   'cover': 'cover.html', // stays in public/
 };
 

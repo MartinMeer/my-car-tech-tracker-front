@@ -209,6 +209,19 @@
   gap: 0.3rem;
 }
 
+.car-details-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.car-separator {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
 .car-nickname {
   font-size: 1.1rem;
   color: var(--primary-light);
@@ -225,6 +238,29 @@
   font-size: 0.9rem;
   color: var(--text-muted);
   font-family: monospace;
+}
+
+.car-brand {
+  font-size: 1rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.car-model {
+  font-size: 1rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.car-year {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.car-mileage {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .car-info-actions {
