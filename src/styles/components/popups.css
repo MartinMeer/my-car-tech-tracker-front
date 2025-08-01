@@ -596,4 +596,137 @@
   display: flex;
   gap: var(--space-md);
   justify-content: flex-end;
+}
+
+/* Date & Mileage Popup */
+.date-mileage-popup {
+  max-width: 600px;
+  width: 90%;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.date-mileage-popup .popup-header {
+  background: var(--primary-color);
+  color: white;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding: var(--space-xl);
+}
+
+.date-mileage-popup .popup-header h2 {
+  color: white;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.date-mileage-popup .popup-body {
+  padding: var(--space-xl);
+}
+
+.date-mileage-popup .form-section {
+  margin-bottom: var(--space-xl);
+}
+
+.date-mileage-popup .form-section:last-child {
+  margin-bottom: 0;
+}
+
+.date-mileage-popup .form-section h3 {
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.date-mileage-popup .selected-car-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--surface-secondary);
+}
+
+.date-mileage-popup .selected-car-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  border: 2px solid var(--border-color);
+}
+
+.date-mileage-popup .selected-car-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.date-mileage-popup .selected-car-details {
+  flex: 1;
+}
+
+.date-mileage-popup .selected-car-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-xs);
+}
+
+.date-mileage-popup .selected-car-year,
+.date-mileage-popup .selected-car-mileage {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.date-mileage-popup .input-group {
+  margin-bottom: var(--space-md);
+}
+
+.date-mileage-popup .input-group:last-child {
+  margin-bottom: 0;
+}
+
+.date-mileage-popup .input-group label {
+  display: block;
+  margin-bottom: var(--space-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--primary-color);
+}
+
+.date-mileage-popup .input-group input {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 2px solid var(--border-light);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition-normal) ease;
+  background: var(--surface);
+}
+
+.date-mileage-popup .input-group input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.date-mileage-popup .input-group .icon {
+  margin-right: var(--space-xs);
+}
+
+.date-mileage-popup .popup-footer {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
 } 

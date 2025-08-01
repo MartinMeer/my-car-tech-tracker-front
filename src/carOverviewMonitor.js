@@ -1,5 +1,5 @@
 import { DataService } from './dataService.js';
-import { getUserAlerts, showUserAlertPopup, showUserAlertPopupWithCar } from './userAlertUI.js';
+import { getUserAlerts } from './userAlertUI.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { CONFIG } from './config.js';
 
@@ -308,21 +308,179 @@ class CarOverviewMonitor {
         console.log('CarOverviewMonitor: showNewAlertPopup called');
         console.log('CarOverviewMonitor: currentCar:', this.currentCar);
         
-        // Use the existing user alert popup system with pre-selected car
-        // This skips car selection since car is already selected
-        if (this.currentCar) {
-            console.log('CarOverviewMonitor: Using showUserAlertPopupWithCar with car ID:', this.currentCar.id);
-            try {
-                await showUserAlertPopupWithCar(this.currentCar.id);
-            } catch (error) {
-                console.error('CarOverviewMonitor: Error calling showUserAlertPopupWithCar:', error);
-                // Fallback to regular popup
-                await showUserAlertPopup();
+        if (!this.currentCar) {
+            console.log('CarOverviewMonitor: No current car, showing error');
+            window.alert('Сначала выберите автомобиль');
+            return;
+        }
+        
+        // Show date & mileage popup directly (skip car selection)
+        console.log('CarOverviewMonitor: Showing date & mileage popup for car ID:', this.currentCar.id);
+        try {
+            await this.showDateAndMileagePopup(this.currentCar.id);
+        } catch (error) {
+            console.error('CarOverviewMonitor: Error showing date & mileage popup:', error);
+            window.alert('Ошибка: ' + error.message);
+        }
+    }
+
+    async showDateAndMileagePopup(carId) {
+        console.log('CarOverviewMonitor: showDateAndMileagePopup called with carId:', carId);
+        try {
+            const car = await DataService.getCar(carId);
+            console.log('Retrieved car:', car);
+            
+            if (!car) {
+                window.alert('Автомобиль не найден');
+                return;
             }
-        } else {
-            console.log('CarOverviewMonitor: No current car, using regular popup');
-            // Fallback to regular popup if no car is selected
-            await showUserAlertPopup();
+            
+            // Get current date
+            const today = new Date();
+            const currentDate = today.toLocaleDateString('ru-RU');
+            
+            const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+            const currentMileage = car.mileage || 0;
+            
+            let popupHtml = `
+                <div class="date-mileage-popup">
+                    <div class="popup-header">
+                        <h2>Добавить новое уведомление</h2>
+                        <button class="close-btn" onclick="closeDateAndMileagePopup()">&times;</button>
+                    </div>
+                    <div class="popup-body">
+                        <div class="form-section">
+                            <h3>Автомобиль</h3>
+                            <div class="selected-car-info">
+                                <div class="selected-car-img">
+                                    ${car.img && car.img.startsWith('data:image/') ? 
+                                        `<img src="${car.img}" alt="${carName}">` : 
+                                        `<span>🚗</span>`
+                                    }
+                                </div>
+                                <div class="selected-car-details">
+                                    <div class="selected-car-name">${carName}</div>
+                                    <div class="selected-car-year">${car.year ? `Год: ${car.year}` : ''}</div>
+                                    <div class="selected-car-mileage">${car.mileage ? `Пробег: ${car.mileage} км` : ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Дата обнаружения проблемы</h3>
+                            <div class="input-group">
+                                <label for="alert-date-input">Дата:</label>
+                                <input type="text" id="alert-date-input" value="${currentDate}" 
+                                       placeholder="дд.мм.гггг" required 
+                                       pattern="\\d{2}\\.\\d{2}\\.\\d{4}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Актуальный пробег</h3>
+                            <div class="input-group">
+                                <label for="alert-mileage-input">
+                                    <span class="icon">🛣️</span>
+                                    Пробег (км):
+                                </label>
+                                <input type="number" id="alert-mileage-input" 
+                                       value="${currentMileage}"
+                                       placeholder="Введите текущий пробег" 
+                                       min="0" required>
+                            </div>
+                        </div>
+                        
+                        <div class="popup-footer">
+                            <button onclick="confirmDateAndMileage()" class="btn-primary">Продолжить</button>
+                            <button onclick="closeDateAndMileagePopup()" class="btn-secondary">Отмена</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Create and show popup
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.id = 'date-mileage-overlay';
+            overlay.innerHTML = popupHtml;
+            
+            document.body.appendChild(overlay);
+            
+            // Make functions globally available
+            window.closeDateAndMileagePopup = this.closeDateAndMileagePopup.bind(this);
+            window.confirmDateAndMileage = this.confirmDateAndMileage.bind(this);
+            
+            // Initialize current alert data
+            this.currentAlertData = {
+                carId: carId,
+                date: currentDate,
+                mileage: currentMileage
+            };
+            
+            // Suggest current mileage from mileage handler
+            try {
+                const { mileageHandler } = await import('./mileageHandler.js');
+                await mileageHandler.suggestMileageForInput('alert-mileage-input', carId);
+            } catch (error) {
+                console.error('Failed to suggest mileage:', error);
+            }
+            
+        } catch (error) {
+            console.error('Error showing date & mileage popup:', error);
+            window.alert('Ошибка загрузки данных: ' + error.message);
+        }
+    }
+
+    closeDateAndMileagePopup() {
+        const overlay = document.getElementById('date-mileage-overlay');
+        if (overlay) {
+            document.body.removeChild(overlay);
+        }
+        this.currentAlertData = null;
+    }
+
+    async confirmDateAndMileage() {
+        console.log('CarOverviewMonitor: confirmDateAndMileage called');
+        try {
+            const dateInput = document.getElementById('alert-date-input');
+            const mileageInput = document.getElementById('alert-mileage-input');
+            
+            const date = dateInput ? dateInput.value : '';
+            const mileage = mileageInput ? mileageInput.value : '';
+            
+            console.log('Date input value:', date);
+            console.log('Mileage input value:', mileage);
+            
+            // Validate date format
+            if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+                window.alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+                dateInput.style.borderColor = '#dc3545';
+                return;
+            }
+            
+            // Validate mileage
+            if (!mileage || isNaN(mileage) || Number(mileage) < 0) {
+                window.alert('Пожалуйста, введите корректный пробег');
+                mileageInput.style.borderColor = '#dc3545';
+                return;
+            }
+            
+            // Update current alert data
+            this.currentAlertData.date = date;
+            this.currentAlertData.mileage = Number(mileage);
+            
+            console.log('Updated currentAlertData:', this.currentAlertData);
+            
+            // Store alert data in session storage for the user-alert page
+            sessionStorage.setItem('userAlertData', JSON.stringify(this.currentAlertData));
+            
+            // Close popup and navigate to user-alert page
+            this.closeDateAndMileagePopup();
+            window.location.hash = '#user-alert';
+            
+        } catch (error) {
+            console.error('Error confirming date and mileage:', error);
+            window.alert('Ошибка: ' + error.message);
         }
     }
 

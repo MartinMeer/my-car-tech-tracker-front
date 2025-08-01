@@ -57,8 +57,6 @@ window.addSpare = addSpare;
 window.calculateRepairTotal = calculateRepairTotal;
 window.removeCarFromBackend = removeCarFromBackend;
 window.showConfirmationDialog = showConfirmationDialog;
-window.handleProblemsButtonClick = handleProblemsButtonClick;
-window.handleServiceButtonClick = handleServiceButtonClick;
 
 // Service Record Manager functions
 window.addMaintenanceToRecord = addMaintenanceToRecord;
@@ -84,6 +82,9 @@ async function handleProblemsButtonClick() {
   console.log('🚨 Problems button clicked - showing car selection popup');
   await showProblemsCarSelectionPopup();
 }
+
+// Make button handlers globally available
+window.handleProblemsButtonClick = handleProblemsButtonClick;
 
 // Show car selection popup for problems (modified from service record)
 async function showProblemsCarSelectionPopup() {
@@ -305,6 +306,9 @@ async function handleServiceButtonClick() {
   console.log('🔧 Service button clicked - showing car selection popup');
   await showServiceCarSelectionPopup();
 }
+
+// Make service button handler globally available
+window.handleServiceButtonClick = handleServiceButtonClick;
 
 // Show car selection popup for service (modified from problems)
 async function showServiceCarSelectionPopup() {
