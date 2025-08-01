@@ -40,6 +40,12 @@ export function loadPage(hash, mainContent, initializePageUI) {
           <h1>Мой автопарк</h1>
           <p>Обзор всех автомобилей в вашем парке</p>
         </div>
+        <div class="fleet-add-car-section">
+          <a href="#add-car" class="btn btn-primary fleet-add-car-btn">
+            <span class="btn-icon">➕</span>
+            <span class="btn-text">Добавить новый автомобиль</span>
+          </a>
+        </div>
         <div id="fleet-cars-list" class="fleet-cars-list">
           <!-- Cars will be loaded here dynamically -->
         </div>
