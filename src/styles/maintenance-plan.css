@@ -394,6 +394,61 @@
     background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
 }
 
+/* Maintenance Action Buttons */
+.maintenance-action-btn {
+    background: none;
+    border: 1px solid #ced4da;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    color: #495057;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.maintenance-action-btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.maintenance-action-btn.add-to-plan {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    color: #1976d2;
+}
+
+.maintenance-action-btn.add-to-plan:hover {
+    background-color: #bbdefb;
+    border-color: #1976d2;
+}
+
+.maintenance-action-btn.add-to-plan.in-plan {
+    background-color: #e8f5e8;
+    border-color: #4caf50;
+    color: #388e3c;
+}
+
+.maintenance-action-btn.add-to-plan.in-plan:hover {
+    background-color: #c8e6c9;
+    border-color: #388e3c;
+}
+
+/* Maintenance in plan styling */
+.maintenance-in-plan {
+    opacity: 0.7;
+    text-decoration: line-through;
+}
+
+.maintenance-in-plan .operation-name,
+.maintenance-in-plan .mileage,
+.maintenance-in-plan .period,
+.maintenance-in-plan .notes {
+    text-decoration: line-through;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .maintenance-plan-container {

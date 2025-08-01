@@ -457,6 +457,39 @@
   background: #059669;
 }
 
+/* Add to Plan Button Styles */
+.alert-action-btn.add-to-plan {
+  background: #3b82f6;
+  color: white;
+}
+
+.alert-action-btn.add-to-plan:hover {
+  background: #2563eb;
+}
+
+.alert-action-btn.add-to-plan.in-plan {
+  background: #10b981;
+  color: white;
+}
+
+.alert-action-btn.add-to-plan.in-plan:hover {
+  background: #059669;
+}
+
+/* Alert in Plan Styling */
+.alert-in-plan {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.alert-in-plan td {
+  text-decoration: line-through;
+}
+
+.alert-in-plan .alert-priority-badge {
+  opacity: 0.7;
+}
+
 /* Selected Car Info */
 .selected-car-info {
   display: flex;

@@ -61,6 +61,11 @@ class MaintenancePlanUI {
             this.savePlan();
         });
 
+        // Saved plans button
+        document.getElementById('saved-plans-btn').addEventListener('click', () => {
+            this.showSavedPlans();
+        });
+
         document.getElementById('cancel-plan-btn').addEventListener('click', () => {
             this.cancelPlan();
         });
@@ -84,7 +89,21 @@ class MaintenancePlanUI {
             }
         });
 
+        // Saved plans modal event listeners
+        document.getElementById('close-saved-plans').addEventListener('click', () => {
+            this.hideSavedPlansModal();
+        });
 
+        document.getElementById('close-saved-plans-btn').addEventListener('click', () => {
+            this.hideSavedPlansModal();
+        });
+
+        // Close saved plans modal on outside click
+        document.getElementById('saved-plans-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'saved-plans-modal') {
+                this.hideSavedPlansModal();
+            }
+        });
 
         // Confirmation modal
         document.getElementById('confirm-yes').addEventListener('click', () => {
@@ -315,15 +334,61 @@ class MaintenancePlanUI {
     }
 
     deleteRow(tr) {
-        this.showConfirmModal('Вы уверены, что хотите удалить эту строку?', () => {
-            const tableType = tr.dataset.tableType;
-            const rowId = tr.dataset.rowId;
-            
-            this.draftData[tableType] = this.draftData[tableType].filter(row => row.id !== rowId);
-            tr.remove();
-            this.saveDraft();
-            this.updateRowNumbers(tableType);
-        });
+        const tableType = tr.dataset.tableType;
+        const rowId = tr.dataset.rowId;
+        const row = this.draftData[tableType].find(r => r.id === rowId);
+        
+        // Check if this row was added from an alert
+        if (row && row.alertId) {
+            this.showConfirmModal('Вы уверены, что хотите удалить эту строку? Это также восстановит исходное уведомление.', () => {
+                // Remove from plan
+                this.draftData[tableType] = this.draftData[tableType].filter(row => row.id !== rowId);
+                tr.remove();
+                this.saveDraft();
+                this.updateRowNumbers(tableType);
+                
+                // Update the original alert to remove inPlan flag
+                this.updateAlertFromPlan(row.alertId, false);
+            });
+        } else if (row && row.maintenanceId) {
+            // Check if this row was added from maintenance schedule
+            this.showConfirmModal('Вы уверены, что хотите удалить эту строку? Это также восстановит исходную запись в периодическом обслуживании.', () => {
+                // Remove from plan
+                this.draftData[tableType] = this.draftData[tableType].filter(row => row.id !== rowId);
+                tr.remove();
+                this.saveDraft();
+                this.updateRowNumbers(tableType);
+                
+                // Note: The maintenance item will be automatically restored when the overview page is reloaded
+                // since we check the plan status on each load
+            });
+        } else {
+            this.showConfirmModal('Вы уверены, что хотите удалить эту строку?', () => {
+                this.draftData[tableType] = this.draftData[tableType].filter(row => row.id !== rowId);
+                tr.remove();
+                this.saveDraft();
+                this.updateRowNumbers(tableType);
+            });
+        }
+    }
+
+    updateAlertFromPlan(alertId, inPlan) {
+        try {
+            // Update the alert in localStorage
+            const existingAlerts = localStorage.getItem('userAlerts');
+            if (existingAlerts) {
+                const alerts = JSON.parse(existingAlerts);
+                const updatedAlerts = alerts.map(alert => {
+                    if (alert.id == alertId) {
+                        return { ...alert, inPlan: inPlan };
+                    }
+                    return alert;
+                });
+                localStorage.setItem('userAlerts', JSON.stringify(updatedAlerts));
+            }
+        } catch (error) {
+            console.error('Error updating alert from plan:', error);
+        }
     }
 
     updateRowNumbers(tableType) {
@@ -426,16 +491,16 @@ class MaintenancePlanUI {
             // Save to backend
             await DataService.saveMaintenancePlan(planData);
             
-            // Export to PDF automatically when saving
-            await this.exportToPDF();
+            // Save to localStorage for saved plans
+            this.saveToSavedPlans(planData);
             
             // Clear draft
             this.clearDraft();
             
             // Show success message
-            this.showMessage('План успешно сохранен и экспортирован в PDF', 'success');
+            this.showMessage('План успешно сохранен', 'success');
             
-                        // Redirect back to car overview
+            // Redirect back to car overview
             setTimeout(() => {
               window.location.hash = `#my-car-overview?car=${carId}`;
             }, 2000);
@@ -444,6 +509,176 @@ class MaintenancePlanUI {
             console.error('Error saving plan:', error);
             this.showMessage('Ошибка при сохранении плана', 'error');
         }
+    }
+
+    saveToSavedPlans(planData) {
+        try {
+            const carId = this.getCarIdFromUrl();
+            const savedPlansKey = `saved_maintenance_plans_${carId}`;
+            
+            // Get existing saved plans
+            const existingPlans = localStorage.getItem(savedPlansKey);
+            const savedPlans = existingPlans ? JSON.parse(existingPlans) : [];
+            
+            // Create plan entry
+            const planEntry = {
+                id: this.generateId(),
+                title: `План ТО от ${new Date(planData.date).toLocaleDateString('ru-RU')}`,
+                date: planData.date,
+                mileage: planData.mileage,
+                maintenance: planData.maintenance,
+                repairs: planData.repairs,
+                carId: planData.carId,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Add to beginning of array (newest first)
+            savedPlans.unshift(planEntry);
+            
+            // Keep only last 20 plans
+            if (savedPlans.length > 20) {
+                savedPlans.splice(20);
+            }
+            
+            localStorage.setItem(savedPlansKey, JSON.stringify(savedPlans));
+        } catch (error) {
+            console.error('Error saving to saved plans:', error);
+        }
+    }
+
+    showSavedPlans() {
+        try {
+            const carId = this.getCarIdFromUrl();
+            const savedPlansKey = `saved_maintenance_plans_${carId}`;
+            
+            // Get saved plans
+            const existingPlans = localStorage.getItem(savedPlansKey);
+            const savedPlans = existingPlans ? JSON.parse(existingPlans) : [];
+            
+            // Render saved plans list
+            this.renderSavedPlansList(savedPlans);
+            
+            // Show modal
+            document.getElementById('saved-plans-modal').style.display = 'flex';
+        } catch (error) {
+            console.error('Error showing saved plans:', error);
+            this.showMessage('Ошибка при загрузке сохраненных планов', 'error');
+        }
+    }
+
+    renderSavedPlansList(savedPlans) {
+        const listContainer = document.getElementById('saved-plans-list');
+        
+        if (savedPlans.length === 0) {
+            listContainer.innerHTML = '<div class="saved-plans-empty">Нет сохраненных планов</div>';
+            return;
+        }
+        
+        listContainer.innerHTML = '';
+        
+        savedPlans.forEach(plan => {
+            const planElement = this.createSavedPlanElement(plan);
+            listContainer.appendChild(planElement);
+        });
+    }
+
+    createSavedPlanElement(plan) {
+        const planDiv = document.createElement('div');
+        planDiv.className = 'saved-plan-item';
+        planDiv.dataset.planId = plan.id;
+        
+        const maintenanceCount = plan.maintenance ? plan.maintenance.length : 0;
+        const repairsCount = plan.repairs ? plan.repairs.length : 0;
+        const totalOperations = maintenanceCount + repairsCount;
+        
+        const planDate = new Date(plan.date).toLocaleDateString('ru-RU');
+        
+        planDiv.innerHTML = `
+            <div class="saved-plan-info">
+                <div class="saved-plan-title">${plan.title}</div>
+                <div class="saved-plan-date">${planDate}</div>
+                <div class="saved-plan-details">
+                    Пробег: ${plan.mileage} км | Операций: ${totalOperations}
+                </div>
+            </div>
+            <div class="saved-plan-actions">
+                <button class="saved-plan-load-btn">Загрузить</button>
+                <button class="saved-plan-delete-btn" title="Удалить">🗑️</button>
+            </div>
+        `;
+        
+        // Add event listeners
+        const loadBtn = planDiv.querySelector('.saved-plan-load-btn');
+        const deleteBtn = planDiv.querySelector('.saved-plan-delete-btn');
+        
+        loadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.loadSavedPlan(plan);
+        });
+        
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteSavedPlan(plan.id);
+        });
+        
+        return planDiv;
+    }
+
+    loadSavedPlan(plan) {
+        try {
+            // Load plan data into current draft
+            this.draftData = {
+                maintenance: plan.maintenance || [],
+                repairs: plan.repairs || [],
+                carId: plan.carId,
+                lastModified: new Date().toISOString()
+            };
+            
+            // Update display
+            this.updateDisplay();
+            
+            // Save as current draft
+            this.saveDraft();
+            
+            // Hide modal
+            this.hideSavedPlansModal();
+            
+            // Show success message
+            this.showMessage('План загружен', 'success');
+        } catch (error) {
+            console.error('Error loading saved plan:', error);
+            this.showMessage('Ошибка при загрузке плана', 'error');
+        }
+    }
+
+    deleteSavedPlan(planId) {
+        this.showConfirmModal('Вы уверены, что хотите удалить этот план?', () => {
+            try {
+                const carId = this.getCarIdFromUrl();
+                const savedPlansKey = `saved_maintenance_plans_${carId}`;
+                
+                // Get existing saved plans
+                const existingPlans = localStorage.getItem(savedPlansKey);
+                const savedPlans = existingPlans ? JSON.parse(existingPlans) : [];
+                
+                // Remove the plan
+                const updatedPlans = savedPlans.filter(plan => plan.id !== planId);
+                
+                localStorage.setItem(savedPlansKey, JSON.stringify(updatedPlans));
+                
+                // Re-render the list
+                this.renderSavedPlansList(updatedPlans);
+                
+                this.showMessage('План удален', 'success');
+            } catch (error) {
+                console.error('Error deleting saved plan:', error);
+                this.showMessage('Ошибка при удалении плана', 'error');
+            }
+        });
+    }
+
+    hideSavedPlansModal() {
+        document.getElementById('saved-plans-modal').style.display = 'none';
     }
 
     cancelPlan() {

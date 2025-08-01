@@ -1,1 +1,11 @@
-Let's implement add-to-plan funcionality on my-car-overview     
+ Let's implement add-to-plan funcionality on my-car-overview. It means carete interactions between corresponded pages   
+1. in alering section, for each entry, add В план button with restoring ability (as implemented for archiving btn)
+2. On click, send entry to plan into a repairs-table and fill a row there.
+    In alert section let this entry remain crosslined
+    Mapping: date to date; {system, description} to operation; priority to notes section in form a comment string: Добавлено из уведомления от $date со статусом "$priority"; resource field in plan remain empty;
+3. When restore in alert section OR delete in plan page:
+- delete the entry from plan
+- clear cross-line
+Note: use where possible existing styles
+
+

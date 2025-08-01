@@ -141,6 +141,66 @@
     line-height: 1.2;
 }
 
+/* Maintenance Actions */
+.maintenance-actions {
+    text-align: center;
+    width: 100px;
+}
+
+.maintenance-action-btn {
+    background: none;
+    border: 1px solid #ced4da;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.625rem;
+    color: #495057;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.maintenance-action-btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.maintenance-action-btn.add-to-plan {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    color: #1976d2;
+}
+
+.maintenance-action-btn.add-to-plan:hover {
+    background-color: #bbdefb;
+    border-color: #1976d2;
+}
+
+.maintenance-action-btn.add-to-plan.in-plan {
+    background-color: #e8f5e8;
+    border-color: #4caf50;
+    color: #388e3c;
+}
+
+.maintenance-action-btn.add-to-plan.in-plan:hover {
+    background-color: #c8e6c9;
+    border-color: #388e3c;
+}
+
+/* Maintenance in plan styling */
+.maintenance-in-plan {
+    opacity: 0.7;
+    text-decoration: line-through;
+}
+
+.maintenance-in-plan .operation-name,
+.maintenance-in-plan .mileage,
+.maintenance-in-plan .period,
+.maintenance-in-plan .notes {
+    text-decoration: line-through;
+}
+
 /* Maintenance Schedule Table - Compact Version */
 #maintenance-schedule-table {
     font-size: 0.75rem;

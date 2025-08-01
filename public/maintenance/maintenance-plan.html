@@ -74,8 +74,25 @@
     <!-- Action Buttons -->
     <div class="plan-actions">
         <button id="save-plan-btn" class="primary-btn">Сохранить план</button>
+        <button id="saved-plans-btn" class="secondary-btn">Сохраненные планы</button>
         <button id="export-pdf-btn" class="secondary-btn">Экспорт в PDF</button>
         <button id="cancel-plan-btn" class="secondary-btn">Отмена</button>
+    </div>
+</div>
+
+<!-- Saved Plans Modal -->
+<div id="saved-plans-modal" class="modal">
+    <div class="modal-content saved-plans-content">
+        <div class="modal-header">
+            <h3>Сохраненные планы</h3>
+            <button id="close-saved-plans" class="close-btn">&times;</button>
+        </div>
+        <div class="saved-plans-list" id="saved-plans-list">
+            <!-- Saved plans will be loaded here -->
+        </div>
+        <div class="modal-footer">
+            <button id="close-saved-plans-btn" class="secondary-btn">Закрыть</button>
+        </div>
     </div>
 </div>
 

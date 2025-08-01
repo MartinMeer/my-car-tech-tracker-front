@@ -231,9 +231,10 @@ class CarOverviewMonitor {
         this.alerts.forEach(alert => {
             const config = priorityConfig[alert.priority] || priorityConfig.info;
             const isArchived = alert.archived || false;
+            const isInPlan = alert.inPlan || false;
 
             tableHTML += `
-                <tr data-alert-id="${alert.id}">
+                <tr data-alert-id="${alert.id}" class="${isInPlan ? 'alert-in-plan' : ''}">
                     <td>${alert.date}</td>
                     <td>
                         <span class="alert-priority-badge ${alert.priority}">
@@ -243,6 +244,11 @@ class CarOverviewMonitor {
                     <td>${alert.subsystem}</td>
                     <td>${this.truncateText(alert.description, 50)}</td>
                     <td class="alert-actions-cell">
+                        <button class="alert-action-btn add-to-plan ${isInPlan ? 'in-plan' : ''}" 
+                                onclick="carOverviewMonitor.toggleAlertPlan(${alert.id})" 
+                                title="${isInPlan ? 'Удалить из плана' : 'Добавить в план'}">
+                            ${isInPlan ? '📋 В плане' : '📋 В план'}
+                        </button>
                         <button class="alert-action-btn archive ${isArchived ? 'archived' : ''}" 
                                 onclick="carOverviewMonitor.toggleAlertArchive(${alert.id})" 
                                 title="${isArchived ? 'Восстановить из архива' : 'Отправить в архив'}">
@@ -302,6 +308,117 @@ class CarOverviewMonitor {
         } catch (error) {
             console.error('Error toggling alert archive:', error);
         }
+    }
+
+    async toggleAlertPlan(alertId) {
+        try {
+            const alert = this.alerts.find(a => a.id == alertId);
+            if (!alert) return;
+
+            if (alert.inPlan) {
+                // Remove from plan
+                await this.removeAlertFromPlan(alert);
+            } else {
+                // Add to plan
+                await this.addAlertToPlan(alert);
+            }
+            
+            // Update in storage
+            await this.updateAlert(alert);
+            
+            // Reload alerts
+            await this.loadAlerts();
+        } catch (error) {
+            console.error('Error toggling alert plan:', error);
+        }
+    }
+
+    async addAlertToPlan(alert) {
+        try {
+            // Create plan entry
+            const planEntry = {
+                id: this.generateId(),
+                operation: `${alert.subsystem}: ${alert.description}`,
+                resources: '',
+                notes: `Добавлено из уведомления от ${alert.date} со статусом "${this.getPriorityText(alert.priority)}"`,
+                createdAt: new Date().toISOString(),
+                alertId: alert.id // Link back to original alert
+            };
+
+            // Add to repairs table in maintenance plan
+            const carId = this.currentCar.id;
+            const planKey = `maintenance_plan_draft_${carId}`;
+            
+            let planData = localStorage.getItem(planKey);
+            if (planData) {
+                planData = JSON.parse(planData);
+            } else {
+                planData = {
+                    maintenance: [],
+                    repairs: [],
+                    carId: carId,
+                    lastModified: new Date().toISOString()
+                };
+            }
+
+            // Add to repairs table
+            if (!planData.repairs) {
+                planData.repairs = [];
+            }
+            planData.repairs.push(planEntry);
+            
+            // Save plan data
+            localStorage.setItem(planKey, JSON.stringify(planData));
+            
+            // Mark alert as in plan
+            alert.inPlan = true;
+            
+            console.log('Alert added to plan:', alert.id);
+        } catch (error) {
+            console.error('Error adding alert to plan:', error);
+            throw error;
+        }
+    }
+
+    async removeAlertFromPlan(alert) {
+        try {
+            const carId = this.currentCar.id;
+            const planKey = `maintenance_plan_draft_${carId}`;
+            
+            let planData = localStorage.getItem(planKey);
+            if (planData) {
+                planData = JSON.parse(planData);
+                
+                // Remove from repairs table
+                if (planData.repairs) {
+                    planData.repairs = planData.repairs.filter(entry => entry.alertId !== alert.id);
+                }
+                
+                // Save updated plan data
+                localStorage.setItem(planKey, JSON.stringify(planData));
+            }
+            
+            // Mark alert as not in plan
+            alert.inPlan = false;
+            
+            console.log('Alert removed from plan:', alert.id);
+        } catch (error) {
+            console.error('Error removing alert from plan:', error);
+            throw error;
+        }
+    }
+
+    getPriorityText(priority) {
+        const priorityTexts = {
+            critical: 'Критично',
+            warning: 'Непонятно',
+            info: 'Потерпим'
+        };
+        return priorityTexts[priority] || 'Потерпим';
+    }
+
+    generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
 
     async updateAlert(updatedAlert) {
@@ -575,6 +692,7 @@ class CarOverviewMonitor {
                                 <th>Период (мес)</th>
                                 <th>Статус</th>
                                 <th>Примечания</th>
+                                <th>Действия</th>
                             </tr>
                         </thead>
                         <tbody id="maintenance-schedule-tbody">
@@ -623,9 +741,10 @@ class CarOverviewMonitor {
                 const status = maintenanceDataService.calculateMaintenanceStatus(item, currentMileage);
                 const statusIcon = maintenanceDataService.getStatusIcon(status);
                 const statusText = maintenanceDataService.getStatusText(status);
+                const isInPlan = this.isMaintenanceItemInPlan(item);
                 
                 tableHTML += `
-                    <tr class="maintenance-row ${status}">
+                    <tr class="maintenance-row ${status} ${isInPlan ? 'maintenance-in-plan' : ''}" data-maintenance-id="${index}">
                         <td>${index + 1}</td>
                         <td class="operation-name">${item.operation}</td>
                         <td class="mileage">${item.mileage.toLocaleString()}</td>
@@ -635,6 +754,13 @@ class CarOverviewMonitor {
                             <span class="status-text">${statusText}</span>
                         </td>
                         <td class="notes">${item.notes}</td>
+                        <td class="maintenance-actions">
+                            <button class="maintenance-action-btn add-to-plan ${isInPlan ? 'in-plan' : ''}" 
+                                    onclick="carOverviewMonitor.toggleMaintenancePlan(${index})" 
+                                    title="${isInPlan ? 'Удалить из плана' : 'Добавить в план'}">
+                                ${isInPlan ? '📋 В плане' : '📋 В план'}
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
@@ -642,7 +768,7 @@ class CarOverviewMonitor {
             return tableHTML;
         } catch (error) {
             console.error('Error loading maintenance schedule:', error);
-            return '<tr><td colspan="6">Ошибка загрузки данных обслуживания</td></tr>';
+            return '<tr><td colspan="7">Ошибка загрузки данных обслуживания</td></tr>';
         }
     }
 
@@ -883,6 +1009,125 @@ class CarOverviewMonitor {
     truncateText(text, maxLength) {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
+    }
+
+    isMaintenanceItemInPlan(item) {
+        // Check if maintenance item is in plan
+        const carId = this.currentCar.id;
+        const planKey = `maintenance_plan_draft_${carId}`;
+        
+        try {
+            const planData = localStorage.getItem(planKey);
+            if (planData) {
+                const plan = JSON.parse(planData);
+                if (plan.maintenance) {
+                    return plan.maintenance.some(planItem => 
+                        planItem.maintenanceId === item.operation
+                    );
+                }
+            }
+        } catch (error) {
+            console.error('Error checking if maintenance item is in plan:', error);
+        }
+        
+        return false;
+    }
+
+    async toggleMaintenancePlan(maintenanceIndex) {
+        try {
+            const maintenanceSchedule = maintenanceDataService.getMaintenanceSchedule();
+            const item = maintenanceSchedule[maintenanceIndex];
+            
+            if (!item) {
+                console.error('Maintenance item not found:', maintenanceIndex);
+                return;
+            }
+
+            if (this.isMaintenanceItemInPlan(item)) {
+                // Remove from plan
+                await this.removeMaintenanceFromPlan(item);
+            } else {
+                // Add to plan
+                await this.addMaintenanceToPlan(item, maintenanceIndex);
+            }
+            
+            // Reload maintenance data to update display
+            await this.loadMaintenanceData();
+        } catch (error) {
+            console.error('Error toggling maintenance plan:', error);
+        }
+    }
+
+    async addMaintenanceToPlan(item, maintenanceIndex) {
+        try {
+            // Create plan entry
+            const planEntry = {
+                id: this.generateId(),
+                operation: item.operation,
+                resources: '',
+                notes: `Добавлено из периодического обслуживания. Пробег: ${item.mileage.toLocaleString()} км, период: ${item.period} мес. ${item.notes}`,
+                createdAt: new Date().toISOString(),
+                maintenanceId: item.operation, // Link back to original maintenance item
+                maintenanceIndex: maintenanceIndex
+            };
+
+            // Add to maintenance table in maintenance plan
+            const carId = this.currentCar.id;
+            const planKey = `maintenance_plan_draft_${carId}`;
+            
+            let planData = localStorage.getItem(planKey);
+            if (planData) {
+                planData = JSON.parse(planData);
+            } else {
+                planData = {
+                    maintenance: [],
+                    repairs: [],
+                    carId: carId,
+                    lastModified: new Date().toISOString()
+                };
+            }
+
+            // Add to maintenance table
+            if (!planData.maintenance) {
+                planData.maintenance = [];
+            }
+            planData.maintenance.push(planEntry);
+            
+            // Save plan data
+            localStorage.setItem(planKey, JSON.stringify(planData));
+            
+            console.log('Maintenance item added to plan:', item.operation);
+        } catch (error) {
+            console.error('Error adding maintenance to plan:', error);
+            throw error;
+        }
+    }
+
+    async removeMaintenanceFromPlan(item) {
+        try {
+            const carId = this.currentCar.id;
+            const planKey = `maintenance_plan_draft_${carId}`;
+            
+            let planData = localStorage.getItem(planKey);
+            if (planData) {
+                planData = JSON.parse(planData);
+                
+                // Remove from maintenance table
+                if (planData.maintenance) {
+                    planData.maintenance = planData.maintenance.filter(entry => 
+                        entry.maintenanceId !== item.operation
+                    );
+                }
+                
+                // Save updated plan data
+                localStorage.setItem(planKey, JSON.stringify(planData));
+            }
+            
+            console.log('Maintenance item removed from plan:', item.operation);
+        } catch (error) {
+            console.error('Error removing maintenance from plan:', error);
+            throw error;
+        }
     }
 
     destroy() {

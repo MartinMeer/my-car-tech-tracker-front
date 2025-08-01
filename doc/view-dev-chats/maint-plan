@@ -18,7 +18,12 @@ On click change, make the row for editing. On click delete, delete the row with 
 On bottom of the page add a button to save the plan, and the cancel button.
 
 
-
+Add a saved plans storing functionality in maintenance-plan:
+1. Change behavior for Save btn: delete from it an exporting ability (remaining exporting for Export btn only) and add a save ability. (both for backend and current prototype versions) 
+2. Add a Saved plans btn to plan-action section
+3. When click to Saved, show the saved-plans popup with list of plans, sorted by date.
+4. When click on concrete plan entry, load selected plan to main plan page
+5. Realise a deleting ability with confirmation
 
 
 

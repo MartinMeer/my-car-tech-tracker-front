@@ -1008,7 +1008,7 @@ async function createAlertGroup(carName, carData, sortType = 'date-desc') {
 // Create individual alert item
 async function createAlertItem(alert) {
   const item = document.createElement('div');
-  item.className = `alert-item ${alert.archived ? 'archived' : ''}`;
+  item.className = `alert-item ${alert.archived ? 'archived' : ''} ${alert.inPlan ? 'alert-in-plan' : ''}`;
   item.setAttribute('data-alert-id', alert.id);
   
   const priorityConfig = {
@@ -1019,8 +1019,9 @@ async function createAlertItem(alert) {
   
   const config = priorityConfig[alert.priority] || priorityConfig.info;
   
-  // Check if alert is archived
+  // Check if alert is archived or in plan
   const isArchived = alert.archived || false;
+  const isInPlan = alert.inPlan || false;
   
   item.innerHTML = `
     <div class="alert-priority-marker ${alert.priority}">
@@ -1039,6 +1040,10 @@ async function createAlertItem(alert) {
     </div>
     
     <div class="alert-actions">
+      <button class="alert-action-btn add-to-plan ${isInPlan ? 'in-plan' : ''}" onclick="toggleAlertPlan(${alert.id})" title="${isInPlan ? 'Удалить из плана' : 'Добавить в план'}">
+        <span class="icon">📋</span>
+        ${isInPlan ? 'В плане' : 'В план'}
+      </button>
       <button class="alert-action-btn archive ${isArchived ? 'archived' : ''}" onclick="toggleAlertArchive(${alert.id})" title="${isArchived ? 'Восстановить из архива' : 'Отправить в архив'}">
         <span class="icon">${isArchived ? '📂' : '🗄️'}</span>
         ${isArchived ? 'В архиве' : 'В архив'}
@@ -1264,6 +1269,11 @@ window.toggleAlertArchive = async function(alertId) {
     // Toggle archive status
     alertItem.archived = !alertItem.archived;
     
+    // If restoring from archive and alert is in plan, remove from plan
+    if (!alertItem.archived && alertItem.inPlan) {
+      await removeAlertFromPlan(alertItem);
+    }
+    
     // Update in storage
     await updateUserAlert(alertItem);
     
@@ -1275,6 +1285,135 @@ window.toggleAlertArchive = async function(alertId) {
     window.alert('Ошибка обновления статуса архива: ' + error.message);
   }
 };
+
+// Remove alert from plan (helper function)
+async function removeAlertFromPlan(alert) {
+  try {
+    // Get all cars to find the one this alert belongs to
+    const cars = await DataService.getCars();
+    const car = cars.find(c => c.id == alert.carId);
+    
+    if (car) {
+      const planKey = `maintenance_plan_draft_${car.id}`;
+      
+      let planData = localStorage.getItem(planKey);
+      if (planData) {
+        planData = JSON.parse(planData);
+        
+        // Remove from repairs table
+        if (planData.repairs) {
+          planData.repairs = planData.repairs.filter(entry => entry.alertId !== alert.id);
+        }
+        
+        // Save updated plan data
+        localStorage.setItem(planKey, JSON.stringify(planData));
+      }
+    }
+    
+    // Mark alert as not in plan
+    alert.inPlan = false;
+    
+  } catch (error) {
+    console.error('Error removing alert from plan:', error);
+    throw error;
+  }
+}
+
+// Toggle alert plan status
+window.toggleAlertPlan = async function(alertId) {
+  try {
+    const alerts = await getUserAlerts();
+    const alertItem = alerts.find(a => a.id == alertId);
+    
+    if (!alertItem) {
+      window.alert('Проблема не найдена');
+      return;
+    }
+    
+    if (alertItem.inPlan) {
+      // Remove from plan
+      await removeAlertFromPlan(alertItem);
+    } else {
+      // Add to plan
+      await addAlertToPlan(alertItem);
+    }
+    
+    // Update in storage
+    await updateUserAlert(alertItem);
+    
+    // Reload alert list
+    loadAlertList();
+    
+  } catch (error) {
+    console.error('Error toggling alert plan:', error);
+    window.alert('Ошибка обновления статуса плана: ' + error.message);
+  }
+};
+
+// Add alert to plan (helper function)
+async function addAlertToPlan(alert) {
+  try {
+    // Create plan entry
+    const planEntry = {
+      id: generateId(),
+      operation: `${alert.subsystem}: ${alert.description}`,
+      resources: '',
+      notes: `Добавлено из уведомления от ${alert.date} со статусом "${getPriorityText(alert.priority)}"`,
+      createdAt: new Date().toISOString(),
+      alertId: alert.id // Link back to original alert
+    };
+
+    // Get all cars to find the one this alert belongs to
+    const cars = await DataService.getCars();
+    const car = cars.find(c => c.id == alert.carId);
+    
+    if (car) {
+      const planKey = `maintenance_plan_draft_${car.id}`;
+      
+      let planData = localStorage.getItem(planKey);
+      if (planData) {
+        planData = JSON.parse(planData);
+      } else {
+        planData = {
+          maintenance: [],
+          repairs: [],
+          carId: car.id,
+          lastModified: new Date().toISOString()
+        };
+      }
+
+      // Add to repairs table
+      if (!planData.repairs) {
+        planData.repairs = [];
+      }
+      planData.repairs.push(planEntry);
+      
+      // Save plan data
+      localStorage.setItem(planKey, JSON.stringify(planData));
+    }
+    
+    // Mark alert as in plan
+    alert.inPlan = true;
+    
+  } catch (error) {
+    console.error('Error adding alert to plan:', error);
+    throw error;
+  }
+}
+
+// Helper functions
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function getPriorityText(priority) {
+  const priorityTexts = {
+    critical: 'Критично',
+    warning: 'Непонятно',
+    info: 'Потерпим'
+  };
+  return priorityTexts[priority] || 'Потерпим';
+}
 
 // Recall alert from archive
 window.recallAlertFromArchive = async function(alertId) {

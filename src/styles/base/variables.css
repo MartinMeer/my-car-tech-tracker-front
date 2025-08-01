@@ -36,6 +36,11 @@
   --warning-light: #f7dc6f;
   --warning-dark: #d68910;
   
+  --danger-color: #e74c3c;
+  --danger-hover: #c0392b;
+  --danger-light: #ec7063;
+  --danger-dark: #a93226;
+  
   /* Neutral Colors */
   --background: #f7f9fa;
   --surface: #fff;

@@ -729,4 +729,160 @@
   display: flex;
   gap: var(--space-md);
   justify-content: flex-end;
+}
+
+/* Saved Plans Modal */
+.saved-plans-content {
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.saved-plans-content .modal-header {
+  background: var(--primary-color);
+  color: white;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding: var(--space-xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.saved-plans-content .modal-header h3 {
+  color: white;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.saved-plans-content .close-btn {
+  background: none;
+  border: none;
+  font-size: var(--font-size-2xl);
+  cursor: pointer;
+  color: white;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background var(--transition-fast);
+}
+
+.saved-plans-content .close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.saved-plans-list {
+  padding: var(--space-xl);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.saved-plan-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--space-md);
+  background: var(--surface);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.saved-plan-item:hover {
+  border-color: var(--primary-color);
+  background: var(--surface-hover);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.saved-plan-item:last-child {
+  margin-bottom: 0;
+}
+
+.saved-plan-info {
+  flex: 1;
+}
+
+.saved-plan-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-xs);
+}
+
+.saved-plan-date {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.saved-plan-details {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.saved-plan-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.saved-plan-load-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.saved-plan-load-btn:hover {
+  background: var(--primary-hover);
+}
+
+.saved-plan-delete-btn {
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  padding: var(--space-sm);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.saved-plan-delete-btn:hover {
+  background: var(--danger-hover);
+}
+
+.saved-plans-content .modal-footer {
+  padding: var(--space-xl);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
+}
+
+.saved-plans-empty {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-muted);
+  font-style: italic;
 } 
