@@ -12,7 +12,8 @@ export function initializeUserAlertUI() {
   // Set up new alert button on alert-list page
   setupNewAlertButton();
   
-
+  // Make showUserAlertPopup available globally for backward compatibility
+  window.showUserAlertPopup = showUserAlertPopup;
   
   console.log('User alert UI initialized successfully');
 }
@@ -62,7 +63,7 @@ function setupArchiveViewButton() {
 }
 
 // Show the user alert popup for car selection and date
-async function showUserAlertPopup() {
+export async function showUserAlertPopup() {
   try {
     const cars = await DataService.getCars();
     
@@ -156,6 +157,100 @@ async function showUserAlertPopup() {
   }
 }
 
+// Show the user alert popup with pre-selected car (skips car selection)
+export async function showUserAlertPopupWithCar(carId) {
+  console.log('showUserAlertPopupWithCar called with carId:', carId);
+  try {
+    const car = await DataService.getCar(carId);
+    console.log('Retrieved car:', car);
+    
+    if (!car) {
+      window.alert('Автомобиль не найден');
+      return;
+    }
+    
+    // Get current date
+    const today = new Date();
+    const currentDate = today.toLocaleDateString('ru-RU');
+    
+    const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+    
+    let popupHtml = `
+      <div class="user-alert-popup">
+        <div class="popup-header">
+          <h2>Сообщить о проблеме</h2>
+          <button class="close-btn" onclick="closeUserAlertPopup()">&times;</button>
+        </div>
+        <div class="popup-body">
+          <div class="form-section">
+            <h3>Автомобиль</h3>
+            <div class="selected-car-info">
+              <div class="selected-car-img">
+                ${car.img && car.img.startsWith('data:image/') ? 
+                  `<img src="${car.img}" alt="${carName}">` : 
+                  `<span>🚗</span>`
+                }
+              </div>
+              <div class="selected-car-details">
+                <div class="selected-car-name">${carName}</div>
+                <div class="selected-car-year">${car.year ? `Год: ${car.year}` : ''}</div>
+                <div class="selected-car-mileage">${car.mileage ? `Пробег: ${car.mileage} км` : ''}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-section">
+            <h3>Дата обнаружения проблемы</h3>
+            <div class="input-group">
+              <label for="alert-date-input">Дата:</label>
+              <input type="text" id="alert-date-input" value="${currentDate}" 
+                     placeholder="дд.мм.гггг" required 
+                     pattern="\\d{2}\\.\\d{2}\\.\\d{4}">
+            </div>
+          </div>
+          
+          <div class="popup-footer">
+            <button onclick="confirmUserAlertWithCar()" class="btn-primary">Продолжить</button>
+            <button onclick="closeUserAlertPopup()" class="btn-secondary">Отмена</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Create and show popup
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.id = 'user-alert-overlay';
+    overlay.innerHTML = popupHtml;
+    
+    console.log('showUserAlertPopupWithCar: Created overlay element');
+    console.log('showUserAlertPopupWithCar: Overlay HTML length:', popupHtml.length);
+    
+    document.body.appendChild(overlay);
+    console.log('showUserAlertPopupWithCar: Added overlay to document.body');
+    console.log('showUserAlertPopupWithCar: Overlay element:', overlay);
+    
+    // Make functions globally available
+    window.closeUserAlertPopup = closeUserAlertPopup;
+    
+    // Store carId in a closure for the confirm function
+    window.confirmUserAlertWithCar = function() {
+      confirmUserAlertWithCar(carId);
+    };
+    
+    // Initialize current alert data with pre-selected car
+    currentAlertData = {
+      carId: carId,
+      date: currentDate,
+      mileage: car.mileage
+    };
+    
+  } catch (error) {
+    console.error('Error showing user alert popup with car:', error);
+    window.alert('Ошибка загрузки данных: ' + error.message);
+  }
+}
+
 // Close user alert popup
 function closeUserAlertPopup() {
   const overlay = document.getElementById('user-alert-overlay');
@@ -227,6 +322,37 @@ async function confirmUserAlert() {
     
   } catch (error) {
     console.error('Error confirming user alert:', error);
+    window.alert('Ошибка: ' + error.message);
+  }
+}
+
+// Confirm user alert with pre-selected car and show mileage confirmation popup
+async function confirmUserAlertWithCar(carId) {
+  console.log('confirmUserAlertWithCar called with carId:', carId);
+  try {
+    const dateInput = document.getElementById('alert-date-input');
+    const date = dateInput ? dateInput.value : '';
+    
+    console.log('Date input value:', date);
+    
+    // Validate date format
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      window.alert('Пожалуйста, введите корректную дату в формате дд.мм.гггг');
+      dateInput.style.borderColor = '#dc3545';
+      return;
+    }
+    
+    // Update current alert data with date and car
+    currentAlertData.carId = carId;
+    currentAlertData.date = date;
+    
+    console.log('Updated currentAlertData:', currentAlertData);
+    
+    // Show mileage confirmation popup
+    showMileageConfirmationPopup();
+    
+  } catch (error) {
+    console.error('Error confirming user alert with car:', error);
     window.alert('Ошибка: ' + error.message);
   }
 }

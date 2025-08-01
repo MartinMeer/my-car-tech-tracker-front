@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Popup Fix</title>
+    <link rel="stylesheet" href="src/styles/styles.css">
+    <link rel="stylesheet" href="src/styles/cars.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Test Popup Fix</h1>
+        
+        <!-- Test button -->
+        <button id="test-popup-btn" class="btn-primary">Test Popup</button>
+        
+        <div style="margin-top: 20px;">
+            <p>This test verifies that the popup now opens correctly after the fix.</p>
+            <p>Expected behavior: Click the button and a popup should appear with car selection and date input.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock DataService for testing
+        window.DataService = {
+            getCar: async (id) => ({ 
+                id, 
+                brand: 'Test', 
+                model: 'Car', 
+                mileage: 50000,
+                nickname: 'My Test Car',
+                year: 2020,
+                img: null
+            }),
+            getCars: async () => [
+                { 
+                    id: 'car-1', 
+                    brand: 'Test', 
+                    model: 'Car 1', 
+                    mileage: 50000, 
+                    nickname: 'My Test Car',
+                    year: 2020,
+                    img: null
+                }
+            ],
+            getCurrentCarId: async () => 'car-1'
+        };
+
+        // Import the user alert functions
+        import { showUserAlertPopup, showUserAlertPopupWithCar } from './src/userAlertUI.js';
+        
+        // Set up test button
+        const testBtn = document.getElementById('test-popup-btn');
+        testBtn.addEventListener('click', async () => {
+            console.log('Test button clicked');
+            
+            // Test the pre-selected car popup
+            await showUserAlertPopupWithCar('car-1');
+        });
+        
+        console.log('Test popup fix initialized');
+        console.log('Click the "Test Popup" button to test the popup functionality');
+    </script>
+</body>
+</html> 

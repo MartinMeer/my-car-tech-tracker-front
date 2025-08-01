@@ -45,12 +45,51 @@
     </div>
   </div>
 
-  <!-- Technical State Section -->
+  <!-- Technical State Section - Split into two parts -->
   <div class="technical-state-section">
     <h2 class="section-title">Текущее техническое состояние</h2>
-    <div class="tech-state-content">
-      <div class="tech-state-placeholder">
-        <p>Информация о техническом состоянии автомобиля будет отображаться здесь</p>
+    
+    <div class="tech-state-split-container">
+      <!-- Left Part - User Alerts -->
+      <div class="tech-state-left">
+        <div class="tech-state-header">
+          <h3 class="tech-state-subtitle">Пользовательские уведомления</h3>
+          <div class="tech-state-controls">
+            <select id="alert-sort-select" class="sort-select">
+              <option value="date-desc">По дате (новые)</option>
+              <option value="date-asc">По дате (старые)</option>
+              <option value="priority-desc">По приоритету (высокий)</option>
+              <option value="priority-asc">По приоритету (низкий)</option>
+            </select>
+            <button id="new-alert-btn" class="btn-primary btn-sm">+ Добавить</button>
+          </div>
+        </div>
+        
+        <div class="tech-state-content">
+          <div id="user-alerts-container" class="alerts-container">
+            <div class="alerts-placeholder">
+              <p>Загрузка уведомлений...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Part - Periodical Maintenance -->
+      <div class="tech-state-right">
+        <div class="tech-state-header">
+          <h3 class="tech-state-subtitle">Периодическое обслуживание</h3>
+          <div class="tech-state-controls">
+            <button id="view-maintenance-plan-btn" class="btn-secondary btn-sm">План обслуживания</button>
+          </div>
+        </div>
+        
+        <div class="tech-state-content">
+          <div id="maintenance-container" class="maintenance-container">
+            <div class="maintenance-placeholder">
+              <p>Загрузка плана обслуживания...</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

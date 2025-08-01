@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Alert Popup with Pre-selected Car</title>
+    <link rel="stylesheet" href="src/styles/styles.css">
+    <link rel="stylesheet" href="src/styles/cars.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Test New Alert Popup with Pre-selected Car</h1>
+        
+        <!-- Test buttons -->
+        <div style="margin: 20px 0;">
+            <button id="test-new-alert-btn" class="btn-primary">Test New Alert (with pre-selected car)</button>
+            <button id="test-regular-popup-btn" class="btn-secondary" style="margin-left: 10px;">Test Regular Popup (car selection)</button>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h3>Test Description:</h3>
+            <ul>
+                <li><strong>Test New Alert:</strong> Opens popup with pre-selected car (skips car selection)</li>
+                <li><strong>Test Regular Popup:</strong> Opens popup with car selection list</li>
+            </ul>
+            <p>This test verifies that when clicking the "+ Добавить" button in the car overview monitor, it opens the date-mileage popup with the current car pre-selected, skipping the car selection step.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock DataService for testing
+        window.DataService = {
+            getCar: async (id) => ({ 
+                id, 
+                brand: 'Test', 
+                model: 'Car', 
+                mileage: 50000,
+                nickname: 'My Test Car',
+                year: 2020,
+                img: null
+            }),
+            getCars: async () => [
+                { 
+                    id: 'car-1', 
+                    brand: 'Test', 
+                    model: 'Car 1', 
+                    mileage: 50000, 
+                    nickname: 'My Test Car',
+                    year: 2020,
+                    img: null
+                },
+                { 
+                    id: 'car-2', 
+                    brand: 'Test', 
+                    model: 'Car 2', 
+                    mileage: 60000, 
+                    nickname: 'My Second Car',
+                    year: 2019,
+                    img: null
+                }
+            ],
+            getCurrentCarId: async () => 'car-1'
+        };
+
+        // Import the car overview monitor
+        import { CarOverviewMonitor } from './src/carOverviewMonitor.js';
+        import { showUserAlertPopup, showUserAlertPopupWithCar } from './src/userAlertUI.js';
+        
+        // Create test data
+        const testAlerts = [
+            {
+                id: 1,
+                carId: 'car-1',
+                date: '25.12.2024',
+                mileage: 50000,
+                subsystem: 'Двигатель',
+                priority: 'critical',
+                description: 'Странный звук при запуске двигателя',
+                archived: false
+            }
+        ];
+
+        // Mock localStorage for testing
+        localStorage.setItem('userAlerts', JSON.stringify(testAlerts));
+        localStorage.setItem('currentCarId', 'car-1');
+        
+        // Initialize monitor
+        const monitor = new CarOverviewMonitor();
+        
+        // Set up test buttons
+        const testBtn = document.getElementById('test-new-alert-btn');
+        const regularBtn = document.getElementById('test-regular-popup-btn');
+        
+        testBtn.addEventListener('click', () => {
+            console.log('Test button clicked - calling showNewAlertPopup (with pre-selected car)');
+            monitor.showNewAlertPopup();
+        });
+        
+        regularBtn.addEventListener('click', () => {
+            console.log('Regular popup button clicked - calling showUserAlertPopup (with car selection)');
+            showUserAlertPopup();
+        });
+        
+        console.log('Test popup initialized');
+        console.log('Click the buttons to test different popup functionalities');
+    </script>
+</body>
+</html> 

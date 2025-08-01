@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Car ID Extraction</title>
+</head>
+<body>
+    <h1>Test Car ID Extraction</h1>
+    
+    <div id="test-results">
+        <h2>Test Results:</h2>
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        // Mock DataService for testing
+        window.DataService = {
+            getCar: async (id) => ({ id, brand: 'Test', model: 'Car' }),
+            getCars: async () => [
+                { id: 'car-1', brand: 'Test', model: 'Car 1' },
+                { id: 'car-2', brand: 'Test', model: 'Car 2' }
+            ],
+            getCurrentCarId: async () => 'car-1'
+        };
+
+        // Test the car ID extraction logic
+        function testCarIdExtraction() {
+            const results = [];
+            
+            // Test different URL patterns
+            const testCases = [
+                {
+                    name: 'Hash with carId parameter',
+                    hash: '#my-car-overview?carId=test-car-123',
+                    expected: 'test-car-123'
+                },
+                {
+                    name: 'Hash with car parameter',
+                    hash: '#my-car-overview?car=test-car-456',
+                    expected: 'test-car-456'
+                },
+                {
+                    name: 'Search params with carId',
+                    search: '?carId=test-car-789',
+                    expected: 'test-car-789'
+                },
+                {
+                    name: 'Search params with car',
+                    search: '?car=test-car-abc',
+                    expected: 'test-car-abc'
+                },
+                {
+                    name: 'No parameters (should use DataService)',
+                    hash: '#my-car-overview',
+                    expected: 'car-1' // from DataService.getCurrentCarId()
+                }
+            ];
+
+            testCases.forEach(testCase => {
+                // Set up the URL for testing
+                if (testCase.hash) {
+                    window.location.hash = testCase.hash;
+                }
+                if (testCase.search) {
+                    window.location.search = testCase.search;
+                }
+
+                // Mock localStorage
+                localStorage.setItem('currentCarId', 'car-1');
+                
+                // Test the extraction logic
+                const carId = getCarIdFromUrl();
+                const passed = carId === testCase.expected;
+                
+                results.push({
+                    name: testCase.name,
+                    expected: testCase.expected,
+                    actual: carId,
+                    passed: passed
+                });
+            });
+
+            return results;
+        }
+
+        // Car ID extraction logic (copied from carOverviewMonitor.js)
+        function getCarIdFromUrl() {
+            // Check hash parameters first (for hash-based routing)
+            const hashParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+            const carIdFromHash = hashParams.get('carId');
+            if (carIdFromHash) return carIdFromHash;
+            
+            // Check for 'car' parameter (used by fleetUI)
+            const carIdFromCar = hashParams.get('car');
+            if (carIdFromCar) return carIdFromCar;
+            
+            // Fall back to search parameters (for direct URL access)
+            const urlParams = new URLSearchParams(window.location.search);
+            const carIdFromSearch = urlParams.get('carId');
+            if (carIdFromSearch) return carIdFromSearch;
+            
+            // Check for 'car' parameter in search params
+            const carIdFromSearchCar = urlParams.get('car');
+            if (carIdFromSearchCar) return carIdFromSearchCar;
+            
+            // Check if we're on my-car-overview page and try to get carId from localStorage
+            if (window.location.hash.includes('my-car-overview')) {
+                const selectedCarId = sessionStorage.getItem('selectedCarId');
+                if (selectedCarId) return selectedCarId;
+                
+                // Also check localStorage for currentCarId
+                const currentCarId = localStorage.getItem('currentCarId');
+                if (currentCarId) return currentCarId;
+            }
+            
+            console.log('CarOverviewMonitor: No carId found in URL or sessionStorage');
+            return null;
+        }
+
+        // Run tests and display results
+        const testResults = testCarIdExtraction();
+        const resultsDiv = document.getElementById('results');
+        
+        let resultsHTML = '';
+        testResults.forEach(result => {
+            const status = result.passed ? '✅ PASS' : '❌ FAIL';
+            resultsHTML += `
+                <div style="margin: 10px 0; padding: 10px; border: 1px solid ${result.passed ? 'green' : 'red'};">
+                    <strong>${result.name}</strong><br>
+                    Status: ${status}<br>
+                    Expected: ${result.expected}<br>
+                    Actual: ${result.actual}
+                </div>
+            `;
+        });
+        
+        resultsDiv.innerHTML = resultsHTML;
+        
+        console.log('Test results:', testResults);
+    </script>
+</body>
+</html> 

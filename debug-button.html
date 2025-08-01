@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Button Test</title>
+</head>
+<body>
+    <h1>Debug Button Test</h1>
+    
+    <!-- Test button -->
+    <button id="new-alert-btn" class="btn-primary btn-sm">+ Добавить</button>
+    
+    <div id="debug-output"></div>
+
+    <script>
+        // Simple test to see if button exists
+        const button = document.getElementById('new-alert-btn');
+        const debugOutput = document.getElementById('debug-output');
+        
+        if (button) {
+            debugOutput.innerHTML += '<p>✅ Button found in DOM</p>';
+            
+            // Add a simple click handler
+            button.addEventListener('click', () => {
+                debugOutput.innerHTML += '<p>✅ Button click detected</p>';
+                alert('Button clicked!');
+            });
+        } else {
+            debugOutput.innerHTML += '<p>❌ Button NOT found in DOM</p>';
+        }
+        
+        // Check if any elements with 'new-alert-btn' exist
+        const allButtons = document.querySelectorAll('[id*="new-alert"]');
+        debugOutput.innerHTML += `<p>Found ${allButtons.length} elements with 'new-alert' in ID</p>`;
+        
+        allButtons.forEach((btn, index) => {
+            debugOutput.innerHTML += `<p>Button ${index + 1}: ${btn.id} - ${btn.textContent}</p>`;
+        });
+    </script>
+</body>
+</html> 

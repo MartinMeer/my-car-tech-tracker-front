@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dynamic Monitor</title>
+    <link rel="stylesheet" href="src/styles/styles.css">
+    <link rel="stylesheet" href="src/styles/cars.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Test Dynamic Monitor</h1>
+        
+        <!-- Test the split technical state section -->
+        <div class="technical-state-section">
+            <h2 class="section-title">Текущее техническое состояние</h2>
+            
+            <div class="tech-state-split-container">
+                <!-- Left Part - User Alerts -->
+                <div class="tech-state-left">
+                    <div class="tech-state-header">
+                        <h3 class="tech-state-subtitle">Пользовательские уведомления</h3>
+                        <div class="tech-state-controls">
+                            <select id="alert-sort-select" class="sort-select">
+                                <option value="date-desc">По дате (новые)</option>
+                                <option value="date-asc">По дате (старые)</option>
+                                <option value="priority-desc">По приоритету (высокий)</option>
+                                <option value="priority-asc">По приоритету (низкий)</option>
+                            </select>
+                            <button id="new-alert-btn" class="btn-primary btn-sm">+ Добавить</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tech-state-content">
+                        <div id="user-alerts-container" class="alerts-container">
+                            <div class="alerts-placeholder">
+                                <p>Загрузка уведомлений...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Part - Periodical Maintenance -->
+                <div class="tech-state-right">
+                    <div class="tech-state-header">
+                        <h3 class="tech-state-subtitle">Периодическое обслуживание</h3>
+                        <div class="tech-state-controls">
+                            <button id="view-maintenance-plan-btn" class="btn-secondary btn-sm">План обслуживания</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tech-state-content">
+                        <div id="maintenance-container" class="maintenance-container">
+                            <div class="maintenance-placeholder">
+                                <p>Загрузка плана обслуживания...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Test the monitor functionality
+        import { CarOverviewMonitor } from './src/carOverviewMonitor.js';
+        
+        // Create test data
+        const testAlerts = [
+            {
+                id: 1,
+                carId: 'test-car-1',
+                date: '25.12.2024',
+                mileage: 50000,
+                subsystem: 'Двигатель',
+                priority: 'critical',
+                description: 'Странный звук при запуске двигателя',
+                archived: false
+            },
+            {
+                id: 2,
+                carId: 'test-car-1',
+                date: '24.12.2024',
+                mileage: 49500,
+                subsystem: 'Тормозная система',
+                priority: 'warning',
+                description: 'Легкий скрип при торможении',
+                archived: false
+            },
+            {
+                id: 3,
+                carId: 'test-car-1',
+                date: '23.12.2024',
+                mileage: 49000,
+                subsystem: 'Подвеска',
+                priority: 'info',
+                description: 'Небольшая вибрация на неровностях',
+                archived: false
+            }
+        ];
+
+        // Mock localStorage for testing
+        localStorage.setItem('userAlerts', JSON.stringify(testAlerts));
+        
+        // Mock DataService
+        window.DataService = {
+            getCar: async (id) => ({
+                id: 'test-car-1',
+                brand: 'Test',
+                model: 'Car',
+                mileage: 50000
+            })
+        };
+
+        // Initialize monitor
+        const monitor = new CarOverviewMonitor();
+        
+        console.log('Test monitor initialized');
+    </script>
+</body>
+</html> 

@@ -16,6 +16,7 @@ import { initializeMileageHistoryUI } from './mileageHistoryUI.js';
 import { ReglamentUI } from './reglamentUI.js';
 import { fleetUI } from './fleetUI.js';
 import { MaintenancePlanUI } from './maintenancePlanUI.js';
+import { CarOverviewMonitor } from './carOverviewMonitor.js';
 
 import {
   renderRepairHistory,
@@ -526,6 +527,8 @@ function initializePageUI(page) {
       break;
     case 'my-car-overview':
       initializeCarOverviewUI();
+      // Initialize car overview monitor for dynamic content
+      new CarOverviewMonitor();
       break;
     case 'service-card':
       initializeServiceRecord();

@@ -237,15 +237,351 @@
   height: 48px; 
 }
 
+/* Technical State Section */
 .technical-state-section {
   background: var(--surface);
-  border-radius: var(--border-radius-xl);
+  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px var(--shadow);
-  border: 1px solid var(--border-light);
-  width: 100%;
+  box-shadow: 0 2px 8px var(--shadow);
+  margin-top: 1rem;
 }
 
+/* Split Container */
+.tech-state-split-container {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.tech-state-left,
+.tech-state-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tech State Header */
+.tech-state-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tech-state-subtitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.tech-state-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.sort-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+/* Alerts Container */
+.alerts-container {
+  flex: 1;
+  min-height: 200px;
+}
+
+.alerts-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Alerts Table */
+.alerts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.alerts-table th {
+  background: var(--surface-secondary);
+  padding: 0.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.alerts-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: top;
+}
+
+.alerts-table tr:hover {
+  background: var(--surface-hover);
+}
+
+/* Alert Priority Badges */
+.alert-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.alert-priority-badge.critical {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.alert-priority-badge.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.alert-priority-badge.info {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+/* Alert Actions */
+.alert-actions-cell {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.alert-action-btn {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+.alert-action-btn:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.alert-action-btn.archive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.alert-action-btn.archive:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.alert-action-btn.archive.archived {
+  background: #10b981;
+  color: white;
+}
+
+.alert-action-btn.archive.archived:hover {
+  background: #059669;
+}
+
+/* Selected Car Info */
+.selected-car-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.selected-car-img {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border-radius: 50%;
+  font-size: 2rem;
+}
+
+.selected-car-img img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.selected-car-details {
+  flex: 1;
+}
+
+.selected-car-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.selected-car-year,
+.selected-car-mileage {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.125rem;
+}
+
+/* Maintenance Container */
+.maintenance-container {
+  flex: 1;
+  min-height: 200px;
+}
+
+.maintenance-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Maintenance Items */
+.maintenance-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.maintenance-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface-secondary);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.maintenance-item.urgent {
+  border-left-color: #dc2626;
+  background: #fef2f2;
+}
+
+.maintenance-item.warning {
+  border-left-color: #d97706;
+  background: #fffbeb;
+}
+
+.maintenance-item.info {
+  border-left-color: #2563eb;
+  background: #eff6ff;
+}
+
+.maintenance-icon {
+  font-size: 1.25rem;
+  width: 24px;
+  text-align: center;
+}
+
+.maintenance-content {
+  flex: 1;
+}
+
+.maintenance-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.maintenance-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.maintenance-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tech-state-split-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .tech-state-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .tech-state-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .alerts-table {
+    font-size: 0.75rem;
+  }
+  
+  .alerts-table th,
+  .alerts-table td {
+    padding: 0.25rem;
+  }
+  
+  .alert-actions-cell {
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .technical-state-section {
+    padding: 1rem;
+  }
+  
+  .tech-state-split-container {
+    gap: 0.75rem;
+  }
+  
+  .alerts-table {
+    font-size: 0.7rem;
+  }
+  
+  .maintenance-item {
+    padding: 0.5rem;
+  }
+}
+
+/* Section Title */
 .section-title {
   color: var(--primary-color);
   font-size: 1.25rem;
