@@ -562,57 +562,53 @@ class CarOverviewMonitor {
         const maintenanceRows = await this.createMaintenanceScheduleRows();
 
         return `
-            <div class="maintenance-guide-container">
-                <!-- Header -->
-                
+            <!-- Maintenance Schedule Table -->
+            <div class="schedule-section">
+               
+                <div class="table-container">
+                    <table id="maintenance-schedule-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Операция</th>
+                                <th>Пробег (км)</th>
+                                <th>Период (мес)</th>
+                                <th>Статус</th>
+                                <th>Примечания</th>
+                            </tr>
+                        </thead>
+                        <tbody id="maintenance-schedule-tbody">
+                            ${maintenanceRows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                <!-- Maintenance Schedule Table -->
-                <div class="schedule-section">
-                   
-                    <div class="table-container">
-                        <table id="maintenance-schedule-table" class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>№</th>
-                                    <th>Операция</th>
-                                    <th>Пробег (км)</th>
-                                    <th>Период (мес)</th>
-                                    <th>Статус</th>
-                                    <th>Примечания</th>
-                                </tr>
-                            </thead>
-                            <tbody id="maintenance-schedule-tbody">
-                                ${maintenanceRows}
-                            </tbody>
-                        </table>
+            <!-- Legend -->
+            <div class="legend-section">
+                <h3 class="legend-title">Условные обозначения:</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <span class="status-icon overdue">🔴</span>
+                        <span class="legend-text">Просрочено</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="status-icon due-soon">🟡</span>
+                        <span class="legend-text">Скоро потребуется</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="status-icon ok">🟢</span>
+                        <span class="legend-text">В порядке</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="status-icon completed">✅</span>
+                        <span class="legend-text">Выполнено</span>
                     </div>
                 </div>
+            </div>
 
-                <!-- Legend -->
-                <div class="legend-section">
-                    <h3 class="legend-title">Условные обозначения:</h3>
-                    <div class="legend-items">
-                        <div class="legend-item">
-                            <span class="status-icon overdue">🔴</span>
-                            <span class="legend-text">Просрочено</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="status-icon due-soon">🟡</span>
-                            <span class="legend-text">Скоро потребуется</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="status-icon ok">🟢</span>
-                            <span class="legend-text">В порядке</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="status-icon completed">✅</span>
-                            <span class="legend-text">Выполнено</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                
+            <!-- Action Buttons -->
+            
         `;
     }
 

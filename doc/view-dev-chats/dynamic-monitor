@@ -1,10 +1,1 @@
-Let's create a dynamic monitor entries in my-car-overview
-All data is related to given car.
-1. Split technical-state-section on two vertical parts
-2. Left part is for working with user alerts,
-    right part is for working with periodical maintenance
-3. In user-alerts must be collect all exising user-alerts
-    Alerts must be reuresented in compact table:
-    columns (from user-alert.html, except 'actions'):
-    alert-date-info | alert-date-info | priority-option | subsystem-select/custom-subsystem-group | problem-description | actions
-    (Sort opts, actions opts) 
+Let's implement add-to-plan funcionality on my-car-overview     
