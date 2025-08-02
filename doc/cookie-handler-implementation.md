@@ -45,7 +45,6 @@ This document describes the backend-ready cookie handler implementation for the 
 - Seamless switching via CONFIG.useBackend flag
 
 ### 🧪 Testing
-- Comprehensive test suite (`src/cookieHandler.test.js`)
 - Browser console testing support
 - Mock authentication for development
 
@@ -208,18 +207,13 @@ In development mode, you can use these demo credentials:
 
 ### Testing
 
-Run the test suite in browser console:
+Browser console testing support is available for development:
 
 ```javascript
-// Import test module
-import { runAllTests } from './src/cookieHandler.test.js';
-
-// Run all tests
-await runAllTests();
-
-// Quick test
-import { quickTest } from './src/cookieHandler.test.js';
-quickTest();
+// Test cookie operations directly in browser console
+CookieHandler.setCookie('test', 'value');
+CookieHandler.getCookie('test');
+CookieHandler.deleteCookie('test');
 ```
 
 ### localStorage Structure
