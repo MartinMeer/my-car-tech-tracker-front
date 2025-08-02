@@ -1,4 +1,5 @@
 import { DataService } from './dataService.js';
+import { formatCarName } from './carNameFormatter.js';
 import { openRepairPopup, openSparePopup } from './repairUI.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { removeCarFromBackend } from './carsUI.js';
@@ -38,10 +39,10 @@ export function initializeCarOverviewUI() {
     if (imgEl) {
       if (car.img && car.img.startsWith('data:image/')) {
         imgEl.src = car.img;
-        imgEl.alt = car.name || 'car image';
+        imgEl.alt = formatCarName(car) || 'car image';
       } else if (car.img && car.img.length === 1) {
         imgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>${encodeURIComponent(car.img)}</text></svg>`;
-        imgEl.alt = car.name || 'car image';
+        imgEl.alt = formatCarName(car) || 'car image';
       } else {
         imgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>🚗</text></svg>`;
         imgEl.alt = 'car image';
@@ -49,7 +50,7 @@ export function initializeCarOverviewUI() {
     }
     // Car name
     const title = document.getElementById('car-title');
-    if (title) title.textContent = `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+    if (title) title.textContent = formatCarName(car);
     
     // Car details in new format
     const brandDiv = document.getElementById('car-brand');
@@ -133,7 +134,7 @@ function setupCarActionButtons(carId) {
         const car = cars.find(c => c.id == carId);
         if (!car) return;
         
-        const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+        const carName = formatCarName(car);
         
         showConfirmationDialog(
           `Вы уверены, что хотите удалить автомобиль "${carName}"? Это действие нельзя отменить.`,
@@ -715,7 +716,7 @@ async function renderServiceRecordsNew(serviceRecords) {
     // Render each car's service records
     Object.keys(serviceRecordsByCar).forEach(carId => {
       const car = cars.find(c => c.id == carId);
-      const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+      const carName = car ? formatCarName(car) : 'Неизвестный автомобиль';
       const carDisplayName = car && car.nickname ? `${carName} (${car.nickname})` : carName;
       const carVin = car ? car.vin : 'VIN не указан';
       
@@ -868,7 +869,7 @@ async function renderServiceRecordsLegacy() {
         type: 'maintenance',
         typeLabel: 'ТО',
         typeClass: 'maintenance',
-        carName: car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль',
+        carName: car ? formatCarName(car) : 'Неизвестный автомобиль',
         carNickname: car ? car.nickname : null,
         carVin: car ? car.vin : null
       });
@@ -882,7 +883,7 @@ async function renderServiceRecordsLegacy() {
         type: 'repair',
         typeLabel: 'Ремонт',
         typeClass: 'repair',
-        carName: car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль',
+        carName: car ? formatCarName(car) : 'Неизвестный автомобиль',
         carNickname: car ? car.nickname : null,
         carVin: car ? car.vin : null
       });
@@ -929,7 +930,7 @@ async function renderServiceRecordsLegacy() {
     // Render each car's records
     Object.keys(recordsByCar).forEach(carId => {
       const car = cars.find(c => c.id == carId);
-      const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+      const carName = car ? formatCarName(car) : 'Неизвестный автомобиль';
       const carDisplayName = car && car.nickname ? `${carName} (${car.nickname})` : carName;
       const carVin = car ? car.vin : 'VIN не указан';
       
@@ -1099,7 +1100,7 @@ async function viewServiceRecordDetails(serviceRecordId) {
     ]);
     
     const car = cars.find(c => c.id == serviceRecord.carId);
-    const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+    const carName = car ? formatCarName(car) : 'Неизвестный автомобиль';
     
     // Get operations for this service record
     const serviceMaintenances = maintenances.filter(m => m.serviceRecordId == serviceRecordId);
@@ -1218,7 +1219,7 @@ async function deleteServiceRecord(serviceRecordId) {
     
     const cars = await DataService.getCars();
     const car = cars.find(c => c.id == serviceRecord.carId);
-    const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+    const carName = car ? formatCarName(car) : 'Неизвестный автомобиль';
     
     showConfirmationDialog(
       `Удалить запись об обслуживании от ${serviceRecord.date} для автомобиля "${carName}"? Все связанные операции будут также удалены.`,
@@ -1288,7 +1289,7 @@ async function showServiceRecordDetails(recordId, recordType) {
     
     const cars = await DataService.getCars();
     const car = cars.find(c => c.id == record.carId);
-    const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+    const carName = car ? formatCarName(car) : 'Неизвестный автомобиль';
     
     let detailsHtml = `
       <div class="service-record-details-popup">
@@ -1538,7 +1539,7 @@ async function deleteRepairRecord(recordId) {
 async function showEditServiceRecordForm(record, recordType) {
   const cars = await DataService.getCars();
   const car = cars.find(c => c.id == record.carId);
-  const carName = car ? `${car.brand || ''} ${car.model || ''}`.trim() || car.name : 'Неизвестный автомобиль';
+  const carName = car ? formatCarName(car) : 'Неизвестный автомобиль';
   
   let formHtml = `
     <div class="service-record-edit-popup">

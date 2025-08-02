@@ -11,21 +11,19 @@
     <div class="car-header-info">
       <h1 id="car-title" class="car-title">[Car Brand] [Car Model]</h1>
       
-      <div class="car-details">
-        <div class="car-details-line">
-          <span id="car-brand" class="car-brand"></span>
-          <span class="car-separator">|</span>
-          <span id="car-model" class="car-model"></span>
-          <span class="car-separator">|</span>
-          <span id="car-year" class="car-year"></span>
-          <span class="car-separator">|</span>
-          <span id="car-vin" class="car-vin"></span>
-          <span class="car-separator">|</span>
-          <span id="car-license-plate" class="car-license-plate"></span>
-          <span class="car-separator">|</span>
-          <span id="car-mileage" class="car-mileage"></span>
+              <div class="car-details">
+          <div class="car-details-line">
+            <span id="car-brand" class="car-brand"></span>
+            <span class="car-separator">|</span>
+            <span id="car-model" class="car-model"></span>
+            <span class="car-separator">|</span>
+            <span id="car-year" class="car-year"></span>
+            <span class="car-separator">|</span>
+            <span id="car-vin" class="car-vin"></span>
+            <span class="car-separator">|</span>
+            <span id="car-license-plate" class="car-license-plate"></span>
+          </div>
         </div>
-      </div>
     </div>
     
     <!-- Action Buttons -->
@@ -61,7 +59,19 @@
 
   <!-- Technical State Section - Split into two parts -->
   <div class="technical-state-section">
-    <h2 class="section-title">Текущее техническое состояние</h2>
+    <div class="section-header-with-mileage">
+      <div class="title-with-mileage">
+        <h2 class="section-title">Текущее техническое состояние</h2>
+        <div class="inline-mileage-field" id="inline-mileage-container">
+          <span class="mileage-label">Пробег:</span>
+          <span id="car-mileage" class="mileage-value">0</span>
+          <span class="mileage-unit">км</span>
+          <button class="mileage-edit-btn" id="edit-mileage-btn" title="Обновить пробег">
+            <span class="edit-icon">✏️</span>
+          </button>
+        </div>
+      </div>
+    </div>
     
     <div class="tech-state-split-container">
       <!-- Left Part - User Alerts -->
@@ -107,4 +117,34 @@
       </div>
     </div>
   </div>
-</section> 
+</section>
+
+<!-- Mileage Update Modal -->
+<div id="mileage-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Обновить пробег</h3>
+      <button class="modal-close" id="close-mileage-modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="mileage-update-form">
+        <div class="form-group">
+          <label for="new-mileage">Новый пробег (км)</label>
+          <input type="number" id="new-mileage" name="newMileage" min="0" required placeholder="Введите новый пробег">
+        </div>
+        <div class="form-group">
+          <label for="mileage-date">Дата обновления</label>
+          <input type="date" id="mileage-date" name="mileageDate" required>
+        </div>
+        <div class="form-group">
+          <label for="mileage-notes">Примечания (необязательно)</label>
+          <textarea id="mileage-notes" name="mileageNotes" placeholder="Дополнительная информация об обновлении пробега"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="cancel-mileage-update">Отмена</button>
+      <button type="button" class="btn btn-primary" id="save-mileage-update">Сохранить</button>
+    </div>
+  </div>
+</div> 

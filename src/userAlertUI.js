@@ -1,4 +1,5 @@
 import { DataService } from './dataService.js';
+import { formatCarName } from './carNameFormatter.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { CONFIG } from './config.js';
 
@@ -89,7 +90,7 @@ export async function showUserAlertPopup() {
     `;
     
     cars.forEach(car => {
-      const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+      const carName = formatCarName(car);
       popupHtml += `
         <div class="car-selection-item" onclick="selectCarForAlert('${car.id}')">
           <div class="car-selection-img">
@@ -173,7 +174,7 @@ export async function showUserAlertPopupWithCar(carId) {
     const today = new Date();
     const currentDate = today.toLocaleDateString('ru-RU');
     
-    const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+    const carName = formatCarName(car);
     
     let popupHtml = `
       <div class="user-alert-popup">
@@ -536,7 +537,7 @@ async function loadAlertData() {
       }
       
       // Populate alert info from problems flow
-      const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+      const carName = formatCarName(car);
       document.getElementById('alert-car-name').textContent = carName;
       document.getElementById('alert-date').textContent = problemsDate;
       document.getElementById('alert-mileage').textContent = problemsMileage ? `${problemsMileage} км` : 'Не указан';
@@ -575,7 +576,7 @@ async function loadAlertData() {
     }
     
     // Populate alert info
-    const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+    const carName = formatCarName(car);
     document.getElementById('alert-car-name').textContent = carName;
     document.getElementById('alert-date').textContent = alertData.date;
     document.getElementById('alert-mileage').textContent = alertData.mileage ? `${alertData.mileage} км` : 'Не указан';
@@ -876,7 +877,7 @@ function groupAlertsByCar(alerts, cars) {
   alerts.forEach(alert => {
     const car = cars.find(c => c.id == alert.carId);
     if (car) {
-      const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+      const carName = formatCarName(car);
       if (!alertsByCar[carName]) {
         alertsByCar[carName] = {
           car: car,
@@ -917,13 +918,13 @@ async function displayAlertList(alertsByCar, sortType = 'date-desc') {
     switch (sortType) {
       case 'date-desc':
         // Sort by newest alert date
-        const newestA = Math.max(...carDataA.alerts.map(alert => new Date(alert.date)));
-        const newestB = Math.max(...carDataB.alerts.map(alert => new Date(alert.date)));
+        const newestA = Math.max(...carDataA.alerts.map(alert => parseRussianDate(alert.date)));
+        const newestB = Math.max(...carDataB.alerts.map(alert => parseRussianDate(alert.date)));
         return newestB - newestA;
       case 'date-asc':
         // Sort by oldest alert date
-        const oldestA = Math.min(...carDataA.alerts.map(alert => new Date(alert.date)));
-        const oldestB = Math.min(...carDataB.alerts.map(alert => new Date(alert.date)));
+        const oldestA = Math.min(...carDataA.alerts.map(alert => parseRussianDate(alert.date)));
+        const oldestB = Math.min(...carDataB.alerts.map(alert => parseRussianDate(alert.date)));
         return oldestA - oldestB;
       case 'priority-desc':
         // Sort by highest priority (critical > warning > info)
@@ -952,19 +953,46 @@ async function displayAlertList(alertsByCar, sortType = 'date-desc') {
   });
 }
 
-// Create alert group element
+// Helper function to parse Russian date format (dd.mm.yyyy)
+function parseRussianDate(dateString) {
+  if (!dateString) return new Date(0);
+  
+  // Check if it's already in Russian format (dd.mm.yyyy)
+  if (/^\d{2}\.\d{2}\.\d{4}$/.test(dateString)) {
+    const [day, month, year] = dateString.split('.');
+    return new Date(year, month - 1, day);
+  }
+  
+  // Try to parse as regular date
+  return new Date(dateString);
+}
+
+// Create alert group for a specific car
 async function createAlertGroup(carName, carData, sortType = 'date-desc') {
   const group = document.createElement('div');
   group.className = 'alert-group';
   
   const header = document.createElement('div');
   header.className = 'alert-group-header';
+  
+  // Calculate newest and oldest dates for sorting groups
+  const dates = carData.alerts.map(alert => parseRussianDate(alert.date));
+  const newestDate = Math.max(...dates);
+  const oldestDate = Math.min(...dates);
+  
   header.innerHTML = `
     <div class="alert-group-title">
-      <span class="icon">🚗</span>
-      ${carName}
+      <span class="car-name">${carName}</span>
+      <span class="alert-count">(${carData.alerts.length})</span>
     </div>
-    <div class="alert-group-count">${carData.alerts.length}</div>
+    <div class="alert-group-dates">
+      <span class="date-range">
+        ${oldestDate.toLocaleDateString('ru-RU')} - ${newestDate.toLocaleDateString('ru-RU')}
+      </span>
+    </div>
+    <div class="alert-group-toggle">
+      <span class="toggle-icon">▼</span>
+    </div>
   `;
   
   const content = document.createElement('div');
@@ -974,9 +1002,9 @@ async function createAlertGroup(carName, carData, sortType = 'date-desc') {
   const sortedAlerts = carData.alerts.sort((a, b) => {
     switch (sortType) {
       case 'date-desc':
-        return new Date(b.date) - new Date(a.date);
+        return parseRussianDate(b.date) - parseRussianDate(a.date);
       case 'date-asc':
-        return new Date(a.date) - new Date(b.date);
+        return parseRussianDate(a.date) - parseRussianDate(b.date);
       case 'priority-desc':
         const priorityOrder = { critical: 3, warning: 2, info: 1 };
         return (priorityOrder[b.priority] || 1) - (priorityOrder[a.priority] || 1);
@@ -984,7 +1012,7 @@ async function createAlertGroup(carName, carData, sortType = 'date-desc') {
         const priorityOrderAsc = { critical: 3, warning: 2, info: 1 };
         return (priorityOrderAsc[a.priority] || 1) - (priorityOrderAsc[b.priority] || 1);
       default:
-        return new Date(b.date) - new Date(a.date);
+        return parseRussianDate(b.date) - parseRussianDate(a.date);
     }
   });
   
@@ -1160,8 +1188,8 @@ async function displayArchiveTable(alertsByCar) {
     const carDataB = alertsByCar[b];
     
     // Sort by newest alert date
-    const newestA = Math.max(...carDataA.alerts.map(alert => new Date(alert.date)));
-    const newestB = Math.max(...carDataB.alerts.map(alert => new Date(alert.date)));
+    const newestA = Math.max(...carDataA.alerts.map(alert => parseRussianDate(alert.date)));
+    const newestB = Math.max(...carDataB.alerts.map(alert => parseRussianDate(alert.date)));
     return newestB - newestA;
   });
   
@@ -1186,7 +1214,7 @@ async function displayArchiveTable(alertsByCar) {
     const carData = alertsByCar[carName];
     
     // Sort alerts by date (newer first)
-    const sortedAlerts = carData.alerts.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedAlerts = carData.alerts.sort((a, b) => parseRussianDate(b.date) - parseRussianDate(a.date));
     
     sortedAlerts.forEach(alert => {
       const priorityConfig = {

@@ -162,7 +162,7 @@
 
     .form-input {
       width: 100%;
-      padding: 1rem 1rem 1rem 3rem;
+      padding: 1rem;
       border: 2px solid #e2e8f0;
       border-radius: 12px;
       font-size: 1rem;
@@ -178,19 +178,7 @@
       transform: translateY(-2px);
     }
 
-    .input-icon {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #a0aec0;
-      font-size: 1.2rem;
-      transition: color 0.3s ease;
-    }
 
-    .form-input:focus + .input-icon {
-      color: #667eea;
-    }
 
     .password-toggle {
       position: absolute;
@@ -490,13 +478,11 @@
       <div class="form-group">
         <label for="login-email" class="form-label">Email</label>
         <input type="email" id="login-email" name="email" class="form-input" required autocomplete="username">
-        <span class="input-icon">📧</span>
       </div>
 
       <div class="form-group">
         <label for="login-password" class="form-label">Пароль</label>
         <input type="password" id="login-password" name="password" class="form-input" required autocomplete="current-password">
-        <span class="input-icon">🔒</span>
         <button type="button" class="password-toggle" onclick="togglePassword('login-password')">👁️</button>
       </div>
 

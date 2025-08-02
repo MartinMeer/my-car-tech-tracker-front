@@ -1,4 +1,5 @@
 import { DataService } from './dataService.js';
+import { formatCarNameWithNickname } from './carNameFormatter.js';
 
 // Global variables for repair operations
 let sparesList = [];
@@ -58,7 +59,7 @@ export async function renderRepairHistory() {
           border-left: 4px solid #ff9800;
           color: #f57c00;
         ">
-          <strong>Показана история ремонтов для автомобиля:</strong> ${currentCar.brand || ''} ${currentCar.model || ''} ${currentCar.nickname ? '(' + currentCar.nickname + ')' : ''}
+          <strong>Показана история ремонтов для автомобиля:</strong> ${formatCarNameWithNickname(currentCar)}
           <div style="margin-top: 0.5rem;">
             <a href="#repair-history" onclick="localStorage.setItem('showAllCars', 'true'); renderRepairHistory();" style="color: #f57c00; text-decoration: underline;">
               Показать для всех автомобилей
@@ -82,7 +83,7 @@ export async function renderRepairHistory() {
             <strong>Показана история ремонтов для всех автомобилей</strong>
             <div style="margin-top: 0.5rem;">
               <a href="#repair-history" onclick="localStorage.removeItem('showAllCars'); renderRepairHistory();" style="color: #2e7d32; text-decoration: underline;">
-                Показать только для ${currentCar.brand || ''} ${currentCar.model || ''} ${currentCar.nickname ? '(' + currentCar.nickname + ')' : ''}
+                Показать только для ${formatCarNameWithNickname(currentCar)}
               </a>
             </div>
           </div>
@@ -95,7 +96,7 @@ export async function renderRepairHistory() {
       html += `
         <div class="car-history-block" style="margin-bottom:2.5rem;">
           <div class="car-history-header" style="font-size:1.15rem;font-weight:600;color:#2d3e50;margin-bottom:0.7rem;">
-            ${car.brand || ''} ${car.model || ''} ${car.nickname ? '(' + car.nickname + ')' : ''} <span style="color:#888;font-size:0.97rem;">[VIN: ${car.vin || '-'}]</span>
+            ${formatCarNameWithNickname(car)} <span style="color:#888;font-size:0.97rem;">[VIN: ${car.vin || '-'}]</span>
           </div>
       `;
       if (carRepairs.length === 0) {

@@ -1,4 +1,5 @@
 import { DataService } from './dataService.js';
+import { formatCarName } from './carNameFormatter.js';
 
 export class ReglamentUI {
     constructor() {
@@ -163,7 +164,7 @@ export class ReglamentUI {
                     <div class="flex items-center gap-3">
                         ${carImageHtml}
                         <div>
-                            <div class="font-medium">${car.name}</div>
+                            <div class="font-medium">${formatCarName(car)}</div>
                             <div class="text-sm text-gray-600">${car.year}</div>
                         </div>
                     </div>
@@ -223,11 +224,11 @@ export class ReglamentUI {
             if (this.selectedCar.img && this.selectedCar.img.startsWith('data:image/')) {
                 // User uploaded image
                 carImage.src = this.selectedCar.img;
-                carImage.alt = this.selectedCar.name || 'car image';
+                carImage.alt = formatCarName(this.selectedCar) || 'car image';
             } else if (this.selectedCar.img && this.selectedCar.img.length === 1) {
                 // Emoji fallback
                 carImage.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='60'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='40'>${encodeURIComponent(this.selectedCar.img)}</text></svg>`;
-                carImage.alt = this.selectedCar.name || 'car image';
+                carImage.alt = formatCarName(this.selectedCar) || 'car image';
             } else {
                 // Default car emoji
                 carImage.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='60'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='40'>🚗</text></svg>`;
@@ -236,9 +237,12 @@ export class ReglamentUI {
         }
         const carNameElement = document.getElementById('car-name');
         if (carNameElement) {
-            carNameElement.textContent = this.selectedCar.name;
+            carNameElement.textContent = formatCarName(this.selectedCar);
         } else {
-            console.warn('Car name element not found');
+            // Only warn if we're on the reglament page
+            if (window.location.hash.includes('reglament') || window.location.pathname.includes('reglament')) {
+                console.warn('Car name element not found on reglament page');
+            }
         }
 
         // Update UI state
@@ -310,7 +314,10 @@ export class ReglamentUI {
     renderMaintenanceTable() {
         const tbody = document.getElementById('maintenance-tbody');
         if (!tbody) {
-            console.error('Maintenance table body not found');
+            // Only warn if we're on the reglament page
+            if (window.location.hash.includes('reglament') || window.location.pathname.includes('reglament')) {
+                console.error('Maintenance table body not found on reglament page');
+            }
             return;
         }
 
@@ -632,10 +639,12 @@ window.closeConfirmationDialog = function() {
     window.reglamentUI?.closeConfirmationDialog();
 };
 
-// Initialize when DOM is loaded
+// Initialize when DOM is loaded - only on reglament page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing ReglamentUI...');
-    window.reglamentUI = new ReglamentUI();
-    
-    console.log('ReglamentUI initialized successfully');
+    // Only initialize on reglament page
+    if (window.location.hash.includes('reglament') || window.location.pathname.includes('reglament')) {
+        console.log('Initializing ReglamentUI...');
+        window.reglamentUI = new ReglamentUI();
+        console.log('ReglamentUI initialized successfully');
+    }
 }); 

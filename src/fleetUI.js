@@ -1,5 +1,6 @@
 import { DataService } from './dataService.js';
 import { getUserAlerts } from './userAlertUI.js';
+import { formatCarNameForList } from './carNameFormatter.js';
 
 export class FleetUI {
   constructor() {
@@ -56,7 +57,7 @@ export class FleetUI {
     row.innerHTML = `
       <div class="fleet-car-image">
         <img src="${this.getCarImage(car)}" 
-             alt="${car.name || 'Автомобиль'}" 
+             alt="${formatCarNameForList(car) || 'Автомобиль'}" 
              onerror="this.src='/img/car-by-deault.png'"
              class="car-thumbnail">
       </div>
@@ -101,21 +102,7 @@ export class FleetUI {
   }
 
   formatCarName(car) {
-    const parts = [];
-    
-    // Handle new structure with brand/model
-    if (car.brand) parts.push(car.brand);
-    if (car.model) parts.push(car.model);
-    
-    // Handle old structure with just name
-    if (!car.brand && !car.model && car.name) {
-      return car.name;
-    }
-    
-    // Add nickname if available
-    if (car.nickname) parts.push(`"${car.nickname}"`);
-    
-    return parts.length > 0 ? parts.join(' ') : 'Автомобиль';
+    return formatCarNameForList(car);
   }
 
   formatCarDetails(car) {

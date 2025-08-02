@@ -36,6 +36,7 @@ import {
 } from './serviceRecordManager.js';
 import { CookieHandler } from './cookieHandler.js';
 import { AuthService } from './authService.js';
+import { formatCarNameForList } from './carNameFormatter.js';
 
 // Main content element
 const mainContent = document.getElementById('main-content');
@@ -114,9 +115,7 @@ async function showProblemsCarSelectionPopup() {
           <div class="popup-body">
             <div class="car-selection-list">
               ${cars.map(car => {
-                const displayName = car.name || `${car.brand || ''} ${car.model || ''}`.trim();
-                const nickname = car.nickname ? ` "${car.nickname}"` : '';
-                const fullName = displayName + nickname;
+                const fullName = formatCarNameForList(car);
                 
                 return `
                   <div class="car-selection-item" data-car-id="${car.id}">
@@ -348,9 +347,7 @@ async function showServiceCarSelectionPopup() {
           <div class="popup-body">
             <div class="car-selection-list">
               ${cars.map(car => {
-                const displayName = car.name || `${car.brand || ''} ${car.model || ''}`.trim();
-                const nickname = car.nickname ? ` "${car.nickname}"` : '';
-                const fullName = displayName + nickname;
+                const fullName = formatCarNameForList(car);
                 
                 return `
                   <div class="car-selection-item" data-car-id="${car.id}">

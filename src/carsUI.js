@@ -1,9 +1,10 @@
 import { DataService } from './dataService.js';
+import { formatCarNameForList, formatCarName } from './carNameFormatter.js';
 import { showConfirmationDialog } from './dialogs.js';
 
 export function initializeMyCarsUI() {
   renderCarsList();
-  setupAddCarForm();
+  // Don't call setupAddCarForm here as the form doesn't exist on my-cars page
 }
 
 function renderCarsList() {
@@ -17,9 +18,8 @@ function renderCarsList() {
         return;
       }
       listDiv.innerHTML = cars.map(car => {
-        // Compose name and nickname
-        const displayName = car.name || `${car.brand || ''} ${car.model || ''}`.trim();
-        const nickname = car.nickname ? ` "${car.nickname}"` : '';
+        // Use unified car name formatter
+        const displayName = formatCarNameForList(car);
         // Image logic
         let imgHtml = '';
         if (car.img && car.img.startsWith('data:image/')) {
@@ -31,7 +31,7 @@ function renderCarsList() {
           <div class="car-list-item" data-car-id="${car.id}" style="display:flex;flex-direction:column;align-items:center;gap:1rem;margin-bottom:2.5rem;cursor:pointer;max-width:256px;">
             ${imgHtml}
             <h2 class="car-list-name" style="font-size:1.25rem;font-weight:600;text-align:center;margin:0 0 0.5rem 0;cursor:pointer;">
-              <span>${displayName}${nickname}</span>
+              <span>${displayName}</span>
             </h2>
           </div>
         `;
@@ -77,7 +77,7 @@ function setupAddCarForm() {
     const price = form['price'].value.trim();
     const nickname = form['nickname'].value.trim();
     const licensePlate = form['licensePlate'].value.trim();
-    const name = [brand, model, nickname].filter(Boolean).join(' ');
+    //const name = [brand, model, nickname].filter(Boolean).join(' ');
     let img = '🚗';
     let imageBase64 = '';
     const imageInput = form['image'];
@@ -199,14 +199,14 @@ function renderCurrentCar() {
   getCurrentCarFromBackend()
     .then(car => {
       if (car) {
-        carNameDiv.textContent = car.name;
+        carNameDiv.textContent = formatCarName(car);
         if (car.img && car.img.startsWith('data:image/')) {
           carImgEl.src = car.img;
-          carImgEl.alt = car.name || 'car image';
+          carImgEl.alt = formatCarName(car) || 'car image';
         } else if (car.img && car.img.length === 1) { // emoji fallback
           // Create a data URL for emoji fallback
           carImgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>${encodeURIComponent(car.img)}</text></svg>`;
-          carImgEl.alt = car.name || 'car image';
+          carImgEl.alt = formatCarName(car) || 'car image';
         } else {
           // Default car emoji
           carImgEl.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='100'>🚗</text></svg>`;
@@ -236,7 +236,7 @@ function renderCarsMenu() {
       html += cars.map(car =>
         `<div class="car-menu-item" data-car-id="${car.id}">${car.img && car.img.startsWith('data:image/')
           ? `<img src="${car.img}" alt="car image" style="width:2.5rem;height:2.5rem;object-fit:cover;border-radius:0.3rem;">`
-          : `<span style="font-size:1.5rem;">${car.img || '🚗'}</span>`} ${car.name}</div>`
+          : `<span style="font-size:1.5rem;">${car.img || '🚗'}</span>`} ${formatCarName(car)}</div>`
       ).join('');
       menu.innerHTML = html;
       // Add event listeners
@@ -394,7 +394,7 @@ function setupCancelButton() {
   cancelBtn.onclick = () => {
     const form = document.getElementById('add-car-form');
     if (!form) {
-      window.location.hash = '#my-cars';
+      window.location.hash = '#';
       return;
     }
     // Gather original data if in edit mode
@@ -441,11 +441,11 @@ function checkUnsavedAndMaybeClose(form, original) {
   if (changed && window.showConfirmationDialog) {
     window.showConfirmationDialog(
       'Закрыть без сохранения изменений?',
-      () => { window.location.hash = '#my-cars'; },
+      () => { window.location.hash = '#'; },
       () => {}
     );
   } else {
-    window.location.hash = '#my-cars';
+    window.location.hash = '#';
   }
 }
 

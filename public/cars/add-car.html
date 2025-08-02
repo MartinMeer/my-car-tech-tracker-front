@@ -26,10 +26,15 @@
         <label for="car-vin">VIN *</label>
         <input type="text" id="car-vin" name="vin" required placeholder="17 символов VIN кода">
       </div>
+    </div>
+    
+    <div class="form-section">
+      <h2>Техническое состояние</h2>
       
       <div class="form-group">
-        <label for="car-mileage">Пробег на момент приобретения (км) *</label>
-        <input type="number" id="car-mileage" name="mileage" required min="0" placeholder="50000">
+        <label for="car-mileage">Пробег на момент приобретения (км)</label>
+        <input type="number" id="car-mileage" name="mileage" min="0" placeholder="50000">
+        <small class="form-help">Пробег контролируется динамическим монитором и может быть обновлен позже</small>
       </div>
     </div>
     

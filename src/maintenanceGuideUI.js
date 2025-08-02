@@ -1,4 +1,5 @@
 import { DataService } from './dataService.js';
+import { formatCarName } from './carNameFormatter.js';
 import { maintenanceDataService } from './maintenanceDataService.js';
 
 export class MaintenanceGuideUI {
@@ -94,7 +95,7 @@ export class MaintenanceGuideUI {
 
     updateCarInfo() {
         if (this.currentCar) {
-            document.getElementById('car-name').textContent = `${this.currentCar.brand} ${this.currentCar.model}`;
+            document.getElementById('car-name').textContent = formatCarName(this.currentCar);
             document.getElementById('car-year').textContent = `(${this.currentCar.year})`;
             document.getElementById('car-vin').textContent = this.currentCar.vin ? `VIN: ${this.currentCar.vin}` : '';
             document.getElementById('current-mileage').textContent = (this.currentCar.mileage || 0).toLocaleString();

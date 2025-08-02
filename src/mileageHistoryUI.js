@@ -1,4 +1,5 @@
 import { DataService } from './dataService.js';
+import { formatCarName } from './carNameFormatter.js';
 import { mileageHandler } from './mileageHandler.js';
 
 // Initialize mileage history UI
@@ -70,7 +71,7 @@ function populateCarSelect(cars, selectedCarId = null) {
   cars.forEach(car => {
     const option = document.createElement('option');
     option.value = car.id;
-    option.textContent = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+            option.textContent = formatCarName(car);
     if (selectedCarId && car.id == selectedCarId) {
       option.selected = true;
     }
@@ -87,7 +88,7 @@ function displayMileageHistory(mileageData, cars) {
   
   mileageData.forEach(entry => {
     const car = cars.find(c => c.id == entry.carId);
-    const carName = car ? (car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name) : 'Неизвестный автомобиль';
+    const carName = car ? formatCarName(car) : 'Неизвестный автомобиль';
     
     const typeLabels = {
       'initial': 'Начальный пробег',

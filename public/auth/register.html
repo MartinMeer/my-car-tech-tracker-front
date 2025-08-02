@@ -162,7 +162,7 @@
 
     .form-input {
       width: 100%;
-      padding: 1rem 1rem 1rem 3rem;
+      padding: 1rem;
       border: 2px solid #e2e8f0;
       border-radius: 12px;
       font-size: 1rem;
@@ -178,19 +178,7 @@
       transform: translateY(-2px);
     }
 
-    .input-icon {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #a0aec0;
-      font-size: 1.2rem;
-      transition: color 0.3s ease;
-    }
 
-    .form-input:focus + .input-icon {
-      color: #667eea;
-    }
 
     .password-toggle {
       position: absolute;
@@ -499,19 +487,16 @@
       <div class="form-group">
         <label for="register-name" class="form-label">Имя</label>
         <input type="text" id="register-name" name="name" class="form-input" autocomplete="name">
-        <span class="input-icon">👤</span>
       </div>
 
       <div class="form-group">
         <label for="register-email" class="form-label">Email</label>
         <input type="email" id="register-email" name="email" class="form-input" required autocomplete="username">
-        <span class="input-icon">📧</span>
       </div>
 
       <div class="form-group">
         <label for="register-password" class="form-label">Пароль</label>
         <input type="password" id="register-password" name="password" class="form-input" required autocomplete="new-password">
-        <span class="input-icon">🔒</span>
         <button type="button" class="password-toggle" onclick="togglePassword('register-password')">👁️</button>
         <div class="password-strength">
           <div class="password-strength-bar">
@@ -524,7 +509,6 @@
       <div class="form-group">
         <label for="register-confirm-password" class="form-label">Подтвердите пароль</label>
         <input type="password" id="register-confirm-password" name="confirm-password" class="form-input" required autocomplete="new-password">
-        <span class="input-icon">🔒</span>
         <button type="button" class="password-toggle" onclick="togglePassword('register-confirm-password')">👁️</button>
       </div>
 

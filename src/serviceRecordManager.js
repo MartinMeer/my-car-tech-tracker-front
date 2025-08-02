@@ -1,4 +1,5 @@
 import { DataService } from './dataService.js';
+import { formatCarName } from './carNameFormatter.js';
 import { showConfirmationDialog } from './dialogs.js';
 
 // Service Record State Management
@@ -249,7 +250,7 @@ async function showCarSelectionPopup() {
           <div class="popup-body">
             <div class="car-selection-list">
               ${cars.map(car => {
-                const displayName = car.name || `${car.brand || ''} ${car.model || ''}`.trim();
+                const displayName = formatCarName(car);
                 const nickname = car.nickname ? ` "${car.nickname}"` : '';
                 const fullName = displayName + nickname;
                 
@@ -321,9 +322,8 @@ async function showDateMileagePopup(carId) {
       return;
     }
     
-    const displayName = selectedCar.name || `${selectedCar.brand || ''} ${selectedCar.model || ''}`.trim();
-    const nickname = selectedCar.nickname ? ` "${selectedCar.nickname}"` : '';
-    const fullName = displayName + nickname;
+    const displayName = formatCarName(selectedCar);
+    const fullName = displayName;
     
     // Create popup HTML for date/mileage selection
     const popupHTML = `
@@ -553,9 +553,7 @@ async function updateServiceRecordCarInfo(carId) {
     }
     
     if (carNameEl) {
-      const displayName = selectedCar.name || `${selectedCar.brand || ''} ${selectedCar.model || ''}`.trim();
-      const nickname = selectedCar.nickname ? ` "${selectedCar.nickname}"` : '';
-      carNameEl.textContent = displayName + nickname;
+      carNameEl.textContent = formatCarName(selectedCar);
     }
     
     if (carYearEl && selectedCar.year) {
@@ -1028,8 +1026,8 @@ function createNewServiceRecord() {
   window.currentServiceRecord = null;
   currentServiceRecord = null;
   
-  // Navigate back to overview
-  window.location.hash = '#my-car-overview';
+  // Navigate back to service-history page
+  window.location.hash = '#service-history';
 }
 
 // Remove sub-record
@@ -1345,8 +1343,8 @@ export function saveAndExit() {
       clearDraft();
       stopAutoSave();
       
-      // Navigate back to overview
-      window.location.hash = '#my-car-overview';
+      // Navigate back to service-history page
+      window.location.hash = '#service-history';
       showSuccessMessage('Запись об обслуживании сохранена!');
     })
     .catch(error => {
@@ -1373,8 +1371,8 @@ export function exitWithoutChanges() {
       currentServiceRecord = null;
       window.currentServiceRecord = null;
       
-      // Navigate back
-      window.location.hash = '#my-car-overview';
+      // Navigate back to service-history page
+      window.location.hash = '#service-history';
       showSuccessMessage('Вышли без сохранения');
     },
     () => {

@@ -1,4 +1,5 @@
 import { DataService } from './dataService.js';
+import { formatCarName } from './carNameFormatter.js';
 
 class MaintenancePlanUI {
     constructor() {
@@ -132,7 +133,7 @@ class MaintenancePlanUI {
             // Car name (full name)
             const carNameElement = document.getElementById('car-name');
             if (carNameElement) {
-                carNameElement.textContent = this.currentCar.name || '';
+                carNameElement.textContent = formatCarName(this.currentCar);
             }
 
             // Year

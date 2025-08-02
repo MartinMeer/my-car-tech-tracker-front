@@ -3,6 +3,7 @@ import { getUserAlerts } from './userAlertUI.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { CONFIG } from './config.js';
 import { maintenanceDataService } from './maintenanceDataService.js';
+import { formatCarName } from './carNameFormatter.js';
 
 class CarOverviewMonitor {
     constructor() {
@@ -168,6 +169,164 @@ class CarOverviewMonitor {
         } else {
             console.log('CarOverviewMonitor: Maintenance guide button not found');
         }
+
+        // Mileage modal functionality
+        this.setupMileageModal();
+    }
+
+    setupMileageModal() {
+        console.log('CarOverviewMonitor: Setting up mileage modal');
+        
+        // Mileage field click handler
+        const inlineMileageContainer = document.getElementById('inline-mileage-container');
+        const editMileageBtn = document.getElementById('edit-mileage-btn');
+        
+        if (inlineMileageContainer) {
+            inlineMileageContainer.addEventListener('click', () => {
+                this.openMileageModal();
+            });
+        }
+        
+        if (editMileageBtn) {
+            editMileageBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent triggering the container click
+                this.openMileageModal();
+            });
+        }
+
+        // Modal close handlers
+        const closeModalBtn = document.getElementById('close-mileage-modal');
+        const cancelBtn = document.getElementById('cancel-mileage-update');
+        
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                this.closeMileageModal();
+            });
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.closeMileageModal();
+            });
+        }
+
+        // Save mileage handler
+        const saveBtn = document.getElementById('save-mileage-update');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.saveMileageUpdate();
+            });
+        }
+
+        // Close modal when clicking outside
+        const modal = document.getElementById('mileage-modal');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeMileageModal();
+                }
+            });
+        }
+
+        // Set current date as default
+        const mileageDateInput = document.getElementById('mileage-date');
+        if (mileageDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            mileageDateInput.value = today;
+        }
+    }
+
+    openMileageModal() {
+        console.log('CarOverviewMonitor: Opening mileage modal');
+        const modal = document.getElementById('mileage-modal');
+        const newMileageInput = document.getElementById('new-mileage');
+        
+        if (modal && newMileageInput) {
+            // Set current mileage as default value
+            const currentMileage = this.currentCar?.mileage || 0;
+            newMileageInput.value = currentMileage;
+            newMileageInput.focus();
+            
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+    }
+
+    closeMileageModal() {
+        console.log('CarOverviewMonitor: Closing mileage modal');
+        const modal = document.getElementById('mileage-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+    }
+
+    async saveMileageUpdate() {
+        console.log('CarOverviewMonitor: Saving mileage update');
+        
+        const newMileageInput = document.getElementById('new-mileage');
+        const mileageDateInput = document.getElementById('mileage-date');
+        const mileageNotesInput = document.getElementById('mileage-notes');
+        
+        if (!newMileageInput || !mileageDateInput) {
+            console.error('CarOverviewMonitor: Required form elements not found');
+            return;
+        }
+
+        const newMileage = parseInt(newMileageInput.value);
+        const mileageDate = mileageDateInput.value;
+        const mileageNotes = mileageNotesInput?.value || '';
+
+        if (!newMileage || newMileage < 0) {
+            alert('Пожалуйста, введите корректный пробег');
+            return;
+        }
+
+        if (!mileageDate) {
+            alert('Пожалуйста, выберите дату обновления');
+            return;
+        }
+
+        try {
+            // Update car mileage in DataService
+            if (this.currentCar) {
+                // Get all cars and update the current car
+                const cars = await DataService.getCars();
+                const carIndex = cars.findIndex(car => car.id === this.currentCar.id);
+                
+                if (carIndex !== -1) {
+                    // Update the car in the array
+                    cars[carIndex] = { ...cars[carIndex], mileage: newMileage };
+                    
+                    // Save the updated cars array
+                    await DataService.saveCars(cars);
+                    
+                    // Update current car reference
+                    this.currentCar = cars[carIndex];
+                    
+                    // Update display
+                    this.updateMileageDisplay(newMileage);
+                    
+                    console.log('CarOverviewMonitor: Mileage updated successfully:', newMileage);
+                    this.closeMileageModal();
+                    
+                    // Show success message
+                    alert(`Пробег успешно обновлен: ${newMileage} км`);
+                } else {
+                    throw new Error('Car not found in cars array');
+                }
+            }
+        } catch (error) {
+            console.error('CarOverviewMonitor: Error updating mileage:', error);
+            alert('Ошибка при обновлении пробега');
+        }
+    }
+
+    updateMileageDisplay(newMileage) {
+        const mileageElement = document.getElementById('car-mileage');
+        if (mileageElement) {
+            mileageElement.textContent = newMileage.toLocaleString();
+        }
     }
 
     async loadAlerts() {
@@ -271,13 +430,27 @@ class CarOverviewMonitor {
         // Action buttons are already set up in the HTML
     }
 
+    // Helper function to parse Russian date format (dd.mm.yyyy)
+    parseRussianDate(dateString) {
+        if (!dateString) return new Date(0);
+        
+        // Check if it's already in Russian format (dd.mm.yyyy)
+        if (/^\d{2}\.\d{2}\.\d{4}$/.test(dateString)) {
+            const [day, month, year] = dateString.split('.');
+            return new Date(year, month - 1, day);
+        }
+        
+        // Try to parse as regular date
+        return new Date(dateString);
+    }
+
     sortAlerts(sortType) {
         const sortedAlerts = [...this.alerts].sort((a, b) => {
             switch (sortType) {
                 case 'date-desc':
-                    return new Date(b.date) - new Date(a.date);
+                    return this.parseRussianDate(b.date) - this.parseRussianDate(a.date);
                 case 'date-asc':
-                    return new Date(a.date) - new Date(b.date);
+                    return this.parseRussianDate(a.date) - this.parseRussianDate(b.date);
                 case 'priority-desc':
                     const priorityOrder = { critical: 3, warning: 2, info: 1 };
                     return (priorityOrder[b.priority] || 1) - (priorityOrder[a.priority] || 1);
@@ -285,7 +458,7 @@ class CarOverviewMonitor {
                     const priorityOrderAsc = { critical: 3, warning: 2, info: 1 };
                     return (priorityOrderAsc[a.priority] || 1) - (priorityOrderAsc[b.priority] || 1);
                 default:
-                    return new Date(b.date) - new Date(a.date);
+                    return this.parseRussianDate(b.date) - this.parseRussianDate(a.date);
             }
         });
 
@@ -477,7 +650,7 @@ class CarOverviewMonitor {
             const today = new Date();
             const currentDate = today.toLocaleDateString('ru-RU');
             
-            const carName = car.nickname || `${car.brand || ''} ${car.model || ''}`.trim() || car.name;
+            const carName = formatCarName(car);
             const currentMileage = car.mileage || 0;
             
             let popupHtml = `
@@ -874,7 +1047,7 @@ class CarOverviewMonitor {
         // Update car title
         const carTitle = document.getElementById('car-title');
         if (carTitle) {
-            const carName = this.currentCar.nickname || `${this.currentCar.brand || ''} ${this.currentCar.model || ''}`.trim() || this.currentCar.name;
+            const carName = formatCarName(this.currentCar);
             carTitle.textContent = carName;
         }
 
