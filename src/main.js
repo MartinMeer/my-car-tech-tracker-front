@@ -310,6 +310,16 @@ async function handleServiceButtonClick() {
 // Make service button handler globally available
 window.handleServiceButtonClick = handleServiceButtonClick;
 
+// Handle history button click
+async function handleHistoryButtonClick() {
+  console.log('📋 History button clicked - navigating to service history');
+  window.location.hash = '#service-history';
+}
+
+// Make history button handler globally available immediately
+window.handleHistoryButtonClick = handleHistoryButtonClick;
+console.log('History button function registered:', typeof window.handleHistoryButtonClick);
+
 // Show car selection popup for service (modified from problems)
 async function showServiceCarSelectionPopup() {
   console.log('🔧 Service: Showing car selection popup...');

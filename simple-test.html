@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .btn { 
+            padding: 15px 30px; 
+            background: #2d3e50; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            margin: 10px;
+            font-size: 16px;
+        }
+        .btn:hover { background: #34495e; }
+        .output { margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Simple Button Test</h1>
+    
+    <button class="btn" onclick="testFunction()">Test Function</button>
+    <button class="btn" onclick="testNavigation()">Test Navigation</button>
+    
+    <div id="output" class="output">
+        <p>Click buttons to test...</p>
+    </div>
+
+    <script>
+        function testFunction() {
+            console.log('Test function called');
+            document.getElementById('output').innerHTML += '<p>✅ Test function called successfully!</p>';
+        }
+        
+        function testNavigation() {
+            console.log('Testing navigation');
+            document.getElementById('output').innerHTML += '<p>Testing navigation to #service-history...</p>';
+            window.location.hash = '#service-history';
+        }
+        
+        console.log('Simple test page loaded');
+        document.getElementById('output').innerHTML += '<p>✅ Page loaded successfully</p>';
+    </script>
+</body>
+</html> 

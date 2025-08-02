@@ -8,4 +8,16 @@
 - clear cross-line
 Note: use where possible existing styles
 
+et's create a dynamic monitor entries in my-car-overview
+All data is related to given car.
+1. Split technical-state-section on two vertical parts
+2. Left part is for working with user alerts,
+    right part is for working with periodical maintenance
+3. In user-alerts must be collect all exising user-alerts
+    Alerts must be represented in compact table:
+    columns (from user-alert.html, except 'actions'):
+    alert-date-info | alert-date-info | priority-option | subsystem-select or custom-subsystem-group | problem-description | actions
+    Actions: editing, archiving with restoring from archive, as in implemented alredy
+4. Add a sorting functionality: by date, by priority. Let sorting do in frontend level, for given dackend data
+
 

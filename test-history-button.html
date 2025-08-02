@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test History Button</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-btn { 
+            padding: 15px 30px; 
+            background: #2d3e50; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            margin: 10px;
+            font-size: 16px;
+        }
+        .test-btn:hover { background: #34495e; }
+        .output { margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test History Button</h1>
+    
+    <button class="test-btn" onclick="testHistoryButton()">Test History Button</button>
+    <button class="test-btn" onclick="testDirectNavigation()">Test Direct Navigation</button>
+    <button class="test-btn" onclick="checkFunction()">Check Function</button>
+    
+    <div id="output" class="output">
+        <p>Click buttons to test functionality...</p>
+    </div>
+
+    <script>
+        // Define the function
+        function handleHistoryButtonClick() {
+            console.log('📋 History button clicked - navigating to service history');
+            document.getElementById('output').innerHTML += '<p>✅ Function called successfully!</p>';
+            window.location.hash = '#service-history';
+        }
+        
+        function testHistoryButton() {
+            console.log('Testing history button...');
+            document.getElementById('output').innerHTML += '<p>Testing history button...</p>';
+            
+            if (typeof handleHistoryButtonClick === 'function') {
+                document.getElementById('output').innerHTML += '<p>✅ Function exists!</p>';
+                handleHistoryButtonClick();
+            } else {
+                document.getElementById('output').innerHTML += '<p>❌ Function not found!</p>';
+            }
+        }
+        
+        function testDirectNavigation() {
+            console.log('Testing direct navigation...');
+            document.getElementById('output').innerHTML += '<p>Testing direct navigation...</p>';
+            window.location.hash = '#service-history';
+        }
+        
+        function checkFunction() {
+            console.log('Checking function availability...');
+            document.getElementById('output').innerHTML += '<p>Checking function availability...</p>';
+            
+            const functions = [
+                'handleHistoryButtonClick',
+                'handleServiceButtonClick', 
+                'handleProblemsButtonClick'
+            ];
+            
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    document.getElementById('output').innerHTML += `<p>✅ ${funcName} exists</p>`;
+                } else {
+                    document.getElementById('output').innerHTML += `<p>❌ ${funcName} not found</p>`;
+                }
+            });
+        }
+        
+        // Make function globally available
+        window.handleHistoryButtonClick = handleHistoryButtonClick;
+        
+        console.log('Test page loaded');
+        document.getElementById('output').innerHTML += '<p>✅ Test page loaded successfully</p>';
+    </script>
+</body>
+</html> 

@@ -30,7 +30,7 @@
         <div id="car-select-menu" class="car-select-menu" style="display:none;"></div>
         <a href="#" class="my-cars-link" id="my-cars-link">Мой автопарк</a>
       </div>
-      <!-- Four main action buttons -->
+      <!-- Main action buttons -->
       <div class="sidebar-buttons">
         <button class="sidebar-btn sidebar-btn-service" onclick="handleServiceButtonClick()">
           <span class="btn-icon">🔧</span>
@@ -44,12 +44,21 @@
           <span class="btn-icon">⚠️</span>
           <span class="btn-text">У нас проблемы!</span>
         </button>
+        
+        <button class="sidebar-btn sidebar-btn-history" id="history-button" onclick="console.log('Button clicked!'); handleHistoryButtonClick();">
+          <span class="btn-icon">📋</span>
+          <span class="btn-text">
+            <span class="btn-line-1">История обслуживания</span>
+            <span class="btn-line-2">Все записи</span>
+          </span>
+        </button>
       </div>
     </nav>
     <main id="main-content">
       <div id="my-cars-name" class="my-cars-name"></div>
       <!-- Content will be loaded here -->
     </main>
+    <!-- right-icons section
     <aside class="right-icons">
       <div class="icon-section">
         <a href="#reglament" title="Техническая информация">
@@ -72,6 +81,7 @@
         </a>
       </div>
     </aside>
+    -->
   </div>
   <nav class="mobile-right-menu">
     <a href="#" class="mobile-car-img">
@@ -135,6 +145,28 @@
   </script>
   <script type="module" src="../src/main.js"></script>
   <script>
+    // Fallback function for history button
+    window.handleHistoryButtonClick = function() {
+      console.log('📋 History button clicked - navigating to service history');
+      window.location.hash = '#service-history';
+    };
+    
+    // Test if function is available
+    console.log('History button function available:', typeof window.handleHistoryButtonClick);
+    
+    // Add event listener to test button click
+    document.addEventListener('DOMContentLoaded', function() {
+      const historyButton = document.getElementById('history-button');
+      if (historyButton) {
+        console.log('History button found in DOM');
+        historyButton.addEventListener('click', function(e) {
+          console.log('History button clicked via event listener');
+        });
+      } else {
+        console.log('History button NOT found in DOM');
+      }
+    });
+    
     // Make the car image a home button to fleet overview
     document.addEventListener('DOMContentLoaded', function() {
       var carImgDiv = document.getElementById('my-cars-img');

@@ -364,11 +364,17 @@
   border-color: var(--accent-dark);
 }
 
+/* Button 3: History - Blue color */
+.sidebar-btn-history {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+}
 
-
-
-
-
+.sidebar-btn-history:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary-dark));
+  border-color: var(--primary-dark);
+}
 
 /* Responsive adjustments for sidebar buttons */
 @media (max-width: 768px) {
