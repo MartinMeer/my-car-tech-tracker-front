@@ -2,7 +2,7 @@ import { DataService } from './dataService.js';
 import { getUserAlerts } from './userAlertUI.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { CONFIG } from './config.js';
-import { maintenanceDataService } from './maintenanceDataService.js';
+import { periodicalMaintDataService } from './periodicalMaintDataService.js';
 import { formatCarName } from './carNameFormatter.js';
 
 class CarOverviewMonitor {
@@ -26,7 +26,7 @@ class CarOverviewMonitor {
         this.updateCarDisplay();
         
         // Subscribe to maintenance data changes
-        this.unsubscribeMaintenance = maintenanceDataService.subscribe(() => {
+        this.unsubscribeMaintenance = periodicalMaintDataService.subscribe(() => {
             this.loadMaintenanceData();
         });
     }
@@ -906,14 +906,14 @@ class CarOverviewMonitor {
     async createMaintenanceScheduleRows() {
         try {
             // Get maintenance schedule from data service
-            const maintenanceSchedule = maintenanceDataService.getMaintenanceSchedule();
+            const maintenanceSchedule = periodicalMaintDataService.getMaintenanceSchedule();
             const currentMileage = this.currentCar.mileage || 0;
             let tableHTML = '';
 
             maintenanceSchedule.forEach((item, index) => {
-                const status = maintenanceDataService.calculateMaintenanceStatus(item, currentMileage);
-                const statusIcon = maintenanceDataService.getStatusIcon(status);
-                const statusText = maintenanceDataService.getStatusText(status);
+                            const status = periodicalMaintDataService.calculateMaintenanceStatus(item, currentMileage);
+            const statusIcon = periodicalMaintDataService.getStatusIcon(status);
+            const statusText = periodicalMaintDataService.getStatusText(status);
                 const isInPlan = this.isMaintenanceItemInPlan(item);
                 
                 tableHTML += `
@@ -996,7 +996,7 @@ class CarOverviewMonitor {
 
     navigateToMaintenanceGuide() {
         if (!this.currentCar) return;
-        window.location.hash = `#maintenance-guide?carId=${this.currentCar.id}`;
+                    window.location.hash = `#periodical-maint-guide?carId=${this.currentCar.id}`;
     }
 
     setupDynamicMonitorButtons() {
@@ -1208,7 +1208,7 @@ class CarOverviewMonitor {
 
     async toggleMaintenancePlan(maintenanceIndex) {
         try {
-            const maintenanceSchedule = maintenanceDataService.getMaintenanceSchedule();
+            const maintenanceSchedule = periodicalMaintDataService.getMaintenanceSchedule();
             const item = maintenanceSchedule[maintenanceIndex];
             
             if (!item) {

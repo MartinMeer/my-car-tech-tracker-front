@@ -29,7 +29,7 @@ The following files were updated to use the unified formatter:
 - `src/mileageHistoryUI.js` - Updated car name display in mileage history
 - `src/serviceRecordManager.js` - Updated car name display in service records
 - `src/reglamentUI.js` - Updated car name display in maintenance guide
-- `src/maintenanceGuideUI.js` - Updated car name display
+- `src/periodicalMaintGuide.js` - Updated car name display
 - `src/maintenancePlanUI.js` - Updated car name display
 
 ### 3. Unified Formatting Logic
@@ -89,7 +89,7 @@ const detailedName = formatCarNameWithNickname(car); // "Моя машина (To
 9. `src/mileageHistoryUI.js` - Updated mileage history
 10. `src/serviceRecordManager.js` - Updated service records
 11. `src/reglamentUI.js` - Updated maintenance guide
-12. `src/maintenanceGuideUI.js` - Updated guide display
+12. `src/periodicalMaintGuide.js` - Updated guide display
 13. `src/maintenancePlanUI.js` - Updated plan display
 
 ## Testing Recommendations

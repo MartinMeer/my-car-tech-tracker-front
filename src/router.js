@@ -2,11 +2,7 @@ export const pageMap = {
   '': 'index.html', // Root page - fleet overview
   'my-car-overview': 'cars/my-car-overview.html',
   'next-mainten-alert': 'maintenance/next-mainten-alert.html',
-  'next-repair-alert': 'repair/next-repair-alert.html',
   'next-mainten-list': 'maintenance/next-mainten-list.html',
-  'next-repair-list': 'repair/next-repair-list.html',
-  'mainten-history': 'maintenance/mainten-history.html',
-  'repair-history': 'repair/repair-history.html',
   'maintenance-plan': 'maintenance/maintenance-plan.html',
   'service-history': 'service-history.html', // stays in public/
 
@@ -16,14 +12,14 @@ export const pageMap = {
   'oils': 'info/oils.html',
   'spares': 'info/spares.html',
   'shops': 'info/shops.html',
-  'my-cars': 'cars/my-cars.html',
+  
   'add-car': 'cars/add-car.html',
   'login': 'auth/login.html',
   'register': 'auth/register.html',
   'contacts': 'info/contacts.html',
   'privacy': 'info/privacy.html',
   'reglament': 'car-info/reglament.html',
-  'maintenance-guide': 'car-info/maintenance-guide.html',
+  'periodical-maint-guide': 'car-info/periodical-maint-guide.html',
   'cover': 'cover.html', // stays in public/
 };
 

@@ -30,7 +30,7 @@
 @import url('./styles/service-record.css');
 
 /* Maintenance Guide Styles - Periodic maintenance schedule */
-@import url('./styles/maintenance-guide.css');
+@import url('./styles/periodical-maint-guide.css');
 
 /* Message Styles - Success/error messages, alerts */
 @import url('./styles/messages.css');

@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 
-class MaintenanceDataService {
+class PeriodicalMaintDataService {
     constructor() {
         this.maintenanceSchedule = [];
         this.originalSchedule = [];
@@ -26,7 +26,7 @@ class MaintenanceDataService {
             // Create backup for revert functionality
             this.originalSchedule = JSON.parse(JSON.stringify(this.maintenanceSchedule));
             
-            console.log('MaintenanceDataService: Loaded maintenance schedule:', this.maintenanceSchedule);
+            console.log('PeriodicalMaintDataService: Loaded maintenance schedule:', this.maintenanceSchedule);
             this.notifyListeners();
             return this.maintenanceSchedule;
         } catch (error) {
@@ -90,7 +90,7 @@ class MaintenanceDataService {
             // For now, we'll just update the original schedule
             this.originalSchedule = JSON.parse(JSON.stringify(this.maintenanceSchedule));
             
-            console.log('MaintenanceDataService: Saved maintenance schedule:', this.maintenanceSchedule);
+            console.log('PeriodicalMaintDataService: Saved maintenance schedule:', this.maintenanceSchedule);
             return true;
         } catch (error) {
             console.error('Error saving maintenance schedule:', error);
@@ -177,6 +177,6 @@ class MaintenanceDataService {
 }
 
 // Create global instance
-const maintenanceDataService = new MaintenanceDataService();
+const periodicalMaintDataService = new PeriodicalMaintDataService();
 
-export { MaintenanceDataService, maintenanceDataService }; 
+export { PeriodicalMaintDataService, periodicalMaintDataService }; 

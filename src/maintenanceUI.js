@@ -1,6 +1,5 @@
 import { DataService } from './dataService.js';
 import { formatCarName } from './carNameFormatter.js';
-import { openRepairPopup, openSparePopup } from './repairUI.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { removeCarFromBackend } from './carsUI.js';
 import { CONFIG } from './config.js';
@@ -142,7 +141,7 @@ function setupCarActionButtons(carId) {
             try {
               await removeCarFromBackend(carId);
               // Redirect to my-cars page after successful deletion
-              window.location.hash = '#my-cars';
+              window.location.hash = '#';
             } catch (error) {
               alert('Ошибка удаления: ' + error.message);
             }

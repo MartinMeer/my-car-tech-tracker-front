@@ -101,23 +101,17 @@
   }
 
   /* Service history full width on desktop */
-  #main-content > section.service-history,
-  #main-content > section.mainten-history,
-  #main-content > section.repair-history {
+  #main-content > section.service-history {
     max-width: 100%;
     padding: 0 1rem;
   }
   
-  .service-history .history-table,
-  .mainten-history .history-table,
-  .repair-history .history-table {
+  .service-history .history-table {
     width: 100%;
     font-size: 1rem;
   }
   
-  .service-history .page-description,
-  .mainten-history .page-description,
-  .repair-history .page-description {
+  .service-history .page-description {
     max-width: 800px;
     margin: 0 auto 2rem auto;
     text-align: center;
@@ -154,34 +148,27 @@
     display: none; 
   }
   
-  .footer-menu-desktop { 
-    display: none; 
+  .footer-sitemap { 
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0 0.5rem;
   }
   
-  .footer-menu-mobile { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 0.5rem; 
-    margin-bottom: 0.5rem; 
+  .sitemap-section {
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    padding: 0.8rem;
+    border: 1px solid var(--border-light);
   }
   
-  .footer-menu-mobile details { 
-    background: var(--primary-dark); 
-    border-radius: var(--border-radius); 
-    padding: 0.3rem 0.7rem; 
+  .sitemap-section h4 {
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
   }
   
-  .footer-menu-mobile summary { 
-    color: var(--text-inverse); 
-    font-weight: bold; 
-    cursor: pointer; 
-  }
-  
-  .footer-menu-mobile a { 
-    color: var(--text-inverse); 
-    text-decoration: none; 
-    display: block; 
-    margin: 0.2rem 0 0.2rem 1rem; 
+  .sitemap-section a {
+    font-size: 0.8rem;
+    padding: 0.2rem 0;
   }
   
   .footer-info { 

@@ -2,7 +2,7 @@ import { CONFIG } from './config.js';
 import { DataService } from './dataService.js';
 import { pageMap, loadPage } from './router.js';
 import { showConfirmationDialog } from './dialogs.js';
-import { initializeMyCarsUI, initializeAddCarUI, updateCarSelectionUI, removeCarFromBackend } from './carsUI.js';
+import { initializeAddCarUI, updateCarSelectionUI, removeCarFromBackend } from './carsUI.js';
 import {
   initializeCarOverviewUI,
   renderMaintenHistory,
@@ -18,15 +18,7 @@ import { fleetUI } from './fleetUI.js';
 import { MaintenancePlanUI } from './maintenancePlanUI.js';
 import { CarOverviewMonitor } from './carOverviewMonitor.js';
 
-import {
-  renderRepairHistory,
-  openRepairPopup,
-  closeRepairPopup,
-  openSparePopup,
-  closeSparePopup,
-  addSpare,
-  calculateRepairTotal
-} from './repairUI.js';
+
 import { 
   initializeServiceRecord, 
   addMaintenanceToRecord, 
@@ -50,12 +42,7 @@ window.spareCounter = 1;
 window.openMaintPopup = openMaintPopup;
 window.closeMaintPopup = closeMaintPopup;
 window.calculateMaintTotal = calculateMaintTotal;
-window.openRepairPopup = openRepairPopup;
-window.closeRepairPopup = closeRepairPopup;
-window.openSparePopup = openSparePopup;
-window.closeSparePopup = closeSparePopup;
-window.addSpare = addSpare;
-window.calculateRepairTotal = calculateRepairTotal;
+
 window.removeCarFromBackend = removeCarFromBackend;
 window.showConfirmationDialog = showConfirmationDialog;
 
@@ -530,9 +517,7 @@ async function saveServiceDateMileage(carId) {
 // UI initialization stub (to be replaced with real logic)
 function initializePageUI(page) {
   switch(page) {
-    case 'my-cars':
-      initializeMyCarsUI();
-      break;
+    
     case 'add-car':
       initializeAddCarUI();
       break;
@@ -559,20 +544,15 @@ function initializePageUI(page) {
       // Initialize reglament UI
       new ReglamentUI();
       break;
-    case 'mainten-history':
-      renderMaintenHistory();
-      break;
-    case 'repair-history':
-      renderRepairHistory();
-      break;
+
     case 'maintenance-plan':
       // Initialize maintenance plan UI
       new MaintenancePlanUI();
       break;
-    case 'maintenance-guide':
-      // Initialize maintenance guide UI
-      import('./maintenanceGuideUI.js').then(module => {
-        new module.MaintenanceGuideUI();
+    case 'periodical-maint-guide':
+      // Initialize periodical maintenance guide UI
+      import('./periodicalMaintGuide.js').then(module => {
+        new module.PeriodicalMaintGuide();
       });
       break;
     case 'mileage-history':
@@ -624,11 +604,12 @@ async function initializeApp() {
       }
     });
     
-    // Setup car image dropdown
-    setupCarImageDropdown();
-    
     // Setup authentication-related event listeners
     setupAuthEventListeners();
+    
+    // Make sure global functions are available
+    window.handleProblemsButtonClick = handleProblemsButtonClick;
+    window.handleServiceButtonClick = handleServiceButtonClick;
     
     console.log('App initialized successfully');
   } catch (error) {
@@ -636,24 +617,6 @@ async function initializeApp() {
   }
 }
 
-// Setup car image dropdown functionality
-function setupCarImageDropdown() {
-  const carImgDiv = document.getElementById('my-cars-img');
-  const carSelectMenu = document.getElementById('car-select-menu');
-  
-  if (carImgDiv && carSelectMenu) {
-    carImgDiv.onclick = function(e) {
-      e.stopPropagation();
-      carSelectMenu.style.display = carSelectMenu.style.display === 'block' ? 'none' : 'block';
-    };
-    
-    document.addEventListener('click', function(e) {
-      if (!carSelectMenu.contains(e.target) && e.target !== carImgDiv) {
-        carSelectMenu.style.display = 'none';
-      }
-    });
-  }
-}
 
 // Check authentication for protected pages
 async function checkAuthentication() {

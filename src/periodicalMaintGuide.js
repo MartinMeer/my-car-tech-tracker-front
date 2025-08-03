@@ -1,8 +1,8 @@
 import { DataService } from './dataService.js';
 import { formatCarName } from './carNameFormatter.js';
-import { maintenanceDataService } from './maintenanceDataService.js';
+import { periodicalMaintDataService } from './periodicalMaintDataService.js';
 
-export class MaintenanceGuideUI {
+export class PeriodicalMaintGuide {
     constructor() {
         this.currentCar = null;
         this.editingItemIndex = null;
@@ -11,7 +11,7 @@ export class MaintenanceGuideUI {
 
     async init() {
         await this.loadCarData();
-        await maintenanceDataService.loadMaintenanceSchedule();
+        await periodicalMaintDataService.loadMaintenanceSchedule();
         this.setupEventListeners();
         this.updateDisplay();
     }
@@ -19,14 +19,14 @@ export class MaintenanceGuideUI {
     async loadCarData() {
         try {
             const carId = this.getCarIdFromUrl();
-            console.log('MaintenanceGuideUI: carId from URL:', carId);
+            console.log('PeriodicalMaintGuide: carId from URL:', carId);
             
             if (carId) {
-                console.log('MaintenanceGuideUI: Loading car data for ID:', carId);
+                console.log('PeriodicalMaintGuide: Loading car data for ID:', carId);
                 this.currentCar = await DataService.getCar(carId);
-                console.log('MaintenanceGuideUI: Loaded car:', this.currentCar);
+                console.log('PeriodicalMaintGuide: Loaded car:', this.currentCar);
             } else {
-                console.log('MaintenanceGuideUI: No carId found in URL');
+                console.log('PeriodicalMaintGuide: No carId found in URL');
             }
         } catch (error) {
             console.error('Error loading car data:', error);
@@ -106,7 +106,7 @@ export class MaintenanceGuideUI {
         const tbody = document.getElementById('maintenance-schedule-tbody');
         if (!tbody) return;
 
-        const maintenanceSchedule = maintenanceDataService.getMaintenanceSchedule();
+        const maintenanceSchedule = periodicalMaintDataService.getMaintenanceSchedule();
         let tableHTML = '';
         
         maintenanceSchedule.forEach((item, index) => {
@@ -118,10 +118,10 @@ export class MaintenanceGuideUI {
                     <td class="period">${item.period}</td>
                     <td class="notes">${item.notes}</td>
                     <td class="actions">
-                        <button class="edit-btn" onclick="maintenanceGuideUI.editItem(${index})" title="Редактировать">
+                        <button class="edit-btn" onclick="periodicalMaintGuide.editItem(${index})" title="Редактировать">
                             ✏️
                         </button>
-                        <button class="delete-btn" onclick="maintenanceGuideUI.deleteItem(${index})" title="Удалить">
+                        <button class="delete-btn" onclick="periodicalMaintGuide.deleteItem(${index})" title="Удалить">
                             🗑️
                         </button>
                     </td>
@@ -133,7 +133,7 @@ export class MaintenanceGuideUI {
     }
 
     updateCRUDButtons() {
-        const hasChanges = maintenanceDataService.hasChanges();
+        const hasChanges = periodicalMaintDataService.hasChanges();
         const saveBtn = document.getElementById('save-maintenance-btn');
         const revertBtn = document.getElementById('revert-changes-btn');
         
@@ -155,7 +155,7 @@ export class MaintenanceGuideUI {
 
     editItem(index) {
         this.editingItemIndex = index;
-        const maintenanceSchedule = maintenanceDataService.getMaintenanceSchedule();
+        const maintenanceSchedule = periodicalMaintDataService.getMaintenanceSchedule();
         const item = maintenanceSchedule[index];
         this.showModal('Редактировать операцию', item);
     }
@@ -227,10 +227,10 @@ export class MaintenanceGuideUI {
 
         if (this.editingItemIndex !== null) {
             // Update existing item
-            maintenanceDataService.updateMaintenanceItem(this.editingItemIndex, newItem);
+            periodicalMaintDataService.updateMaintenanceItem(this.editingItemIndex, newItem);
         } else {
             // Add new item
-            maintenanceDataService.addMaintenanceItem(newItem);
+            periodicalMaintDataService.addMaintenanceItem(newItem);
         }
 
         this.closeModal();
@@ -240,7 +240,7 @@ export class MaintenanceGuideUI {
 
     deleteItem(index) {
         if (confirm('Вы уверены, что хотите удалить эту операцию?')) {
-            maintenanceDataService.deleteMaintenanceItem(index);
+            periodicalMaintDataService.deleteMaintenanceItem(index);
             this.renderMaintenanceSchedule();
             this.updateCRUDButtons();
         }
@@ -248,7 +248,7 @@ export class MaintenanceGuideUI {
 
     async saveMaintenanceSchedule() {
         try {
-            const success = await maintenanceDataService.saveMaintenanceSchedule();
+            const success = await periodicalMaintDataService.saveMaintenanceSchedule();
             this.updateCRUDButtons();
             
             if (success) {
@@ -264,7 +264,7 @@ export class MaintenanceGuideUI {
 
     revertChanges() {
         if (confirm('Вы уверены, что хотите отменить все изменения?')) {
-            maintenanceDataService.revertChanges();
+            periodicalMaintDataService.revertChanges();
             this.renderMaintenanceSchedule();
             this.updateCRUDButtons();
         }
@@ -291,5 +291,5 @@ export class MaintenanceGuideUI {
 }
 
 // Create global instance for inline event handlers
-const maintenanceGuideUI = new MaintenanceGuideUI();
-window.maintenanceGuideUI = maintenanceGuideUI; 
+const periodicalMaintGuide = new PeriodicalMaintGuide();
+window.periodicalMaintGuide = periodicalMaintGuide; 

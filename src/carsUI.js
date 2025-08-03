@@ -2,10 +2,7 @@ import { DataService } from './dataService.js';
 import { formatCarNameForList, formatCarName } from './carNameFormatter.js';
 import { showConfirmationDialog } from './dialogs.js';
 
-export function initializeMyCarsUI() {
-  renderCarsList();
-  // Don't call setupAddCarForm here as the form doesn't exist on my-cars page
-}
+
 
 function renderCarsList() {
   const listDiv = document.getElementById('cars-list');
@@ -245,7 +242,7 @@ function renderCarsMenu() {
           const carId = this.getAttribute('data-car-id');
           const action = this.getAttribute('data-action');
           if (action === 'my-cars') {
-            window.location.hash = '#my-cars';
+            window.location.hash = '#';
             menu.style.display = 'none';
             return;
           }
