@@ -1,0 +1,45 @@
+{
+  "name": "fleetmaster-monorepo",
+  "version": "1.0.0",
+  "description": "FleetMaster - Complete Fleet Management Solution",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev:marketing & npm run dev:main-app",
+    "dev:marketing": "npm run dev --workspace=@fleetmaster/marketing-site",
+    "dev:main-app": "npm run dev --workspace=@fleetmaster/main-app",
+    "build": "npm run build:marketing && npm run build:main-app",
+    "build:marketing": "npm run build --workspace=@fleetmaster/marketing-site",
+    "build:main-app": "npm run build --workspace=@fleetmaster/main-app",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "docker:build": "cd infrastructure && docker-compose build",
+    "docker:up": "cd infrastructure && docker-compose up -d",
+    "docker:down": "cd infrastructure && docker-compose down",
+    "docker:logs": "cd infrastructure && docker-compose logs -f",
+    "deploy:staging": "bash scripts/deploy-staging.sh",
+    "deploy:production": "bash scripts/deploy-production.sh",
+    "clean": "rm -rf apps/*/dist apps/*/node_modules packages/*/node_modules node_modules",
+    "install:all": "npm install && npm install --workspaces"
+  },
+  "keywords": [
+    "fleet-management",
+    "car-tracker",
+    "maintenance",
+    "vehicle-management",
+    "monorepo"
+  ],
+  "author": "FleetMaster Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+} 

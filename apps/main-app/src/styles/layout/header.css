@@ -1,0 +1,65 @@
+/* ==========================================================================
+   HEADER LAYOUT STYLES
+   Extracted from layout.css
+   ========================================================================== */
+
+header {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  box-shadow: 0 2px 8px var(--shadow);
+  min-height: var(--header-height);
+}
+
+body, .container, main#main-content {
+  min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  min-height: 100vh;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-account-link {
+  display: flex;
+  align-items: center;
+  transition: opacity var(--transition-fast);
+}
+
+.user-account-link:hover {
+  opacity: 0.8;
+}
+
+.user-account-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: border-color var(--transition-fast);
+}
+
+.user-account-link:hover .user-account-icon {
+  border-color: rgba(255, 255, 255, 0.8);
+} 

@@ -1,0 +1,29 @@
+{
+  "name": "@fleetmaster/main-app",
+  "version": "1.0.0",
+  "description": "FleetMaster Car Tracker - Main Application",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server . -p 3000 -c-1",
+    "build": "echo 'No build step needed for vanilla JS'",
+    "test": "echo 'Tests will be added'",
+    "lint": "echo 'Linting will be added'",
+    "preview": "npx http-server . -p 4173 -c-1"
+  },
+  "keywords": [
+    "fleet-management",
+    "car-tracker",
+    "maintenance",
+    "vehicle-management"
+  ],
+  "author": "FleetMaster Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "eslint": "^8.57.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+} 
