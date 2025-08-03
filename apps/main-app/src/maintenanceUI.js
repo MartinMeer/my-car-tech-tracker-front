@@ -3,6 +3,7 @@ import { formatCarName } from './carNameFormatter.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { removeCarFromBackend } from './carsUI.js';
 import { CONFIG } from './config.js';
+import { mileageHandler } from './mileageHandler.js';
 
 // Global variables for service card
 let currentOperation = null;
@@ -163,8 +164,8 @@ function setupCarActionButtons(carId) {
   
   if (maintenanceHistoryBtn) {
     maintenanceHistoryBtn.addEventListener('click', () => {
-      // Navigate to maintenance history page
-      window.location.href = `../maintenance/mainten-history.html?carId=${carId}`;
+      // Navigate to service history page
+      window.location.hash = `#service-history?carId=${carId}`;
     });
   }
 }
@@ -402,7 +403,6 @@ export function openMaintPopup() {
         
         // Suggest current mileage from mileage handler
         try {
-          const { mileageHandler } = await import('./mileageHandler.js');
           await mileageHandler.suggestMileageForInput('maint-mileage', serviceRecord.carId);
         } catch (error) {
           console.error('Failed to suggest mileage:', error);
@@ -419,7 +419,6 @@ export function openMaintPopup() {
         
         // Suggest current mileage from mileage handler
         try {
-          const { mileageHandler } = await import('./mileageHandler.js');
           await mileageHandler.suggestMileageForInput('maint-mileage', car.id);
         } catch (error) {
           console.error('Failed to suggest mileage:', error);
@@ -501,7 +500,7 @@ export async function fetchCarTotalsFromBackend(carId) {
 
 // Render maintenance history
 export async function renderMaintenHistory() {
-  const container = document.getElementById('mainten-history-list');
+  const container = document.getElementById('service-history-list');
   if (!container) return;
   container.innerHTML = '<div class="loading">Загрузка истории ТО...</div>';
   
@@ -553,7 +552,7 @@ export async function renderMaintenHistory() {
         ">
           <strong>Показана история ТО для автомобиля:</strong> ${currentCar.brand || ''} ${currentCar.model || ''} ${currentCar.nickname ? '(' + currentCar.nickname + ')' : ''}
           <div style="margin-top: 0.5rem;">
-            <a href="#mainten-history" onclick="localStorage.setItem('showAllCars', 'true'); renderMaintenHistory();" style="color: #1976d2; text-decoration: underline;">
+            <a href="#service-history" onclick="localStorage.setItem('showAllCars', 'true'); renderMaintenHistory();" style="color: #1976d2; text-decoration: underline;">
               Показать для всех автомобилей
             </a>
           </div>
@@ -574,7 +573,7 @@ export async function renderMaintenHistory() {
           ">
             <strong>Показана история ТО для всех автомобилей</strong>
             <div style="margin-top: 0.5rem;">
-              <a href="#mainten-history" onclick="localStorage.removeItem('showAllCars'); renderMaintenHistory();" style="color: #f57c00; text-decoration: underline;">
+              <a href="#service-history" onclick="localStorage.removeItem('showAllCars'); renderMaintenHistory();" style="color: #f57c00; text-decoration: underline;">
                 Показать только для ${currentCar.brand || ''} ${currentCar.model || ''} ${currentCar.nickname ? '(' + currentCar.nickname + ')' : ''}
               </a>
             </div>

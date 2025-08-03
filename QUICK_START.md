@@ -110,3 +110,7 @@ You now have a **minimal working demo** with:
 - ✅ Easy to extend and maintain
 
 **The mess is gone!** 🧹✨ 
+
+Test start:
+cd /home/oleg/my-car-tech-tracker-front/my-car-tech-tracker-front && npm install
+oleg@olegmm:~/my-car-tech-tracker-front/my-car-tech-tracker-front$ npm run dev:main-app

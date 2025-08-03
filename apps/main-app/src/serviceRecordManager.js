@@ -1,6 +1,7 @@
 import { DataService } from './dataService.js';
 import { formatCarName } from './carNameFormatter.js';
 import { showConfirmationDialog } from './dialogs.js';
+import { mileageHandler } from './mileageHandler.js';
 
 // Service Record State Management
 let currentServiceRecord = null;
@@ -395,7 +396,6 @@ async function showDateMileagePopup(carId) {
     
     // Suggest current mileage for the mileage input
     try {
-      const { mileageHandler } = await import('./mileageHandler.js');
       await mileageHandler.suggestMileageForInput('date-mileage-mileage', carId);
     } catch (error) {
       console.error('Failed to suggest mileage:', error);
@@ -498,7 +498,6 @@ async function createServiceRecordWithCar(carId, date, mileage = null) {
   // Add mileage entry to mileage handler
   if (mileage) {
     try {
-      const { mileageHandler } = await import('./mileageHandler.js');
       await mileageHandler.addMileageEntry(carId, mileage, date, 'service');
     } catch (error) {
       console.error('Failed to add mileage entry:', error);
@@ -808,7 +807,6 @@ export async function addMaintenanceToRecord() {
   
   // Add mileage entry to mileage handler
   try {
-    const { mileageHandler } = await import('./mileageHandler.js');
     await mileageHandler.addMileageEntry(
       currentServiceRecord.carId, 
       currentServiceRecord.mileage, 
@@ -877,7 +875,6 @@ export async function addRepairToRecord() {
   
   // Add mileage entry to mileage handler
   try {
-    const { mileageHandler } = await import('./mileageHandler.js');
     await mileageHandler.addMileageEntry(
       currentServiceRecord.carId, 
       currentServiceRecord.mileage, 
@@ -968,7 +965,6 @@ async function saveServiceRecord() {
     
     // Update mileage handler with the final mileage and date
     try {
-      const { mileageHandler } = await import('./mileageHandler.js');
       await mileageHandler.addMileageEntry(
         currentServiceRecord.carId,
         currentServiceRecord.mileage,

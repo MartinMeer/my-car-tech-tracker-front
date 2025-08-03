@@ -1,4 +1,5 @@
 import { AuthService } from './authService.js';
+import { PathUtils } from './config.js';
 
 /**
  * Authentication UI Handler
@@ -36,7 +37,7 @@ export const AuthUI = {
         if (result.success) {
           alert(result.message);
           // Redirect to main app
-          window.location.href = '../index.html';
+          PathUtils.navigateToMain();
         }
       } catch (error) {
         alert('Ошибка входа: ' + error.message);
@@ -105,7 +106,7 @@ export const AuthUI = {
         if (result.success) {
           alert(result.message + '\nТеперь вы можете войти в систему');
           // Redirect to login page
-          window.location.href = 'login.html';
+          PathUtils.navigateToLogin();
         }
       } catch (error) {
         alert('Ошибка регистрации: ' + error.message);
@@ -144,7 +145,7 @@ export const AuthUI = {
           const result = await AuthService.login('demo@example.com', 'demo123');
           if (result.success) {
             alert('Demo login successful!');
-            window.location.href = '../index.html';
+            PathUtils.navigateToMain();
           }
         } catch (error) {
           alert('Demo login failed: ' + error.message);

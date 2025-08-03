@@ -4,6 +4,7 @@ import { showConfirmationDialog } from './dialogs.js';
 import { CONFIG } from './config.js';
 import { periodicalMaintDataService } from './periodicalMaintDataService.js';
 import { formatCarName } from './carNameFormatter.js';
+import { mileageHandler } from './mileageHandler.js';
 
 class CarOverviewMonitor {
     constructor() {
@@ -730,7 +731,6 @@ class CarOverviewMonitor {
             
             // Suggest current mileage from mileage handler
             try {
-                const { mileageHandler } = await import('./mileageHandler.js');
                 await mileageHandler.suggestMileageForInput('alert-mileage-input', carId);
             } catch (error) {
                 console.error('Failed to suggest mileage:', error);

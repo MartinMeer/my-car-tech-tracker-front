@@ -2,6 +2,7 @@ import { DataService } from './dataService.js';
 import { formatCarName } from './carNameFormatter.js';
 import { showConfirmationDialog } from './dialogs.js';
 import { CONFIG } from './config.js';
+import { mileageHandler } from './mileageHandler.js';
 
 // Global variables for user alert
 let currentAlertData = null;
@@ -415,7 +416,6 @@ async function showMileageConfirmationPopup() {
     
     // Suggest current mileage from mileage handler
     try {
-      const { mileageHandler } = await import('./mileageHandler.js');
       await mileageHandler.suggestMileageForInput('mileage-confirmation-input', currentAlertData.carId);
     } catch (error) {
       console.error('Failed to suggest mileage:', error);
@@ -745,7 +745,6 @@ async function saveUserAlert(alertData) {
     // Add mileage entry to mileage handler
     if (alertData.mileage) {
       try {
-        const { mileageHandler } = await import('./mileageHandler.js');
         await mileageHandler.addMileageEntry(alertData.carId, alertData.mileage, alertData.date, 'alert', {
           subsystem: alertData.subsystem,
           priority: alertData.priority,

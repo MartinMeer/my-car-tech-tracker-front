@@ -4,6 +4,7 @@
  */
 
 import { AuthService } from './authService.js';
+import { PathUtils } from './config.js';
 
 export const UserAccountUI = {
   /**
@@ -26,7 +27,7 @@ export const UserAccountUI = {
       
               if (!user) {
           console.log('No user found, redirecting to login...');
-          window.location.href = 'auth/login.html';
+          PathUtils.navigateToLogin();
           return;
         }
 
@@ -60,7 +61,7 @@ export const UserAccountUI = {
       
               // If there's an error, try to redirect to login
         setTimeout(() => {
-          window.location.href = 'auth/login.html';
+          PathUtils.navigateToLogin();
         }, 2000);
     }
   },
@@ -218,7 +219,7 @@ export const UserAccountUI = {
         this.resetForm();
       }
     } else {
-      window.location.href = 'index.html';
+      PathUtils.navigateToMain();
     }
   },
 

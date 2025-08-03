@@ -1,6 +1,7 @@
 import { DataService } from './dataService.js';
 import { formatCarNameForList, formatCarName } from './carNameFormatter.js';
 import { showConfirmationDialog } from './dialogs.js';
+import { mileageHandler } from './mileageHandler.js';
 
 
 
@@ -68,13 +69,13 @@ function setupAddCarForm() {
     e.preventDefault();
     const brand = form['brand'].value.trim();
     const model = form['model'].value.trim();
-    const year = form['year'].value.trim();
+    const year = parseInt(form['year'].value.trim());
     const vin = form['vin'].value.trim();
-    const mileage = form['mileage'].value.trim();
-    const price = form['price'].value.trim();
+    const mileage = form['mileage'].value.trim() ? parseInt(form['mileage'].value.trim()) : null;
+    const price = form['price'].value.trim() ? parseFloat(form['price'].value.trim()) : null;
     const nickname = form['nickname'].value.trim();
     const licensePlate = form['licensePlate'].value.trim();
-    //const name = [brand, model, nickname].filter(Boolean).join(' ');
+    const name = [brand, model, nickname].filter(Boolean).join(' ');
     let img = '🚗';
     let imageBase64 = '';
     const imageInput = form['image'];
@@ -90,7 +91,7 @@ function setupAddCarForm() {
         img = imageBase64; // Use base64 as img for now
       }
     }
-    if (!brand || !model || !year || !vin || !mileage) return;
+    if (!brand || !model || !year || !vin) return;
     
     // Validate license plate format if provided
     if (licensePlate && !/^[АВЕКМНОРСТУХ]\d{3}[АВЕКМНОРСТУХ]{2}\d{2,3}$/.test(licensePlate)) {
@@ -122,8 +123,8 @@ function setupAddCarForm() {
         }
         window.location.hash = '#my-car-overview';
       };
-      if (changed && window.showConfirmationDialog) {
-        window.showConfirmationDialog('Сохранить изменения?', doSave, () => {});
+      if (changed) {
+        showConfirmationDialog('Сохранить изменения?', doSave, () => {});
       } else {
         await doSave();
       }
@@ -344,8 +345,8 @@ function setupRequiredFieldConfirmations(form, original) {
     });
     input.addEventListener('change', e => {
       let changed = input.value !== (original[fieldName] || '');
-      if (changed && window.showConfirmationDialog) {
-        window.showConfirmationDialog(
+      if (changed) {
+        showConfirmationDialog(
           'Вы уверены, что хотите изменить это поле?',
           () => {},
           () => { input.value = prevValue; }
@@ -435,8 +436,8 @@ function checkUnsavedAndMaybeClose(form, original) {
   } else {
     changed = [brand, model, year, vin, mileage, price, nickname, licensePlate].some(v => v) || (imageInput && imageInput.value);
   }
-  if (changed && window.showConfirmationDialog) {
-    window.showConfirmationDialog(
+  if (changed) {
+    showConfirmationDialog(
       'Закрыть без сохранения изменений?',
       () => { window.location.hash = '#'; },
       () => {}
@@ -486,7 +487,6 @@ async function addCarToBackend(carData) {
   
   // Add initial mileage to mileage handler
   try {
-    const { mileageHandler } = await import('./mileageHandler.js');
     if (carData.mileage) {
       await mileageHandler.addInitialMileage(newId, carData.mileage);
     }

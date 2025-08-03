@@ -397,55 +397,6 @@ export const DataService = {
     }
   },
 
-  // Reglament operations
-  async getCarReglament(carId) {
-    try {
-      if (CONFIG.useBackend) {
-        const response = await fetch(`${CONFIG.apiUrl}/cars/${carId}/reglament`, {
-          headers: this.getAuthHeaders(),
-          credentials: 'include'
-        });
-        if (!response.ok) throw new Error('Ошибка загрузки регламента');
-        return response.json();
-      } else {
-        try {
-          const reglament = JSON.parse(localStorage.getItem(`reglament_${carId}`) || '[]');
-          return reglament;
-        } catch (e) {
-          console.error('Ошибка чтения localStorage для регламента:', e);
-          localStorage.removeItem(`reglament_${carId}`);
-          return [];
-        }
-      }
-    } catch (error) {
-      throw new Error('Ошибка загрузки регламента: ' + error.message);
-    }
-  },
-
-  async saveCarReglament(carId, reglamentData) {
-    try {
-      if (CONFIG.useBackend) {
-        const response = await fetch(`${CONFIG.apiUrl}/cars/${carId}/reglament`, {
-          method: 'POST',
-          headers: this.getAuthHeaders(),
-          credentials: 'include',
-          body: JSON.stringify(reglamentData)
-        });
-        if (!response.ok) throw new Error('Ошибка сохранения регламента');
-        return response.json();
-      } else {
-        try {
-          localStorage.setItem(`reglament_${carId}`, JSON.stringify(reglamentData));
-          return { success: true };
-        } catch (e) {
-          throw new Error('Ошибка записи в localStorage для регламента');
-        }
-      }
-    } catch (error) {
-      throw new Error('Ошибка сохранения регламента: ' + error.message);
-    }
-  },
-
   async saveMaintenancePlan(planData) {
     try {
       if (CONFIG.useBackend) {

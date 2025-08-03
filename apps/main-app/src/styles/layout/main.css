@@ -64,11 +64,10 @@ footer {
   margin-top: 1rem;
 }
 
-.mobile-right-menu {
-  display: none;
-}
-
-.mobile-bottom-icons {
+.mobile-right-menu,
+.mobile-bottom-icons,
+.mobile-action-buttons,
+.mobile-header-bar {
   display: none;
 }
 

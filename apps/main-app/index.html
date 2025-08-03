@@ -61,7 +61,7 @@
     <!-- right-icons section
     <aside class="right-icons">
       <div class="icon-section">
-        <a href="#reglament" title="Техническая информация">
+        <a href="#periodical-maint-guide" title="Техническая информация">
           <img src="/img/checklist-car3.jpeg" alt="Техническая информация" class="right-icon-img" />
         </a>
       </div>
@@ -83,13 +83,33 @@
     </aside>
     -->
   </div>
-  <nav class="mobile-right-menu">
-    <a href="#" class="mobile-car-img">
-      <img id="mobile-my-cars-img" class="my-cars-img" src="/img/main-img.jpeg" alt="car image" />
+  <!-- Mobile Action Buttons - New mobile equivalent of sidebar buttons -->
+  <nav class="mobile-action-buttons">
+    <button class="mobile-action-btn mobile-action-service" onclick="handleServiceButtonClick()">
+      <span class="mobile-btn-icon">🔧</span>
+      <span class="mobile-btn-text">Сервис</span>
+    </button>
+    <button class="mobile-action-btn mobile-action-problems" onclick="handleProblemsButtonClick()">
+      <span class="mobile-btn-icon">⚠️</span>
+      <span class="mobile-btn-text">Проблемы</span>
+    </button>
+    <button class="mobile-action-btn mobile-action-history" onclick="handleHistoryButtonClick()">
+      <span class="mobile-btn-icon">📋</span>
+      <span class="mobile-btn-text">История</span>
+    </button>
+  </nav>
+  
+  <!-- Mobile Header Bar - Cleaner mobile navigation -->
+  <nav class="mobile-header-bar">
+    <a href="#" class="mobile-car-link" id="mobile-car-link">
+      <img id="mobile-header-car-img" class="mobile-header-car-img" src="/img/main-img.jpeg" alt="car image" />
+      <span class="mobile-car-name" id="mobile-car-name">Мой автопарк</span>
     </a>
   </nav>
+  
+  <!-- Mobile Bottom Navigation - Cleaned up -->
   <nav class="mobile-bottom-icons">
-    <a href="#reglament" title="Техническая информация">
+            <a href="#periodical-maint-guide" title="Техническая информация">
       <img src="/img/checklist-car3.jpeg" alt="Техническая информация" class="mobile-icon-img" />
     </a>
     <a href="#oils" title="Масла и жидкости">
@@ -186,7 +206,8 @@
     // Make the car image a home button to fleet overview
     document.addEventListener('DOMContentLoaded', function() {
       var carImgDiv = document.getElementById('my-cars-img');
-      var mobileCarImgDiv = document.getElementById('mobile-my-cars-img');
+      var mobileCarImgDiv = document.getElementById('mobile-header-car-img');
+      var mobileCarLink = document.getElementById('mobile-car-link');
       
       if (carImgDiv) {
         carImgDiv.addEventListener('click', function(e) {
@@ -197,6 +218,14 @@
       
       if (mobileCarImgDiv) {
         mobileCarImgDiv.addEventListener('click', function(e) {
+          e.stopPropagation();
+          window.location.hash = '#';
+        });
+      }
+      
+      if (mobileCarLink) {
+        mobileCarLink.addEventListener('click', function(e) {
+          e.preventDefault();
           e.stopPropagation();
           window.location.hash = '#';
         });

@@ -13,7 +13,7 @@ import {
 } from './maintenanceUI.js';
 import { initializeUserAlertUI, setupUserAlertForm, initializeAlertListUI } from './userAlertUI.js';
 import { initializeMileageHistoryUI } from './mileageHistoryUI.js';
-import { ReglamentUI } from './reglamentUI.js';
+
 import { fleetUI } from './fleetUI.js';
 import { MaintenancePlanUI } from './maintenancePlanUI.js';
 import { CarOverviewMonitor } from './carOverviewMonitor.js';
@@ -29,6 +29,7 @@ import {
 import { CookieHandler } from './cookieHandler.js';
 import { AuthService } from './authService.js';
 import { formatCarNameForList } from './carNameFormatter.js';
+import { mileageHandler } from './mileageHandler.js';
 
 // Main content element
 const mainContent = document.getElementById('main-content');
@@ -54,7 +55,6 @@ window.editSubRecord = editSubRecord;
 
 // Mileage Handler debug function (for testing)
 window.debugMileage = async () => {
-  const { mileageHandler } = await import('./mileageHandler.js');
   return await mileageHandler.debugMileageData();
 };
 
@@ -540,10 +540,7 @@ function initializePageUI(page) {
       // Initialize alert list UI
       initializeAlertListUI();
       break;
-    case 'reglament':
-      // Initialize reglament UI
-      new ReglamentUI();
-      break;
+
 
     case 'maintenance-plan':
       // Initialize maintenance plan UI
