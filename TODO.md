@@ -51,6 +51,28 @@ DO NOT write any code, just create a comprehensive, step-by-step migration guide
 ## IMPLEMENT IT! ##
 1. Create a logo and add it everywhere
 2. Create a cover's banner, a blocks to cover (or landing page)
+###
+Create a landing cover page for project: Fleet-management-system
+Access to the system for users is available after registration and authentication.
+Unregistered users can only view the cover page.
+Main functionality of project:
+- add/edit/delete cars
+- control of car technical state
+- plan of maintenance
+- financial control
+Cover page is localized for Russian and English.
+
+
+
+
+
+
+
+###
+
+
+
+
 3. Restore a service-record history, link it to maintenace-history in my-car-overview 
 
 ## BACKEND ##
