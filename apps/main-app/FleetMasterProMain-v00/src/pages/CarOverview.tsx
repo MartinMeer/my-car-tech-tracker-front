@@ -1,7 +1,7 @@
 /**
  * Car detail overview page showing individual vehicle information, status, and maintenance data
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
@@ -29,6 +29,64 @@ export default function CarOverview() {
   const [newMileage, setNewMileage] = useState('')
   const [mileageDate, setMileageDate] = useState('')
   const [mileageNotes, setMileageNotes] = useState('')
+  const [refreshStatus, setRefreshStatus] = useState(0)
+
+  // Function to get dynamic car status based on maintenance and alerts
+  const getCarStatus = (carId: string | number) => {
+    const maintenanceList = JSON.parse(localStorage.getItem('in-maintenance') || '[]')
+    const isInMaintenance = maintenanceList.some((entry: any) => entry.carId === carId.toString())
+    
+    if (isInMaintenance) {
+      return 'maintenance'
+    }
+
+    const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
+    const carAlerts = savedAlerts.filter((alert: any) => 
+      alert.carId === carId.toString() && alert.status === 'active'
+    )
+    
+    const hasCriticalAlerts = carAlerts.some((alert: any) => alert.priority === 'critical')
+    if (hasCriticalAlerts) {
+      return 'problem'
+    }
+
+    return 'active'
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800'
+      case 'maintenance': return 'bg-orange-100 text-orange-800'
+      case 'problem': return 'bg-red-100 text-red-800'
+      case 'scheduled': return 'bg-blue-100 text-blue-800'
+      case 'inactive': return 'bg-gray-100 text-gray-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active': return 'Готов к работе'
+      case 'maintenance': return 'На обслуживании'
+      case 'problem': return 'Требует внимания'
+      case 'scheduled': return 'Запланировано ТО'
+      case 'inactive': return 'Неактивен'
+      default: return 'Неизвестно'
+    }
+  }
+
+  useEffect(() => {
+    // Listen for maintenance status changes
+    const handleMaintenanceChange = () => {
+      setRefreshStatus(prev => prev + 1)
+    }
+
+    window.addEventListener('maintenanceStatusChanged', handleMaintenanceChange)
+    
+    return () => {
+      window.removeEventListener('maintenanceStatusChanged', handleMaintenanceChange)
+    }
+  }, [])
 
   // Mock car data - in real app would fetch by ID
   const car = {
@@ -99,15 +157,6 @@ export default function CarOverview() {
     }
   ]
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800'
-      case 'maintenance': return 'bg-yellow-100 text-yellow-800'
-      case 'problem': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'bg-red-100 text-red-800'
@@ -173,9 +222,8 @@ export default function CarOverview() {
               <div className="flex-1 w-full">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-xl font-bold">{car.brand} {car.model}</h2>
-                  <Badge className={getStatusColor(car.status)}>
-                    {car.status === 'active' ? 'Активен' : 
-                     car.status === 'maintenance' ? 'На ТО' : 'Проблема'}
+                  <Badge className={getStatusColor(getCarStatus(car.id))}>
+                    {getStatusText(getCarStatus(car.id))}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -297,7 +345,7 @@ export default function CarOverview() {
                     <p className="text-sm">{notification.message}</p>
                     <div className="flex items-center justify-between mt-2">
                       <p className="text-xs text-gray-500">{notification.date}</p>
-                      <Badge size="sm" className={getPriorityColor(notification.priority)}>
+                                              <Badge className={getPriorityColor(notification.priority)}>
                         {notification.priority === 'high' ? 'Высокий' :
                          notification.priority === 'medium' ? 'Средний' : 'Низкий'}
                       </Badge>
@@ -323,7 +371,7 @@ export default function CarOverview() {
                 <div key={item.id} className="p-3 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium">{item.type}</h4>
-                    <Badge size="sm" className={getMaintenanceStatusColor(item.status)}>
+                                            <Badge className={getMaintenanceStatusColor(item.status)}>
                       {item.status === 'due' ? 'Срочно' :
                        item.status === 'upcoming' ? 'Скоро' : 'Будущее'}
                     </Badge>

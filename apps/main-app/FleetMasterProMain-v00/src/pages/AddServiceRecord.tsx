@@ -21,7 +21,8 @@ import {
   Calendar,
   Car,
   FileText,
-  Settings
+  Settings,
+  CheckCircle
 } from 'lucide-react'
 
 interface ServiceOperation {
@@ -72,6 +73,8 @@ export default function AddServiceRecord() {
     recommendations: ''
   })
   const [userAlerts, setUserAlerts] = useState<any[]>([])
+  const [isConfirmReturnOpen, setIsConfirmReturnOpen] = useState(false)
+  const [isReturningToReady, setIsReturningToReady] = useState(false)
 
   // Mock car data
   const cars = [
@@ -218,6 +221,38 @@ export default function AddServiceRecord() {
 
   const validateForm = () => {
     return formData.carId && formData.date && operations.length > 0
+  }
+
+  const handleReturnToReady = () => {
+    if (!formData.carId) {
+      alert('Выберите автомобиль')
+      return
+    }
+    setIsConfirmReturnOpen(true)
+  }
+
+  const confirmReturnToReady = () => {
+    setIsReturningToReady(true)
+    
+    try {
+      // Remove car from maintenance list
+      const maintenanceList = JSON.parse(localStorage.getItem('in-maintenance') || '[]')
+      const updatedList = maintenanceList.filter((entry: any) => entry.carId !== formData.carId)
+      localStorage.setItem('in-maintenance', JSON.stringify(updatedList))
+
+      // Close dialog
+      setIsConfirmReturnOpen(false)
+      setIsReturningToReady(false)
+
+      // Trigger event to update counters
+      window.dispatchEvent(new CustomEvent('maintenanceStatusChanged'))
+
+      alert('Автомобиль возвращен в эксплуатацию!')
+    } catch (error) {
+      console.error('Error returning to ready:', error)
+      alert('Ошибка при возврате в эксплуатацию. Попробуйте еще раз.')
+      setIsReturningToReady(false)
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -621,12 +656,50 @@ export default function AddServiceRecord() {
                 Отмена
               </Button>
             </Link>
+            <Button 
+              type="button" 
+              onClick={handleReturnToReady}
+              variant="outline"
+              className="flex-1 text-green-600 border-green-600 hover:bg-green-50"
+              disabled={!formData.carId || isReturningToReady}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              {isReturningToReady ? 'Возвращение...' : 'Вернуть в эксплуатацию'}
+            </Button>
             <Button type="submit" className="flex-1" disabled={!validateForm()}>
               <Save className="h-4 w-4 mr-2" />
               Сохранить запись
             </Button>
           </div>
         </form>
+
+        {/* Confirmation Dialog for Returning to Ready */}
+        <Dialog open={isConfirmReturnOpen} onOpenChange={setIsConfirmReturnOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Подтверждение возврата в эксплуатацию</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="h-8 w-8 text-amber-500" />
+                <div>
+                  <p className="font-medium">Вернуть автомобиль в эксплуатацию?</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedCar?.name} будет помечен как готовый к работе
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsConfirmReturnOpen(false)} disabled={isReturningToReady}>
+                  Отмена
+                </Button>
+                <Button onClick={confirmReturnToReady} disabled={isReturningToReady} className="bg-green-600 hover:bg-green-700">
+                  {isReturningToReady ? 'Возвращение...' : 'Да, вернуть в эксплуатацию'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   )

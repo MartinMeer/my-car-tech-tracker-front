@@ -107,6 +107,7 @@ interface MaintenancePlan {
   carId: string
   carName: string
   plannedDate: string
+  plannedCompletionDate: string
   plannedMileage: string
   periodicOperations: Array<{
     operation: string
@@ -132,6 +133,7 @@ interface MaintenancePlan {
 export default function MaintenancePlanning() {
   const [selectedCarId, setSelectedCarId] = useState('')
   const [plannedDate, setPlannedDate] = useState('')
+  const [plannedCompletionDate, setPlannedCompletionDate] = useState('')
   const [plannedMileage, setPlannedMileage] = useState('')
   const [serviceProvider, setServiceProvider] = useState('')
   const [planNotes, setPlanNotes] = useState('')
@@ -140,6 +142,8 @@ export default function MaintenancePlanning() {
   const [repairItems, setRepairItems] = useState<any[]>([])
   const [savedPlans, setSavedPlans] = useState<MaintenancePlan[]>([])
   const [isViewPlansOpen, setIsViewPlansOpen] = useState(false)
+  const [isConfirmMaintenanceOpen, setIsConfirmMaintenanceOpen] = useState(false)
+  const [isSendingToMaintenance, setIsSendingToMaintenance] = useState(false)
 
   // Mock car data
   const cars = [
@@ -253,8 +257,8 @@ export default function MaintenancePlanning() {
   }
 
   const savePlan = () => {
-    if (!selectedCarId || !plannedDate) {
-      alert('Выберите автомобиль и дату планирования')
+    if (!selectedCarId || !plannedDate || !plannedCompletionDate) {
+      alert('Выберите автомобиль и укажите даты начала и завершения обслуживания')
       return
     }
 
@@ -275,6 +279,7 @@ export default function MaintenancePlanning() {
         carId: selectedCarId,
         carName: selectedCar?.name || 'Неизвестный автомобиль',
         plannedDate,
+        plannedCompletionDate,
         plannedMileage,
         periodicOperations: selectedPeriodicOps.map(item => ({
           operation: item.operation,
@@ -304,6 +309,7 @@ export default function MaintenancePlanning() {
       // Clear form after successful save
       setSelectedCarId('')
       setPlannedDate('')
+      setPlannedCompletionDate('')
       setPlannedMileage('')
       setServiceProvider('')
       setPlanNotes('')
@@ -314,6 +320,117 @@ export default function MaintenancePlanning() {
     } catch (error) {
       console.error('Error saving maintenance plan:', error)
       alert('Ошибка при сохранении плана. Попробуйте еще раз.')
+    }
+  }
+
+  const sendToMaintenance = () => {
+    if (!selectedCarId || !plannedDate || !plannedCompletionDate) {
+      alert('Выберите автомобиль и укажите даты начала и завершения обслуживания')
+      return
+    }
+
+    // Check if any operations are selected
+    const selectedPeriodicOps = periodicItems.filter(item => item.selected)
+    const selectedRepairOps = repairItems.filter(item => item.selected)
+    
+    if (selectedPeriodicOps.length === 0 && selectedRepairOps.length === 0) {
+      alert('Выберите хотя бы одну операцию для планирования')
+      return
+    }
+
+    setIsConfirmMaintenanceOpen(true)
+  }
+
+  const confirmSendToMaintenance = () => {
+    setIsSendingToMaintenance(true)
+    
+    try {
+      const selectedCar = cars.find(c => c.id === selectedCarId)
+      
+      // Create maintenance plan
+      const maintenancePlan = {
+        id: Date.now().toString(),
+        periodicOperations: periodicItems.filter(item => item.selected).map(item => ({
+          operation: item.operation,
+          selected: true,
+          priority: item.priority,
+          estimatedCost: item.estimatedCost || 0,
+          notes: item.notes || ''
+        })),
+        repairOperations: repairItems.filter(item => item.selected).map(item => ({
+          alertId: item.alertId,
+          description: item.description,
+          priority: item.priority,
+          estimatedCost: item.estimatedCost || 0,
+          notes: item.notes || ''
+        })),
+        totalEstimatedCost: calculateTotalCost(),
+        notes: planNotes
+      }
+
+      // Create maintenance entry
+      const maintenanceEntry = {
+        id: Date.now().toString(),
+        carId: selectedCarId,
+        carName: selectedCar?.name || 'Неизвестный автомобиль',
+        carBrand: selectedCar?.brand || '',
+        carModel: selectedCar?.model || '',
+        plannedDate,
+        plannedCompletionDate,
+        plannedMileage,
+        serviceProvider,
+        maintenancePlan,
+        addedAt: new Date().toISOString()
+      }
+
+      // Add to maintenance list
+      const existingMaintenance = JSON.parse(localStorage.getItem('in-maintenance') || '[]')
+      const updatedMaintenance = [...existingMaintenance, maintenanceEntry]
+      localStorage.setItem('in-maintenance', JSON.stringify(updatedMaintenance))
+
+      // Save the plan as well
+      const newPlan: MaintenancePlan = {
+        id: maintenancePlan.id,
+        carId: selectedCarId,
+        carName: selectedCar?.name || 'Неизвестный автомобиль',
+        plannedDate,
+        plannedCompletionDate,
+        plannedMileage,
+        periodicOperations: maintenancePlan.periodicOperations,
+        repairOperations: maintenancePlan.repairOperations,
+        totalEstimatedCost: maintenancePlan.totalEstimatedCost,
+        serviceProvider,
+        notes: planNotes,
+        status: 'scheduled',
+        createdAt: new Date().toISOString()
+      }
+
+      const updatedPlans = [...savedPlans, newPlan]
+      setSavedPlans(updatedPlans)
+      localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
+
+      // Clear form after successful save
+      setSelectedCarId('')
+      setPlannedDate('')
+      setPlannedCompletionDate('')
+      setPlannedMileage('')
+      setServiceProvider('')
+      setPlanNotes('')
+      setPeriodicItems([])
+      setRepairItems([])
+
+      // Close dialogs
+      setIsConfirmMaintenanceOpen(false)
+      setIsSendingToMaintenance(false)
+
+      // Trigger event to update counters
+      window.dispatchEvent(new CustomEvent('maintenanceStatusChanged'))
+
+      alert('Автомобиль отправлен на обслуживание!')
+    } catch (error) {
+      console.error('Error sending to maintenance:', error)
+      alert('Ошибка при отправке на обслуживание. Попробуйте еще раз.')
+      setIsSendingToMaintenance(false)
     }
   }
 
@@ -348,14 +465,18 @@ export default function MaintenancePlanning() {
         {/* Planning Summary */}
         <Card className="mb-6">
           <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-gray-600">Автомобиль:</p>
                 <p className="font-medium">{selectedCar ? selectedCar.name : 'Не выбран'}</p>
               </div>
               <div>
-                <p className="text-gray-600">Плановая дата:</p>
+                <p className="text-gray-600">Дата начала:</p>
                 <p className="font-medium">{plannedDate || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Дата завершения:</p>
+                <p className="font-medium">{plannedCompletionDate || '-'}</p>
               </div>
               <div>
                 <p className="text-gray-600">Операций:</p>
@@ -394,14 +515,23 @@ export default function MaintenancePlanning() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="plannedDate">Плановая дата обслуживания *</Label>
+                <Label htmlFor="plannedDate">Плановая дата начала обслуживания *</Label>
                 <Input
                   id="plannedDate"
                   type="date"
                   value={plannedDate}
                   onChange={(e) => setPlannedDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="plannedCompletionDate">Планируемая дата завершения обслуживания *</Label>
+                <Input
+                  id="plannedCompletionDate"
+                  type="date"
+                  value={plannedCompletionDate}
+                  onChange={(e) => setPlannedCompletionDate(e.target.value)}
                 />
               </div>
               <div>
@@ -628,7 +758,8 @@ export default function MaintenancePlanning() {
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h4 className="font-medium">{plan.carName}</h4>
-                          <p className="text-sm text-gray-600">Запланировано на {plan.plannedDate}</p>
+                          <p className="text-sm text-gray-600">Начало: {plan.plannedDate}</p>
+                          <p className="text-sm text-gray-600">Завершение: {plan.plannedCompletionDate}</p>
                         </div>
                         <Badge>{plan.status === 'draft' ? 'Черновик' : 'Запланировано'}</Badge>
                       </div>
@@ -644,13 +775,57 @@ export default function MaintenancePlanning() {
           </Dialog>
           <Button 
             onClick={savePlan} 
+            variant="outline"
             className="flex-1" 
-            disabled={!selectedCarId || !plannedDate || (selectedPeriodicCount === 0 && selectedRepairCount === 0)}
+            disabled={!selectedCarId || !plannedDate || !plannedCompletionDate || (selectedPeriodicCount === 0 && selectedRepairCount === 0)}
           >
             <Save className="h-4 w-4 mr-2" />
             Сохранить план
           </Button>
+          <Button 
+            onClick={sendToMaintenance} 
+            className="flex-1 bg-orange-600 hover:bg-orange-700" 
+            disabled={!selectedCarId || !plannedDate || (selectedPeriodicCount === 0 && selectedRepairCount === 0) || isSendingToMaintenance}
+          >
+            <Wrench className="h-4 w-4 mr-2" />
+            {isSendingToMaintenance ? 'Отправка...' : 'Отправить на обслуживание'}
+          </Button>
         </div>
+
+        {/* Confirmation Dialog for Sending to Maintenance */}
+        <Dialog open={isConfirmMaintenanceOpen} onOpenChange={setIsConfirmMaintenanceOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Подтверждение отправки на обслуживание</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="h-8 w-8 text-amber-500" />
+                <div>
+                  <p className="font-medium">Отправить автомобиль на обслуживание?</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedCar?.name} будет помечен как находящийся на сервисе
+                  </p>
+                </div>
+              </div>
+              <div className="bg-gray-50 p-3 rounded">
+                <p className="text-sm font-medium mb-1">План обслуживания:</p>
+                <p className="text-xs text-gray-600">Операций: {selectedPeriodicCount + selectedRepairCount}</p>
+                <p className="text-xs text-gray-600">Дата начала: {plannedDate}</p>
+                <p className="text-xs text-gray-600">Дата завершения: {plannedCompletionDate}</p>
+                <p className="text-xs text-gray-600">Стоимость: {calculateTotalCost().toLocaleString()} ₽</p>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsConfirmMaintenanceOpen(false)} disabled={isSendingToMaintenance}>
+                  Отмена
+                </Button>
+                <Button onClick={confirmSendToMaintenance} disabled={isSendingToMaintenance} className="bg-orange-600 hover:bg-orange-700">
+                  {isSendingToMaintenance ? 'Отправка...' : 'Да, отправить на обслуживание'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   )

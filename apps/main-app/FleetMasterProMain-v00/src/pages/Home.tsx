@@ -22,12 +22,53 @@ import {
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState('fleet')
   const [activeAlertsCount, setActiveAlertsCount] = useState(0)
+  const [inMaintenanceCount, setInMaintenanceCount] = useState(0)
 
-  // Load active alerts count from localStorage
-  useEffect(() => {
+  // Load counts from localStorage and listen for changes
+  const loadCounts = () => {
     const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
     const activeAlerts = savedAlerts.filter((alert: any) => alert.status === 'active')
     setActiveAlertsCount(activeAlerts.length)
+
+    const maintenanceList = JSON.parse(localStorage.getItem('in-maintenance') || '[]')
+    setInMaintenanceCount(maintenanceList.length)
+  }
+
+  // Function to get dynamic car status based on maintenance and alerts
+  const getCarStatus = (carId: string | number) => {
+    const maintenanceList = JSON.parse(localStorage.getItem('in-maintenance') || '[]')
+    const isInMaintenance = maintenanceList.some((entry: any) => entry.carId === carId.toString())
+    
+    if (isInMaintenance) {
+      return 'maintenance'
+    }
+
+    const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
+    const carAlerts = savedAlerts.filter((alert: any) => 
+      alert.carId === carId.toString() && alert.status === 'active'
+    )
+    
+    const hasCriticalAlerts = carAlerts.some((alert: any) => alert.priority === 'critical')
+    if (hasCriticalAlerts) {
+      return 'problem'
+    }
+
+    return 'active'
+  }
+
+  useEffect(() => {
+    loadCounts()
+
+    // Listen for maintenance status changes
+    const handleMaintenanceChange = () => {
+      loadCounts()
+    }
+
+    window.addEventListener('maintenanceStatusChanged', handleMaintenanceChange)
+    
+    return () => {
+      window.removeEventListener('maintenanceStatusChanged', handleMaintenanceChange)
+    }
   }, [])
 
   // Mock data for demonstration
@@ -67,9 +108,22 @@ export default function Home() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800'
-      case 'maintenance': return 'bg-yellow-100 text-yellow-800'
+      case 'maintenance': return 'bg-orange-100 text-orange-800'
       case 'problem': return 'bg-red-100 text-red-800'
+      case 'scheduled': return 'bg-blue-100 text-blue-800'
+      case 'inactive': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active': return 'Готов к работе'
+      case 'maintenance': return 'На обслуживании'
+      case 'problem': return 'Требует внимания'
+      case 'scheduled': return 'Запланировано ТО'
+      case 'inactive': return 'Неактивен'
+      default: return 'Неизвестно'
     }
   }
 
@@ -135,24 +189,26 @@ export default function Home() {
               <div className="flex items-center space-x-2">
                 <Car className="h-8 w-8 text-blue-600" />
                 <div>
-                  <p className="text-2xl font-bold">{cars.length}</p>
-                  <p className="text-sm text-gray-600">Автомобилей</p>
+                  <p className="text-2xl font-bold">{cars.length - inMaintenanceCount}</p>
+                  <p className="text-sm text-gray-600">Автомобили готовые к работе</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Wrench className="h-8 w-8 text-green-600" />
-                <div>
-                  <p className="text-2xl font-bold">1</p>
-                  <p className="text-sm text-gray-600">На сервисе</p>
+          <Link to="/in-maintenance">
+            <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Wrench className="h-8 w-8 text-orange-600" />
+                  <div>
+                    <p className="text-2xl font-bold">{inMaintenanceCount}</p>
+                    <p className="text-sm text-gray-600">Автомобили на сервисе</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
           
           <Link to="/alerts">
             <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
@@ -182,6 +238,43 @@ export default function Home() {
             </Card>
           </Link>
         </div>
+
+      
+
+        {/* Fleet Overview */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Мой автопарк</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {cars.map((car) => (
+                <Link key={car.id} to={`/car/${car.id}`}>
+                  <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <img 
+                        src={car.image} 
+                        alt={`${car.brand} ${car.model}`}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-semibold">{car.name}</h3>
+                          <Badge className={getStatusColor(getCarStatus(car.id))}>
+                            {getStatusText(getCarStatus(car.id))}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600">{car.brand} {car.model} ({car.year})</p>
+                        <p className="text-xs text-gray-500">Пробег: {car.mileage.toLocaleString()} км</p>
+                        <p className="text-xs text-gray-500">Следующее ТО: {car.nextService}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <Card className="mb-6">
@@ -218,42 +311,6 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Fleet Overview */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Мой автопарк</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {cars.map((car) => (
-                <Link key={car.id} to={`/car/${car.id}`}>
-                  <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center space-x-4">
-                      <img 
-                        src={car.image} 
-                        alt={`${car.brand} ${car.model}`}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-semibold">{car.name}</h3>
-                          <Badge className={getStatusColor(car.status)}>
-                            {car.status === 'active' ? 'Активен' : 
-                             car.status === 'maintenance' ? 'На ТО' : 'Проблема'}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600">{car.brand} {car.model} ({car.year})</p>
-                        <p className="text-xs text-gray-500">Пробег: {car.mileage.toLocaleString()} км</p>
-                        <p className="text-xs text-gray-500">Следующее ТО: {car.nextService}</p>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Recent Activities */}
         <Card>
           <CardHeader>
@@ -272,7 +329,7 @@ export default function Home() {
                     <p className="text-sm">{activity.message}</p>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs text-gray-500">{activity.date}</p>
-                      <Badge size="sm" className={getPriorityColor(activity.priority)}>
+                      <Badge className={getPriorityColor(activity.priority)}>
                         {activity.priority === 'high' ? 'Высокий' :
                          activity.priority === 'medium' ? 'Средний' : 'Низкий'}
                       </Badge>

@@ -125,7 +125,7 @@ export default function LoginPage() {
       // On successful login, navigate to main app
       NavigationService.navigateToMainApp();
     } catch (error) {
-      setError(error.message || 'Login failed');
+      setError(error instanceof Error ? error.message : 'Login failed');
     }
   };
 

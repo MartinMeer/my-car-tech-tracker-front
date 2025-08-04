@@ -11,6 +11,7 @@ import AlertList from './pages/AlertList'
 import AddServiceRecord from './pages/AddServiceRecord'
 import ServiceHistory from './pages/ServiceHistory'
 import MaintenancePlanning from './pages/MaintenancePlanning'
+import InMaintenance from './pages/InMaintenance'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/add-service-record" element={<AddServiceRecord />} />
         <Route path="/service-history" element={<ServiceHistory />} />
         <Route path="/maintenance-planning" element={<MaintenancePlanning />} />
+        <Route path="/in-maintenance" element={<InMaintenance />} />
       </Routes>
     </HashRouter>
     </AuthHandler>    

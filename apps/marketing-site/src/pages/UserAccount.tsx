@@ -23,6 +23,7 @@ import {
   Settings
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { NavigationService } from '../services/NavigationService';
 
 export default function UserAccountPage() {
   /**
@@ -247,15 +248,13 @@ export default function UserAccountPage() {
       {/* Back to Home Button */}
       <div className="absolute top-6 left-6 z-50">
         <Button
-          asChild
           variant="outline"
           size="sm"
           className="bg-white/90 backdrop-blur-sm border-gray-300 hover:bg-white/95"
+          onClick={() => NavigationService.navigateToMainApp()}
         >
-          <Link to="/">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t.backToHome}
-          </Link>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {t.backToHome}
         </Button>
       </div>
 

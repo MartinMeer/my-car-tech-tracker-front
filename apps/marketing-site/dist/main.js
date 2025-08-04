@@ -27181,7 +27181,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
     return element.props.ref || element.ref;
   }
 
-  // node_modules/clsx/dist/clsx.mjs
+  // ../../node_modules/clsx/dist/clsx.mjs
   function r(e) {
     var t, f, n = "";
     if ("string" == typeof e || "number" == typeof e) n += e;
@@ -27238,7 +27238,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
     return cx(base, getVariantClassNames, getCompoundVariantClassNames, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
   };
 
-  // node_modules/tailwind-merge/dist/bundle-mjs.mjs
+  // ../../node_modules/tailwind-merge/dist/bundle-mjs.mjs
   var CLASS_PART_SEPARATOR = "-";
   var createClassGroupUtils = (config) => {
     const classMap = createClassMap(config);
@@ -31438,7 +31438,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
         await login(email, password);
         NavigationService.navigateToMainApp();
       } catch (error2) {
-        setError(error2.message || "Login failed");
+        setError(error2 instanceof Error ? error2.message : "Login failed");
       }
     };
     return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "min-h-screen bg-gradient-to-b from-slate-50 to-white", children: [
@@ -37542,17 +37542,17 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
           ]
         }
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "absolute top-6 left-6 z-50", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "absolute top-6 left-6 z-50", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
         Button,
         {
-          asChild: true,
           variant: "outline",
           size: "sm",
           className: "bg-white/90 backdrop-blur-sm border-gray-300 hover:bg-white/95",
-          children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(Link, { to: "/", children: [
+          onClick: () => NavigationService.navigateToMainApp(),
+          children: [
             /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(ArrowLeft, { className: "w-4 h-4 mr-2" }),
             t.backToHome
-          ] })
+          ]
         }
       ) }),
       /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "max-w-4xl mx-auto px-4 py-20", children: [
