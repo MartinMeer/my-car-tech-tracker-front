@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Личный кабинет — My Car Tech Tracker</title>
+  <link rel="icon" type="image/x-icon" href="/img/favicons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="../src/styles/styles.css">
+  <style>
+    .user-account-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-profile-section {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .user-image-container {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+
+    .user-image {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #3b82f6;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .user-image:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .image-upload-overlay {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: #3b82f6;
+      color: white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .image-upload-overlay:hover {
+      background: #2563eb;
+      transform: scale(1.1);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .user-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+
+    .user-role {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 1rem;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .password-section {
+      background: #f9fafb;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .password-toggle {
+      position: relative;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .password-toggle-btn:hover {
+      color: #374151;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      color: #3b82f6;
+      text-decoration: none;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .back-link:hover {
+      color: #2563eb;
+    }
+
+    .back-link::before {
+      content: "←";
+      margin-right: 0.5rem;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="user-account-container">
+    <a href="index.html" class="back-link">Вернуться к главной</a>
+    
+    <div class="user-profile-section">
+      <div class="user-image-container">
+        <img id="userImage" class="user-image" src="/img/car-by-deault.png" alt="Фото пользователя">
+        <div class="image-upload-overlay" onclick="document.getElementById('imageInput').click()">
+          📷
+        </div>
+        <input type="file" id="imageInput" class="file-input" accept="image/*">
+      </div>
+      <div class="user-name" id="userName">Загрузка...</div>
+      <div class="user-role" id="userRole">Загрузка...</div>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <form id="userAccountForm">
+      <div class="form-section">
+        <div class="form-group">
+          <label for="displayName" class="form-label">Имя пользователя</label>
+          <input type="text" id="displayName" class="form-input" placeholder="Введите ваше имя">
+        </div>
+
+        <div class="form-group">
+          <label for="userRoleSelect" class="form-label">Роль</label>
+          <select id="userRoleSelect" class="form-select">
+            <option value="fleet_manager">Fleet Manager</option>
+            <option value="technician">Technician</option>
+            <option value="driver">Driver</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Изменение пароля</h3>
+        <div class="password-section">
+          <div class="form-group">
+            <label for="currentPassword" class="form-label">Текущий пароль</label>
+            <div class="password-toggle">
+              <input type="password" id="currentPassword" class="form-input" placeholder="Введите текущий пароль">
+              <button type="button" class="password-toggle-btn" onclick="togglePassword('currentPassword')">👁️</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="newPassword" class="form-label">Новый пароль</label>
+            <div class="password-toggle">
+              <input type="password" id="newPassword" class="form-input" placeholder="Введите новый пароль">
+              <button type="button" class="password-toggle-btn" onclick="togglePassword('newPassword')">👁️</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Подтвердите новый пароль</label>
+            <div class="password-toggle">
+              <input type="password" id="confirmPassword" class="form-input" placeholder="Подтвердите новый пароль">
+              <button type="button" class="password-toggle-btn" onclick="togglePassword('confirmPassword')">👁️</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn btn-secondary" onclick="cancelChanges()">Отмена</button>
+        <button type="submit" class="btn btn-primary" id="saveButton">Сохранить изменения</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    // Import AuthService
+    import { AuthService } from '../src/authService.js';
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('User account page loading...');
+      console.log('Current URL:', window.location.href);
+      
+      try {
+        // Check if user is authenticated
+        console.log('Checking authentication...');
+        const user = await AuthService.getCurrentUser();
+        console.log('Auth check result:', user);
+        
+        if (!user) {
+          console.log('User not authenticated, redirecting to login...');
+          window.location.href = 'auth/login.html';
+          return;
+        }
+        
+        console.log('User authenticated, loading user account page...');
+        // User is authenticated, load the userAccountUI.js
+        const userAccountModule = await import('../src/userAccountUI.js');
+        userAccountModule.UserAccountUI.init();
+        
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        window.location.href = 'auth/login.html';
+      }
+    });
+  </script>
+</body>
+</html> 

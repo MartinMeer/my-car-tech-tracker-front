@@ -1,0 +1,21 @@
+{
+  "name": "@fleetmaster/shared",
+  "version": "1.0.0",
+  "description": "FleetMaster Shared Resources - Images, Constants, and Common Assets",
+  "main": "index.js",
+  "exports": {
+    "./images/*": "./img/*",
+    "./constants": "./constants/index.js"
+  },
+  "scripts": {
+    "build": "echo 'No build step needed for static assets'"
+  },
+  "keywords": [
+    "shared",
+    "assets",
+    "images",
+    "constants"
+  ],
+  "author": "FleetMaster Team",
+  "license": "MIT"
+} 

@@ -1,0 +1,109 @@
+<div class="maintenance-plan-container">
+    <!-- Header -->
+    <div class="plan-header">
+        <h1 class="plan-title">План технического обслуживания</h1>
+        <div class="plan-meta">
+            <div class="plan-date">
+                <span class="meta-label">Дата:</span>
+                <span id="current-date"></span>
+            </div>
+            <div class="plan-car-info">
+                <span class="meta-label">Автомобиль:</span>
+                <span id="car-name"></span>
+                <span id="car-year"></span>
+                <span id="car-vin"></span>
+                <span id="car-license-plate"></span>
+            </div>
+            <div class="plan-mileage">
+                <span class="meta-label">Текущий пробег:</span>
+                <span id="current-mileage"></span> км
+            </div>
+        </div>
+    </div>
+
+    <!-- Periodical Maintenance Table -->
+    <div class="table-section">
+        <h2 class="table-title">Периодическое техническое обслуживание</h2>
+        <div class="table-container">
+            <table id="maintenance-table" class="data-table">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Операция</th>
+                        <th>Ресурсы</th>
+                        <th>Примечания</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="maintenance-tbody">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+            <button id="add-maintenance-row" class="add-row-btn">
+                <span class="btn-icon">+</span>
+                Добавить операцию
+            </button>
+        </div>
+    </div>
+
+    <!-- Repairs Table -->
+    <div class="table-section">
+        <h2 class="table-title">Ремонтные работы</h2>
+        <div class="table-container">
+            <table id="repairs-table" class="data-table">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Операция</th>
+                        <th>Ресурсы</th>
+                        <th>Примечания</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="repairs-tbody">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+            <button id="add-repairs-row" class="add-row-btn">
+                <span class="btn-icon">+</span>
+                Добавить операцию
+            </button>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="plan-actions">
+        <button id="save-plan-btn" class="primary-btn">Сохранить план</button>
+        <button id="saved-plans-btn" class="secondary-btn">Сохраненные планы</button>
+        <button id="export-pdf-btn" class="secondary-btn">Экспорт в PDF</button>
+        <button id="cancel-plan-btn" class="secondary-btn">Отмена</button>
+    </div>
+</div>
+
+<!-- Saved Plans Modal -->
+<div id="saved-plans-modal" class="modal">
+    <div class="modal-content saved-plans-content">
+        <div class="modal-header">
+            <h3>Сохраненные планы</h3>
+            <button id="close-saved-plans" class="close-btn">&times;</button>
+        </div>
+        <div class="saved-plans-list" id="saved-plans-list">
+            <!-- Saved plans will be loaded here -->
+        </div>
+        <div class="modal-footer">
+            <button id="close-saved-plans-btn" class="secondary-btn">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirm-modal" class="modal">
+    <div class="modal-content">
+        <h3>Подтверждение</h3>
+        <p id="confirm-message">Вы уверены, что хотите удалить эту строку?</p>
+        <div class="modal-actions">
+            <button id="confirm-yes" class="danger-btn">Да</button>
+            <button id="confirm-no" class="secondary-btn">Нет</button>
+        </div>
+    </div>
+</div> 

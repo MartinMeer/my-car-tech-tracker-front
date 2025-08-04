@@ -1,0 +1,633 @@
+/**
+ * Service record creation page for documenting maintenance and repair work
+ */
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import { Textarea } from '../components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { Badge } from '../components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
+import { 
+  ArrowLeft, 
+  Wrench, 
+  Plus, 
+  X, 
+  Save, 
+  AlertTriangle,
+  Calendar,
+  Car,
+  FileText,
+  Settings
+} from 'lucide-react'
+
+interface ServiceOperation {
+  id: string
+  type: 'periodical' | 'repair'
+  name: string
+  description: string
+  parts: Array<{
+    name: string
+    quantity: number
+    cost: number
+  }>
+  laborCost: number
+  linkedAlertId?: string
+  recommendations?: string
+}
+
+interface ServiceRecord {
+  id: string
+  carId: string
+  carName: string
+  date: string
+  mileage: string
+  serviceProvider: string
+  totalCost: number
+  operations: ServiceOperation[]
+  notes: string
+  createdAt: string
+}
+
+export default function AddServiceRecord() {
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({
+    carId: '',
+    date: new Date().toISOString().split('T')[0],
+    mileage: '',
+    serviceProvider: '',
+    notes: ''
+  })
+  const [operations, setOperations] = useState<ServiceOperation[]>([])
+  const [isAddOperationOpen, setIsAddOperationOpen] = useState(false)
+  const [currentOperation, setCurrentOperation] = useState<Partial<ServiceOperation>>({
+    type: 'periodical',
+    name: '',
+    description: '',
+    parts: [],
+    laborCost: 0,
+    recommendations: ''
+  })
+  const [userAlerts, setUserAlerts] = useState<any[]>([])
+
+  // Mock car data
+  const cars = [
+    { id: '1', name: 'Транспорт #1', brand: 'Toyota', model: 'Camry', currentMileage: 85000 },
+    { id: '2', name: 'Грузовик #2', brand: 'Mercedes', model: 'Sprinter', currentMileage: 120000 }
+  ]
+
+  const periodicOperations = [
+    'Замена моторного масла',
+    'Замена масляного фильтра', 
+    'Замена воздушного фильтра',
+    'Замена топливного фильтра',
+    'Замена свечей зажигания',
+    'Замена ремня ГРМ',
+    'Замена тормозных колодок',
+    'Замена тормозной жидкости',
+    'Замена охлаждающей жидкости',
+    'Развал-схождение',
+    'Замена амортизаторов',
+    'Другое'
+  ]
+
+  useEffect(() => {
+    // Load user alerts for repair operations
+    const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
+    const activeAlerts = savedAlerts.filter((alert: any) => alert.status === 'active')
+    setUserAlerts(activeAlerts)
+
+    // Auto-fill mileage if car is selected
+    if (formData.carId) {
+      const selectedCar = cars.find(c => c.id === formData.carId)
+      if (selectedCar && !formData.mileage) {
+        setFormData(prev => ({ ...prev, mileage: selectedCar.currentMileage.toString() }))
+      }
+    }
+  }, [formData.carId])
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const addPartToOperation = () => {
+    setCurrentOperation(prev => ({
+      ...prev,
+      parts: [...(prev.parts || []), { name: '', quantity: 1, cost: 0 }]
+    }))
+  }
+
+  const updatePart = (index: number, field: string, value: string | number) => {
+    setCurrentOperation(prev => ({
+      ...prev,
+      parts: prev.parts?.map((part, i) => 
+        i === index ? { ...part, [field]: value } : part
+      ) || []
+    }))
+  }
+
+  const removePart = (index: number) => {
+    setCurrentOperation(prev => ({
+      ...prev,
+      parts: prev.parts?.filter((_, i) => i !== index) || []
+    }))
+  }
+
+  const calculateOperationTotal = () => {
+    const partsCost = currentOperation.parts?.reduce((sum, part) => 
+      sum + (part.quantity * part.cost), 0) || 0
+    return partsCost + (currentOperation.laborCost || 0)
+  }
+
+  const addOperation = () => {
+    if (!currentOperation.name) {
+      alert('Введите название операции')
+      return
+    }
+
+    const newOperation: ServiceOperation = {
+      id: Date.now().toString(),
+      type: currentOperation.type as 'periodical' | 'repair',
+      name: currentOperation.name,
+      description: currentOperation.description || '',
+      parts: currentOperation.parts || [],
+      laborCost: currentOperation.laborCost || 0,
+      linkedAlertId: currentOperation.linkedAlertId,
+      recommendations: currentOperation.recommendations
+    }
+
+    setOperations(prev => [...prev, newOperation])
+    
+    // Reset form
+    setCurrentOperation({
+      type: 'periodical',
+      name: '',
+      description: '',
+      parts: [],
+      laborCost: 0,
+      recommendations: ''
+    })
+    setIsAddOperationOpen(false)
+
+    // If this is a repair operation, archive the linked alert
+    if (newOperation.linkedAlertId) {
+      const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
+      const updatedAlerts = savedAlerts.map((alert: any) =>
+        alert.id === newOperation.linkedAlertId 
+          ? { ...alert, status: 'archived', resolvedBy: newOperation.id }
+          : alert
+      )
+      localStorage.setItem('fleet-alerts', JSON.stringify(updatedAlerts))
+      setUserAlerts(prev => prev.filter(alert => alert.id !== newOperation.linkedAlertId))
+    }
+
+    // If there are recommendations, create new alerts
+    if (newOperation.recommendations) {
+      const existingAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
+      const recommendationAlert = {
+        id: Date.now().toString() + '_rec',
+        carId: formData.carId,
+        carName: cars.find(c => c.id === formData.carId)?.name || 'Неизвестный автомобиль',
+        date: formData.date,
+        mileage: formData.mileage,
+        system: 'Рекомендация сервиса',
+        location: '',
+        priority: 'unclear',
+        description: `Рекомендация после обслуживания: ${newOperation.recommendations}`,
+        createdAt: new Date().toISOString(),
+        status: 'active',
+        sourceServiceRecord: newOperation.id
+      }
+      localStorage.setItem('fleet-alerts', JSON.stringify([...existingAlerts, recommendationAlert]))
+    }
+  }
+
+  const removeOperation = (operationId: string) => {
+    setOperations(prev => prev.filter(op => op.id !== operationId))
+  }
+
+  const calculateTotalCost = () => {
+    return operations.reduce((sum, op) => {
+      const partsCost = op.parts.reduce((pSum, part) => pSum + (part.quantity * part.cost), 0)
+      return sum + partsCost + op.laborCost
+    }, 0)
+  }
+
+  const validateForm = () => {
+    return formData.carId && formData.date && operations.length > 0
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      alert('Заполните обязательные поля и добавьте хотя бы одну операцию')
+      return
+    }
+
+    const serviceRecord: ServiceRecord = {
+      id: Date.now().toString(),
+      carId: formData.carId,
+      carName: cars.find(c => c.id === formData.carId)?.name || 'Неизвестный автомобиль',
+      date: formData.date,
+      mileage: formData.mileage,
+      serviceProvider: formData.serviceProvider,
+      totalCost: calculateTotalCost(),
+      operations,
+      notes: formData.notes,
+      createdAt: new Date().toISOString()
+    }
+
+    // Save to localStorage
+    const existingRecords = JSON.parse(localStorage.getItem('service-records') || '[]')
+    localStorage.setItem('service-records', JSON.stringify([...existingRecords, serviceRecord]))
+
+    // Navigate back
+    navigate('/')
+  }
+
+  const selectedCar = cars.find(c => c.id === formData.carId)
+  const carAlerts = userAlerts.filter(alert => alert.carId === formData.carId)
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="px-4 py-3">
+          <div className="flex items-center space-x-3">
+            <Link to="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900 flex items-center">
+                <Wrench className="h-5 w-5 mr-2 text-blue-600" />
+                Новая запись о сервисе
+              </h1>
+              <p className="text-sm text-gray-600">Документирование выполненных работ</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="px-4 py-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Service Info Summary */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-600">Автомобиль:</p>
+                  <p className="font-medium">{selectedCar ? selectedCar.name : 'Не выбран'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Дата сервиса:</p>
+                  <p className="font-medium">{formData.date || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Пробег:</p>
+                  <p className="font-medium">{formData.mileage || '-'} км</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Стоимость:</p>
+                  <p className="font-medium text-green-600">{calculateTotalCost().toLocaleString()} ₽</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <Car className="h-5 w-5 mr-2" />
+                Основная информация
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="car">Автомобиль *</Label>
+                <Select value={formData.carId} onValueChange={(value) => handleInputChange('carId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите автомобиль..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cars.map((car) => (
+                      <SelectItem key={car.id} value={car.id}>
+                        {car.name} - {car.brand} {car.model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="date">Дата обслуживания *</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="mileage">Пробег на момент обслуживания (км) *</Label>
+                <Input
+                  id="mileage"
+                  type="number"
+                  placeholder="85000"
+                  value={formData.mileage}
+                  onChange={(e) => handleInputChange('mileage', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="serviceProvider">Исполнитель работ</Label>
+                <Input
+                  id="serviceProvider"
+                  placeholder="Название автосервиса или мастера"
+                  value={formData.serviceProvider}
+                  onChange={(e) => handleInputChange('serviceProvider', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Operations */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center">
+                  <Settings className="h-5 w-5 mr-2" />
+                  Выполненные операции ({operations.length})
+                </CardTitle>
+                <Dialog open={isAddOperationOpen} onOpenChange={setIsAddOperationOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Добавить
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Добавить операцию</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Тип операции</Label>
+                        <Select 
+                          value={currentOperation.type} 
+                          onValueChange={(value) => setCurrentOperation(prev => ({ ...prev, type: value as 'periodical' | 'repair' }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="periodical">Плановое ТО</SelectItem>
+                            <SelectItem value="repair">Ремонт</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {currentOperation.type === 'periodical' && (
+                        <div>
+                          <Label>Выберите операцию</Label>
+                          <Select 
+                            value={currentOperation.name} 
+                            onValueChange={(value) => setCurrentOperation(prev => ({ ...prev, name: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите из списка..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {periodicOperations.map((op) => (
+                                <SelectItem key={op} value={op}>
+                                  {op}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {currentOperation.type === 'repair' && (
+                        <div>
+                          <Label>Связанная проблема</Label>
+                          <Select 
+                            value={currentOperation.linkedAlertId} 
+                            onValueChange={(value) => {
+                              const alert = carAlerts.find(a => a.id === value)
+                              setCurrentOperation(prev => ({ 
+                                ...prev, 
+                                linkedAlertId: value,
+                                name: alert ? `Ремонт: ${alert.system}` : '',
+                                description: alert ? alert.description : ''
+                              }))
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите проблему из списка..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {carAlerts.map((alert) => (
+                                <SelectItem key={alert.id} value={alert.id}>
+                                  {alert.system} - {alert.description.substring(0, 50)}...
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {(currentOperation.type === 'repair' || currentOperation.name === 'Другое') && (
+                        <div>
+                          <Label>Название операции</Label>
+                          <Input
+                            value={currentOperation.name}
+                            onChange={(e) => setCurrentOperation(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="Введите название операции..."
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <Label>Описание работ</Label>
+                        <Textarea
+                          value={currentOperation.description}
+                          onChange={(e) => setCurrentOperation(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Подробное описание выполненных работ..."
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label>Запчасти и расходники</Label>
+                          <Button type="button" variant="outline" size="sm" onClick={addPartToOperation}>
+                            <Plus className="h-4 w-4 mr-1" />
+                            Добавить
+                          </Button>
+                        </div>
+                        {currentOperation.parts?.map((part, index) => (
+                          <div key={index} className="grid grid-cols-4 gap-2 mb-2">
+                            <Input
+                              placeholder="Название"
+                              value={part.name}
+                              onChange={(e) => updatePart(index, 'name', e.target.value)}
+                            />
+                            <Input
+                              type="number"
+                              placeholder="Кол-во"
+                              value={part.quantity}
+                              onChange={(e) => updatePart(index, 'quantity', parseInt(e.target.value) || 0)}
+                            />
+                            <Input
+                              type="number"
+                              placeholder="Цена"
+                              value={part.cost}
+                              onChange={(e) => updatePart(index, 'cost', parseFloat(e.target.value) || 0)}
+                            />
+                            <Button type="button" variant="ghost" size="sm" onClick={() => removePart(index)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div>
+                        <Label>Стоимость работ (₽)</Label>
+                        <Input
+                          type="number"
+                          value={currentOperation.laborCost}
+                          onChange={(e) => setCurrentOperation(prev => ({ ...prev, laborCost: parseFloat(e.target.value) || 0 }))}
+                          placeholder="0"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>Рекомендации для дальнейшего обслуживания</Label>
+                        <Textarea
+                          value={currentOperation.recommendations}
+                          onChange={(e) => setCurrentOperation(prev => ({ ...prev, recommendations: e.target.value }))}
+                          placeholder="Рекомендации будут автоматически добавлены в систему уведомлений..."
+                        />
+                      </div>
+
+                      <div className="bg-gray-50 p-3 rounded">
+                        <p className="text-sm font-medium">Общая стоимость операции:</p>
+                        <p className="text-lg font-bold text-green-600">{calculateOperationTotal().toLocaleString()} ₽</p>
+                      </div>
+
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsAddOperationOpen(false)}>
+                          Отмена
+                        </Button>
+                        <Button type="button" onClick={addOperation}>
+                          Добавить операцию
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {operations.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Settings className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>Операции не добавлены</p>
+                  <p className="text-sm">Добавьте выполненные работы</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {operations.map((operation) => (
+                    <div key={operation.id} className="border rounded-lg p-3 bg-white">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={operation.type === 'periodical' ? 'default' : 'destructive'}>
+                            {operation.type === 'periodical' ? 'Плановое ТО' : 'Ремонт'}
+                          </Badge>
+                          <h4 className="font-medium">{operation.name}</h4>
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => removeOperation(operation.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {operation.description && (
+                        <p className="text-sm text-gray-600 mb-2">{operation.description}</p>
+                      )}
+                      {operation.parts.length > 0 && (
+                        <div className="mb-2">
+                          <p className="text-xs font-medium text-gray-500 mb-1">Запчасти:</p>
+                          {operation.parts.map((part, idx) => (
+                            <p key={idx} className="text-xs text-gray-600">
+                              {part.name} x{part.quantity} - {(part.quantity * part.cost).toLocaleString()} ₽
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">Работы: {operation.laborCost.toLocaleString()} ₽</span>
+                        <span className="font-medium text-green-600">
+                          Итого: {(operation.parts.reduce((sum, part) => sum + (part.quantity * part.cost), 0) + operation.laborCost).toLocaleString()} ₽
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="bg-green-50 p-3 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Общая стоимость всех работ:</span>
+                      <span className="text-xl font-bold text-green-600">{calculateTotalCost().toLocaleString()} ₽</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Notes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <FileText className="h-5 w-5 mr-2" />
+                Дополнительные заметки
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={formData.notes}
+                onChange={(e) => handleInputChange('notes', e.target.value)}
+                placeholder="Дополнительная информация о проведенном обслуживании..."
+                rows={3}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link to="/" className="flex-1">
+              <Button variant="outline" className="w-full">
+                <X className="h-4 w-4 mr-2" />
+                Отмена
+              </Button>
+            </Link>
+            <Button type="submit" className="flex-1" disabled={!validateForm()}>
+              <Save className="h-4 w-4 mr-2" />
+              Сохранить запись
+            </Button>
+          </div>
+        </form>
+      </main>
+    </div>
+  )
+}

@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Зарегистрироваться — My Car Tech Tracker</title>
+  <link rel="icon" type="image/x-icon" href="/img/favicons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="../../src/styles/styles.css">
+  <style>
+    /* Brilliant Registration Page Styles */
+    .register-page {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .register-page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('/img/main-img.jpeg') center/cover;
+      opacity: 0.1;
+      z-index: 0;
+    }
+
+    .floating-shapes {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .shape {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .shape:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 60%;
+      right: 10%;
+      animation-delay: 2s;
+    }
+
+    .shape:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: 4s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .register-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      padding: 3rem;
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      z-index: 2;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .register-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .register-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: white;
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .register-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 0.5rem;
+    }
+
+    .register-subtitle {
+      color: #718096;
+      font-size: 1rem;
+    }
+
+    .register-form {
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: white;
+      position: relative;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+    }
+
+
+
+    .password-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #a0aec0;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+      color: #667eea;
+    }
+
+    .register-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .register-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .register-btn:active {
+      transform: translateY(0);
+    }
+
+    .register-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-loading {
+      position: relative;
+      color: transparent;
+    }
+
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .password-strength {
+      margin-top: 0.5rem;
+    }
+
+    .password-strength-bar {
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .password-strength-fill {
+      height: 100%;
+      transition: width 0.3s ease, background 0.3s ease;
+      border-radius: 2px;
+    }
+
+    .password-strength-fill.weak {
+      background: #e53e3e;
+      width: 33%;
+    }
+
+    .password-strength-fill.medium {
+      background: #d69e2e;
+      width: 66%;
+    }
+
+    .password-strength-fill.strong {
+      background: #38a169;
+      width: 100%;
+    }
+
+    .password-strength-text {
+      font-size: 0.8rem;
+      color: #718096;
+    }
+
+    .social-register {
+      margin: 2rem 0;
+    }
+
+    .social-title {
+      text-align: center;
+      color: #718096;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .social-title::before,
+    .social-title::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 30%;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    .social-title::before {
+      left: 0;
+    }
+
+    .social-title::after {
+      right: 0;
+    }
+
+    .social-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .social-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: white;
+      color: #4a5568;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .social-btn:hover {
+      border-color: #667eea;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .register-links {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .register-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .register-link:hover {
+      color: #764ba2;
+    }
+
+    .back-link {
+      position: absolute;
+      top: 2rem;
+      left: 2rem;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      z-index: 3;
+    }
+
+    .back-link:hover {
+      transform: translateX(-5px);
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-weight: 500;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert-success {
+      background: #c6f6d5;
+      color: #22543d;
+      border: 1px solid #9ae6b4;
+    }
+
+    .alert-error {
+      background: #fed7d7;
+      color: #742a2a;
+      border: 1px solid #feb2b2;
+    }
+
+    .terms-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .terms-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #667eea;
+    }
+
+    .terms-text {
+      font-size: 0.9rem;
+      color: #4a5568;
+    }
+
+    .terms-link {
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .terms-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 480px) {
+      .register-container {
+        padding: 2rem;
+        margin: 1rem;
+      }
+
+      .register-title {
+        font-size: 1.5rem;
+      }
+
+      .social-buttons {
+        flex-direction: column;
+      }
+
+      .back-link {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-bottom: 1rem;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body class="register-page">
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <a href="../cover.html" class="back-link">
+    ← На главную
+  </a>
+
+  <div class="register-container">
+    <div class="register-header">
+      <div class="register-logo">🚗</div>
+      <h1 class="register-title">Создать аккаунт</h1>
+      <p class="register-subtitle">Присоединяйтесь к My Car Tech Tracker</p>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <form class="register-form" id="registerForm">
+      <div class="form-group">
+        <label for="register-name" class="form-label">Имя</label>
+        <input type="text" id="register-name" name="name" class="form-input" autocomplete="name">
+      </div>
+
+      <div class="form-group">
+        <label for="register-email" class="form-label">Email</label>
+        <input type="email" id="register-email" name="email" class="form-input" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label for="register-password" class="form-label">Пароль</label>
+        <input type="password" id="register-password" name="password" class="form-input" required autocomplete="new-password">
+        <button type="button" class="password-toggle" onclick="togglePassword('register-password')">👁️</button>
+        <div class="password-strength">
+          <div class="password-strength-bar">
+            <div class="password-strength-fill" id="passwordStrengthFill"></div>
+          </div>
+          <div class="password-strength-text" id="passwordStrengthText">Введите пароль</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="register-confirm-password" class="form-label">Подтвердите пароль</label>
+        <input type="password" id="register-confirm-password" name="confirm-password" class="form-input" required autocomplete="new-password">
+        <button type="button" class="password-toggle" onclick="togglePassword('register-confirm-password')">👁️</button>
+      </div>
+
+      <div class="terms-checkbox">
+        <input type="checkbox" id="terms-checkbox" required>
+        <label for="terms-checkbox" class="terms-text">
+          Я согласен с <a href="../info/privacy.html" class="terms-link" target="_blank">условиями использования</a> и 
+          <a href="../info/privacy.html" class="terms-link" target="_blank">политикой конфиденциальности</a>
+        </label>
+      </div>
+
+      <button type="submit" class="register-btn" id="registerBtn">
+        Создать аккаунт
+      </button>
+    </form>
+
+    <div class="social-register">
+      <div class="social-title">Или зарегистрируйтесь через</div>
+      <div class="social-buttons">
+        <button type="button" class="social-btn" onclick="socialRegister('google')">
+          <span>🔍</span>
+          Google
+        </button>
+        <button type="button" class="social-btn" onclick="socialRegister('github')">
+          <span>🐙</span>
+          GitHub
+        </button>
+      </div>
+    </div>
+
+    <div class="register-links">
+      <span>Уже есть аккаунт? </span>
+      <a href="login.html" class="register-link">Войти</a>
+    </div>
+  </div>
+
+  <script type="module">
+    // Import AuthService
+    import { AuthService } from '../../src/authService.js';
+    
+    // Global functions for registration page
+    window.togglePassword = function(inputId) {
+      const input = document.getElementById(inputId);
+      const button = input.nextElementSibling;
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        button.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        button.textContent = '👁️';
+      }
+    };
+
+    window.socialRegister = function(provider) {
+      showAlert(`Регистрация через ${provider} временно недоступна. Используйте форму выше.`, 'error');
+    };
+
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      
+      alertContainer.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      let feedback = '';
+
+      if (password.length >= 8) strength++;
+      if (/[a-z]/.test(password)) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+      const strengthFill = document.getElementById('passwordStrengthFill');
+      const strengthText = document.getElementById('passwordStrengthText');
+
+      strengthFill.className = 'password-strength-fill';
+      
+      if (strength <= 2) {
+        strengthFill.classList.add('weak');
+        feedback = 'Слабый пароль';
+      } else if (strength <= 3) {
+        strengthFill.classList.add('medium');
+        feedback = 'Средний пароль';
+      } else {
+        strengthFill.classList.add('strong');
+        feedback = 'Сильный пароль';
+      }
+
+      strengthText.textContent = feedback;
+    }
+
+    // Enhanced form handling
+    document.addEventListener('DOMContentLoaded', function() {
+      const registerForm = document.getElementById('registerForm');
+      const registerBtn = document.getElementById('registerBtn');
+      const passwordInput = document.getElementById('register-password');
+
+      // Password strength checker
+      passwordInput.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+      });
+
+      registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-confirm-password').value;
+        const name = document.getElementById('register-name').value;
+        const termsAccepted = document.getElementById('terms-checkbox').checked;
+        
+        if (!email || !password || !confirmPassword) {
+          showAlert('Пожалуйста, заполните все обязательные поля', 'error');
+          return;
+        }
+
+        if (!termsAccepted) {
+          showAlert('Необходимо принять условия использования', 'error');
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showAlert('Пароли не совпадают', 'error');
+          return;
+        }
+
+        if (password.length < 6) {
+          showAlert('Пароль должен содержать минимум 6 символов', 'error');
+          return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          showAlert('Пожалуйста, введите корректный email', 'error');
+          return;
+        }
+
+        // Show loading state
+        registerBtn.classList.add('btn-loading');
+        registerBtn.disabled = true;
+
+        try {
+          // Use AuthService for registration
+          const userData = {
+            email: email,
+            password: password,
+            name: name || email.split('@')[0]
+          };
+
+          const result = await AuthService.register(userData);
+          
+          if (result.success) {
+            showAlert('Регистрация успешна! Теперь вы можете войти в систему.', 'success');
+            
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 2000);
+          }
+          
+        } catch (error) {
+          showAlert('Ошибка регистрации: ' + error.message, 'error');
+        } finally {
+          registerBtn.classList.remove('btn-loading');
+          registerBtn.disabled = false;
+        }
+      });
+
+      // Add input animations
+      const inputs = document.querySelectorAll('.form-input');
+      inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+          this.parentElement.style.transform = 'scale(1.02)';
+        });
+        
+        input.addEventListener('blur', function() {
+          this.parentElement.style.transform = 'scale(1)';
+        });
+      });
+    });
+  </script>
+</body>
+</html> 

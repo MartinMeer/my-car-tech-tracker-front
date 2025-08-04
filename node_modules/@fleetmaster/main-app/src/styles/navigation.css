@@ -1,0 +1,478 @@
+/* ==========================================================================
+   NAVIGATION STYLES
+   Car Selection Menu, Sidebar Links, Mobile Navigation
+   ========================================================================== */
+
+/* My Cars Name */
+.my-cars-name {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+/* My Cars Image */
+.my-cars-img {
+  width: 170px;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px var(--border-color);
+  cursor: pointer;
+  display: block;
+  transition: all var(--transition-normal) ease;
+}
+
+.my-cars-img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(45, 62, 80, 0.3);
+}
+
+.my-cars-img:active {
+  transform: scale(0.95);
+}
+
+/* My Cars Link */
+.my-cars-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  margin: 0.5rem auto 0.2rem auto;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.my-cars-link:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 62, 80, 0.2);
+}
+
+.my-cars-link:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+/* Removed the plus symbol from my-cars-link */
+
+/* Car Selection Menu */
+.car-select-menu, .my-cars-dropdown {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  min-width: 180px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 2px 8px var(--shadow);
+  z-index: var(--z-modal);
+  margin-top: 0.2rem;
+  display: none;
+}
+
+.car-select-menu .car-menu-item, .my-cars-dropdown .car-menu-item {
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: background var(--transition-fast);
+}
+
+.car-select-menu .car-menu-item:hover, .my-cars-dropdown .car-menu-item:hover {
+  background: var(--surface-hover);
+}
+
+.my-cars-dropdown .my-cars-manage-link {
+  display: block;
+  color: var(--primary-color);
+  text-decoration: none;
+  padding: 0.3rem 0.2rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  text-align: center;
+}
+
+.my-cars-dropdown .my-cars-manage-link:hover {
+  background: #e0e7ef;
+  color: #4e6a8a;
+}
+
+/* My Cars Menu */
+.my-cars-menu {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 2px 8px var(--shadow);
+  margin: 0.2rem auto 0 auto;
+  padding: 0.5rem 1rem;
+  min-width: 160px;
+  position: absolute;
+  z-index: var(--z-dropdown);
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+}
+
+/* Car Selection List */
+.car-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.car-selection-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  background: var(--surface);
+}
+
+.car-selection-item:hover {
+  border-color: var(--primary-color);
+  background: var(--surface-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 62, 80, 0.1);
+}
+
+.car-selection-item:active {
+  transform: translateY(0);
+}
+
+.car-selection-item.selected {
+  border-color: var(--warning-color);
+  background: var(--warning-light);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.car-selection-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--border-radius-lg);
+  background: var(--surface-secondary);
+  flex-shrink: 0;
+}
+
+.car-selection-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--border-radius-lg);
+}
+
+.car-selection-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.car-selection-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-selection-year,
+.car-selection-mileage {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.car-selection-date {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.car-selection-date label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.car-selection-date input,
+.car-selection-mileage input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  font-size: 1rem;
+  transition: border-color var(--transition-fast) ease;
+}
+
+.car-selection-date input:focus,
+.car-selection-mileage input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(45, 62, 80, 0.1);
+}
+
+/* Date mileage inputs for problems flow */
+.date-mileage-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.date-mileage-inputs .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.date-mileage-inputs label {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+.date-mileage-inputs input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  font-size: 1rem;
+  transition: border-color var(--transition-fast) ease;
+}
+
+.date-mileage-inputs input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(45, 62, 80, 0.1);
+}
+
+
+
+/* ==========================================================================
+   SIDEBAR BUTTONS
+   New four-button sidebar layout
+   ========================================================================== */
+
+.sidebar-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  color: var(--primary-color);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  text-align: left;
+  width: 100%;
+  min-height: 60px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.sidebar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 62, 80, 0.15);
+  border-color: var(--primary-color);
+}
+
+.sidebar-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.sidebar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.btn-line-1,
+.btn-line-2 {
+  display: block;
+}
+
+/* Make "Заполни отчет!" bold in the service button */
+.sidebar-btn-service .btn-line-2 {
+  font-weight: bold;
+}
+
+/* Button 1: Service Report - Yellow-green */
+.sidebar-btn-service {
+  border-color: var(--success-color);
+  background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+  color: white;
+}
+
+.sidebar-btn-service:hover {
+  background: linear-gradient(135deg, var(--success-hover), var(--success-dark));
+  border-color: var(--success-dark);
+}
+
+/* Button 2: Problems - Light red color */
+.sidebar-btn-problems {
+  border-color: var(--accent-color);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+  color: white;
+}
+
+.sidebar-btn-problems:hover {
+  background: linear-gradient(135deg, var(--accent-hover), var(--accent-dark));
+  border-color: var(--accent-dark);
+}
+
+/* Button 3: History - Blue color */
+.sidebar-btn-history {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+}
+
+.sidebar-btn-history:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary-dark));
+  border-color: var(--primary-dark);
+}
+
+/* Responsive adjustments for sidebar buttons */
+@media (max-width: 768px) {
+  .sidebar-buttons {
+    gap: 0.8rem;
+  }
+  
+  .sidebar-btn {
+    padding: 0.8rem;
+    min-height: 50px;
+    font-size: var(--font-size-sm);
+  }
+  
+  .btn-icon {
+    font-size: 1.3rem;
+    width: 20px;
+  }
+  
+  .btn-text {
+    gap: 0.1rem;
+  }
+}
+
+/* Navigation Bar Styles */
+.navbar {
+  background: var(--surface);
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.nav-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius);
+}
+
+.nav-title {
+  color: var(--primary-color);
+}
+
+.nav-menu {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  color: var(--text-color);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  font-size: 0.9rem;
+}
+
+.nav-link:hover {
+  background: var(--surface-hover);
+  color: var(--primary-color);
+}
+
+.nav-link.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Main Content for standalone pages */
+.main-content {
+  padding: 2rem;
+  background: var(--background);
+  min-height: calc(100vh - 80px);
+}
+
+.page-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.page-header h1 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.page-header p {
+  color: var(--text-muted);
+  font-size: 1rem;
+} 

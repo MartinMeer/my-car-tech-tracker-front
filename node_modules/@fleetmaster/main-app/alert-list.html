@@ -1,0 +1,61 @@
+<section>
+  <h1>У нас проблемы!</h1>
+ 
+  
+  <div class="alert-list-container">
+    <div class="alert-list-header">
+      <div class="alert-list-controls">
+        <div class="add-alert-btn-container">
+          <button id="new-alert-btn" class="btn btn-primary">
+            <span class="icon">🚨</span>
+            Сообщить о проблеме
+          </button>
+        </div>
+        <div class="archive-controls">
+          <button id="view-archive-btn" class="btn btn-secondary">
+            <span class="icon">🗄️</span>
+            Архив
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="alert-list-content" id="alert-list-content">
+      <p class="page-description">Список всех обнаруженных проблем по автомобилям</p>
+      <!-- Alerts will be loaded here dynamically -->
+    </div>
+    
+    <div class="alert-list-empty" id="alert-list-empty" style="display: none;">
+      <div class="empty-state">
+        <div class="empty-icon">✅</div>
+        <h3>Проблем нет!</h3>
+        <p>Все ваши автомобили в отличном состоянии</p>
+        <button class="btn-primary" onclick="window.location.hash='#user-alert'">
+          <span class="icon">🚨</span>
+          Сообщить о проблеме
+        </button>
+      </div>
+    </div>
+    
+    <!-- Archive View -->
+    <div class="archive-view" id="archive-view" style="display: none;">
+      <div class="archive-header">
+        <h2>Архив проблем</h2>
+        <button id="back-to-alerts-btn" class="btn btn-secondary">
+          <span class="icon">←</span>
+          Назад к проблемам
+        </button>
+      </div>
+      <div class="archive-content" id="archive-content">
+        <!-- Archived alerts will be loaded here -->
+      </div>
+      <div class="archive-empty" id="archive-empty" style="display: none;">
+        <div class="empty-state">
+          <div class="empty-icon">🗄️</div>
+          <h3>Архив пуст</h3>
+          <p>Нет архивированных проблем</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> 
