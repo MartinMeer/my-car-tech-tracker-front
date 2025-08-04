@@ -1,7 +1,7 @@
 /**
  * User alert creation form for reporting vehicle problems and issues
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
@@ -10,25 +10,43 @@ import { Label } from '../components/ui/label'
 import { Textarea } from '../components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group'
+import { DataService, Car as CarType } from '../services/DataService'
+import { AlertService, AlertPriority, AlertFormData } from '../services/AlertService'
 import { ArrowLeft, AlertTriangle, Save, X } from 'lucide-react'
 
 export default function UserAlert() {
   const navigate = useNavigate()
+  const [cars, setCars] = useState<CarType[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     carId: '',
     date: new Date().toISOString().split('T')[0],
     mileage: '',
     system: '',
     location: '',
-    priority: '',
+    priority: '' as AlertPriority | '',
     description: ''
   })
 
-  // Mock car data - in real app would fetch from API
-  const cars = [
-    { id: '1', name: 'Транспорт #1', brand: 'Toyota', model: 'Camry' },
-    { id: '2', name: 'Грузовик #2', brand: 'Mercedes', model: 'Sprinter' }
-  ]
+  // Load cars on component mount
+  useEffect(() => {
+    const loadCars = async () => {
+      try {
+        setIsLoading(true)
+        const carsData = await DataService.getCars()
+        setCars(carsData)
+      } catch (error) {
+        console.error('Error loading cars:', error)
+        setError('Ошибка загрузки списка автомобилей')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadCars()
+  }, [])
 
   const systemOptions = [
     'Двигатель',
@@ -81,34 +99,61 @@ export default function UserAlert() {
     return required.every(field => formData[field as keyof typeof formData].trim() !== '')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!validateForm()) {
-      alert('Пожалуйста, заполните все обязательные поля')
+      setError('Пожалуйста, заполните все обязательные поля')
       return
     }
 
-    // Get existing alerts from localStorage
-    const existingAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
-    
-    // Create new alert
-    const newAlert = {
-      id: Date.now().toString(),
-      ...formData,
-      createdAt: new Date().toISOString(),
-      status: 'active',
-      carName: cars.find(c => c.id === formData.carId)?.name || 'Неизвестный автомобиль'
+    const selectedCar = cars.find(c => c.id === formData.carId)
+    if (!selectedCar) {
+      setError('Выберите автомобиль')
+      return
     }
-    
-    // Save to localStorage
-    localStorage.setItem('fleet-alerts', JSON.stringify([...existingAlerts, newAlert]))
-    
-    // Navigate to alert list
-    navigate('/alerts')
+
+    try {
+      setIsSubmitting(true)
+      setError(null)
+
+      const alertData: AlertFormData = {
+        carId: formData.carId,
+        carName: selectedCar.name,
+        type: 'problem',
+        priority: formData.priority as AlertPriority,
+        description: formData.description,
+        location: formData.system + (formData.location ? ` - ${formData.location}` : ''),
+        mileage: parseInt(formData.mileage) || 0
+      }
+
+      await AlertService.createAlert(alertData)
+
+      // Navigate to alert list with success message
+      navigate('/alerts', { 
+        state: { message: 'Сообщение о проблеме успешно создано!' }
+      })
+    } catch (error) {
+      console.error('Error creating alert:', error)
+      setError(error.message || 'Ошибка при создании сообщения. Попробуйте еще раз.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const selectedCar = cars.find(c => c.id === formData.carId)
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -134,6 +179,17 @@ export default function UserAlert() {
 
       {/* Main Content */}
       <main className="px-4 py-6">
+        {/* Error Display */}
+        {error && (
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 text-red-800">
+                <AlertTriangle className="h-4 w-4" />
+                <p className="text-sm">{error}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <Card>
@@ -289,14 +345,27 @@ export default function UserAlert() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <Link to="/" className="flex-1">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" disabled={isSubmitting}>
                 <X className="h-4 w-4 mr-2" />
                 Не сохранять
               </Button>
             </Link>
-            <Button type="submit" className="flex-1" disabled={!validateForm()}>
-              <Save className="h-4 w-4 mr-2" />
-              Сохранить
+            <Button 
+              type="submit" 
+              className="flex-1" 
+              disabled={!validateForm() || isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Сохранение...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Сохранить
+                </>
+              )}
             </Button>
           </div>
         </form>

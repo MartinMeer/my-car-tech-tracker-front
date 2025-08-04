@@ -9,6 +9,8 @@ import { Badge } from '../components/ui/badge'
 import { Input } from '../components/ui/input'
 import { Textarea } from '../components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
+import { Alert } from '../services/DataService'
+import { AlertService, AlertPriority, AlertStatus } from '../services/AlertService'
 import { 
   ArrowLeft, 
   AlertTriangle, 

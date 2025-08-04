@@ -24488,7 +24488,7 @@
   });
 
   // src/main.tsx
-  var import_client = __toESM(require_client());
+  var import_client = __toESM(require_client(), 1);
 
   // node_modules/react-router/dist/development/chunk-C37GKA54.mjs
   var React = __toESM(require_react(), 1);
@@ -26829,10 +26829,10 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/contexts/AuthContext.tsx
-  var import_react2 = __toESM(require_react());
+  var import_react2 = __toESM(require_react(), 1);
 
   // src/hooks/useAuth.ts
-  var import_react = __toESM(require_react());
+  var import_react = __toESM(require_react(), 1);
 
   // src/services/AuthService.ts
   var AuthService = class {
@@ -27042,7 +27042,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/contexts/AuthContext.tsx
-  var import_jsx_runtime = __toESM(require_jsx_runtime());
+  var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
   var AuthContext = (0, import_react2.createContext)(null);
   function AuthProvider({ children }) {
     const auth = useAuth();
@@ -27050,10 +27050,10 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/pages/Home.tsx
-  var import_react5 = __toESM(require_react());
+  var import_react5 = __toESM(require_react(), 1);
 
   // src/components/ui/button.tsx
-  var React15 = __toESM(require_react());
+  var React15 = __toESM(require_react(), 1);
 
   // node_modules/@radix-ui/react-slot/dist/index.mjs
   var React14 = __toESM(require_react(), 1);
@@ -30197,7 +30197,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/components/ui/button.tsx
-  var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
   var buttonVariants = cva(
     "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     {
@@ -30314,7 +30314,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   };
 
   // src/components/AppNavigation.tsx
-  var import_jsx_runtime4 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
   function AppNavigation() {
     const { user, isAuthenticated } = useAuth();
     const handleLaunchApp = () => {
@@ -30354,8 +30354,8 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/components/ui/card.tsx
-  var React16 = __toESM(require_react());
-  var import_jsx_runtime5 = __toESM(require_jsx_runtime());
+  var React16 = __toESM(require_react(), 1);
+  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
   var Card = React16.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
@@ -30408,7 +30408,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   CardFooter.displayName = "CardFooter";
 
   // src/components/ui/badge.tsx
-  var import_jsx_runtime6 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
   var badgeVariants = cva(
     "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
     {
@@ -30806,7 +30806,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   var Zap = createLucideIcon("zap", __iconNode29);
 
   // src/pages/Home.tsx
-  var import_jsx_runtime7 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
   function Home() {
     const [language, setLanguage] = (0, import_react5.useState)("ru");
     const translations = {
@@ -31258,11 +31258,11 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/pages/Login.tsx
-  var import_react6 = __toESM(require_react());
+  var import_react6 = __toESM(require_react(), 1);
 
   // src/components/ui/input.tsx
-  var React18 = __toESM(require_react());
-  var import_jsx_runtime8 = __toESM(require_jsx_runtime());
+  var React18 = __toESM(require_react(), 1);
+  var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
   var Input = React18.forwardRef(
     ({ className, type, ...props }, ref) => {
       return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
@@ -31282,7 +31282,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   Input.displayName = "Input";
 
   // src/components/ui/label.tsx
-  var React21 = __toESM(require_react());
+  var React21 = __toESM(require_react(), 1);
 
   // node_modules/@radix-ui/react-label/dist/index.mjs
   var React20 = __toESM(require_react(), 1);
@@ -31349,7 +31349,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   var Root = Label;
 
   // src/components/ui/label.tsx
-  var import_jsx_runtime11 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime11 = __toESM(require_jsx_runtime(), 1);
   var labelVariants = cva(
     "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
   );
@@ -31364,7 +31364,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   Label2.displayName = Root.displayName;
 
   // src/pages/Login.tsx
-  var import_jsx_runtime12 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime12 = __toESM(require_jsx_runtime(), 1);
   function LoginPage() {
     const [language, setLanguage] = (0, import_react6.useState)("ru");
     const [showPassword, setShowPassword] = (0, import_react6.useState)(false);
@@ -31598,10 +31598,10 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/pages/Register.tsx
-  var import_react7 = __toESM(require_react());
+  var import_react7 = __toESM(require_react(), 1);
 
   // src/components/ui/checkbox.tsx
-  var React32 = __toESM(require_react());
+  var React32 = __toESM(require_react(), 1);
 
   // node_modules/@radix-ui/react-checkbox/dist/index.mjs
   var React31 = __toESM(require_react(), 1);
@@ -32190,7 +32190,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/components/ui/checkbox.tsx
-  var import_jsx_runtime15 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
   var Checkbox2 = React32.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
     Checkbox,
     {
@@ -32212,7 +32212,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   Checkbox2.displayName = Checkbox.displayName;
 
   // src/pages/Register.tsx
-  var import_jsx_runtime16 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
   function RegisterPage() {
     const [language, setLanguage] = (0, import_react7.useState)("ru");
     const [showPassword, setShowPassword] = (0, import_react7.useState)(false);
@@ -32512,10 +32512,10 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/pages/UserAccount.tsx
-  var import_react12 = __toESM(require_react());
+  var import_react12 = __toESM(require_react(), 1);
 
   // src/components/ui/select.tsx
-  var React55 = __toESM(require_react());
+  var React55 = __toESM(require_react(), 1);
 
   // node_modules/@radix-ui/react-select/dist/index.mjs
   var React54 = __toESM(require_react(), 1);
@@ -37268,7 +37268,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   var Separator = SelectSeparator;
 
   // src/components/ui/select.tsx
-  var import_jsx_runtime27 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime27 = __toESM(require_jsx_runtime(), 1);
   var Select2 = Root23;
   var SelectValue2 = Value;
   var SelectTrigger2 = React55.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
@@ -37377,7 +37377,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   SelectSeparator2.displayName = Separator.displayName;
 
   // src/pages/UserAccount.tsx
-  var import_jsx_runtime28 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime28 = __toESM(require_jsx_runtime(), 1);
   function UserAccountPage() {
     const [language, setLanguage] = (0, import_react12.useState)("ru");
     const [showCurrentPassword, setShowCurrentPassword] = (0, import_react12.useState)(false);
@@ -37817,7 +37817,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/App.tsx
-  var import_jsx_runtime29 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime29 = __toESM(require_jsx_runtime(), 1);
   function App() {
     return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(AuthProvider, { children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(HashRouter, { children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(Routes, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Route, { path: "/", element: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Home, {}) }),
@@ -37828,7 +37828,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
   }
 
   // src/main.tsx
-  var import_jsx_runtime30 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime30 = __toESM(require_jsx_runtime(), 1);
   var root = (0, import_client.createRoot)(document.getElementById("app"));
   root.render(/* @__PURE__ */ (0, import_jsx_runtime30.jsx)(App, {}));
 })();

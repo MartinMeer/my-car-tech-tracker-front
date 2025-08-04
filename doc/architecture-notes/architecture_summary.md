@@ -13,12 +13,9 @@ A modular, scalable car maintenance and repair tracker for individuals and small
   - All business rules, calculations, and data integrity are enforced by the backend.
 
 - **Backend-Driven:**
-  - The Java backend provides all business logic, data storage, and API endpoints.
+  - The Java backend (will be crated later) provides all business logic, data storage, and API endpoints.
   - The frontend communicates with the backend via RESTful API calls (or similar), using a service layer abstraction.
 
-- **Lightweight & Maintainable:**
-  - Uses vanilla HTML, CSS, and JavaScript (no heavy frameworks) for fast load times and easy maintenance.
-  - Modular code structure for easy extension and future feature integration (e.g., AI, analytics).
 
 - **Configurable Data Source:**
   - During development, the frontend can use localStorage for demo/testing.

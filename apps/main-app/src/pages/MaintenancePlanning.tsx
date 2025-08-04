@@ -144,6 +144,8 @@ export default function MaintenancePlanning() {
   const [isViewPlansOpen, setIsViewPlansOpen] = useState(false)
   const [isConfirmMaintenanceOpen, setIsConfirmMaintenanceOpen] = useState(false)
   const [isSendingToMaintenance, setIsSendingToMaintenance] = useState(false)
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
+  const [autoSaveInterval, setAutoSaveInterval] = useState<NodeJS.Timeout | null>(null)
 
   // Mock car data
   const cars = [
@@ -160,7 +162,34 @@ export default function MaintenancePlanning() {
     // Load saved maintenance plans
     const savedMaintenancePlans = JSON.parse(localStorage.getItem('maintenance-plans') || '[]')
     setSavedPlans(savedMaintenancePlans)
+
+    // Set up autosave interval
+    const interval = setInterval(autoSaveDraft, 30000) // 30 seconds
+    setAutoSaveInterval(interval)
+
+    // Cleanup
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
   }, [])
+
+  useEffect(() => {
+    // Reset autosave interval when form data changes
+    if (autoSaveInterval) {
+      clearInterval(autoSaveInterval)
+    }
+    const interval = setInterval(autoSaveDraft, 30000)
+    setAutoSaveInterval(interval)
+
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
+  }, [selectedCarId, plannedDate, plannedCompletionDate, plannedMileage, serviceProvider, planNotes, periodicItems, repairItems])
 
   useEffect(() => {
     if (selectedCarId) {
@@ -235,6 +264,80 @@ export default function MaintenancePlanning() {
     ))
   }
 
+  const loadPlanForEditing = (plan: MaintenancePlan) => {
+    setEditingPlanId(plan.id)
+    setSelectedCarId(plan.carId)
+    setPlannedDate(plan.plannedDate)
+    setPlannedCompletionDate(plan.plannedCompletionDate)
+    setPlannedMileage(plan.plannedMileage)
+    setServiceProvider(plan.serviceProvider)
+    setPlanNotes(plan.notes)
+    
+    // Load periodic operations
+    const selectedCar = cars.find(c => c.id === plan.carId)
+    if (selectedCar) {
+      const neededMaintenance = maintenanceRegulations.map(regulation => {
+        const planOperation = plan.periodicOperations.find(op => op.operation === regulation.operation)
+        const intervalMileage = parseInt(regulation.mileage)
+        const intervalMonths = parseInt(regulation.period)
+        
+        const mileageSinceLastService = selectedCar.currentMileage % intervalMileage
+        const mileageUntilNext = intervalMileage - mileageSinceLastService
+        
+        const lastServiceDate = new Date(selectedCar.lastServiceDate)
+        const monthsSinceService = Math.floor((Date.now() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
+        const monthsUntilNext = intervalMonths - (monthsSinceService % intervalMonths)
+        
+        let priority: 'high' | 'medium' | 'low' = 'low'
+        if (mileageUntilNext <= 2000 || monthsUntilNext <= 1) {
+          priority = 'high'
+        } else if (mileageUntilNext <= 5000 || monthsUntilNext <= 3) {
+          priority = 'medium'
+        }
+
+        return {
+          operation: regulation.operation,
+          notes: regulation.notes,
+          mileageInterval: intervalMileage,
+          timeInterval: intervalMonths,
+          mileageUntilNext,
+          monthsUntilNext,
+          priority: planOperation?.priority || priority,
+          selected: !!planOperation,
+          estimatedCost: planOperation?.estimatedCost || 0,
+          planNotes: planOperation?.notes || ''
+        }
+      })
+      setPeriodicItems(neededMaintenance)
+    }
+
+    // Load repair operations
+    const repairOperations = plan.repairOperations.map(repairOp => ({
+      alertId: repairOp.alertId,
+      description: repairOp.description,
+      priority: repairOp.priority,
+      estimatedCost: repairOp.estimatedCost,
+      notes: repairOp.notes,
+      selected: true,
+      planNotes: repairOp.notes
+    }))
+    setRepairItems(repairOperations)
+    
+    setIsViewPlansOpen(false)
+  }
+
+  const clearForm = () => {
+    setEditingPlanId(null)
+    setSelectedCarId('')
+    setPlannedDate('')
+    setPlannedCompletionDate('')
+    setPlannedMileage('')
+    setServiceProvider('')
+    setPlanNotes('')
+    setPeriodicItems([])
+    setRepairItems([])
+  }
+
   const calculateTotalCost = () => {
     const periodicCost = periodicItems
       .filter(item => item.selected)
@@ -274,8 +377,8 @@ export default function MaintenancePlanning() {
     const selectedCar = cars.find(c => c.id === selectedCarId)
     
     try {
-      const newPlan: MaintenancePlan = {
-        id: Date.now().toString(),
+      const planData: MaintenancePlan = {
+        id: editingPlanId || Date.now().toString(),
         carId: selectedCarId,
         carName: selectedCar?.name || 'Неизвестный автомобиль',
         plannedDate,
@@ -286,40 +389,114 @@ export default function MaintenancePlanning() {
           selected: true,
           priority: item.priority,
           estimatedCost: item.estimatedCost || 0,
-          notes: item.notes || ''
+          notes: item.planNotes || item.notes || ''
         })),
         repairOperations: selectedRepairOps.map(item => ({
           alertId: item.alertId,
           description: item.description,
           priority: item.priority,
           estimatedCost: item.estimatedCost || 0,
-          notes: item.notes || ''
+          notes: item.planNotes || item.notes || ''
         })),
         totalEstimatedCost: calculateTotalCost(),
         serviceProvider,
         notes: planNotes,
         status: 'draft',
-        createdAt: new Date().toISOString()
+        createdAt: editingPlanId 
+          ? savedPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()
+          : new Date().toISOString()
       }
 
-      const updatedPlans = [...savedPlans, newPlan]
+      let updatedPlans
+      if (editingPlanId) {
+        // Update existing plan
+        updatedPlans = savedPlans.map(plan => 
+          plan.id === editingPlanId ? planData : plan
+        )
+      } else {
+        // Create new plan
+        updatedPlans = [...savedPlans, planData]
+      }
+      
       setSavedPlans(updatedPlans)
       localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
 
-      // Clear form after successful save
-      setSelectedCarId('')
-      setPlannedDate('')
-      setPlannedCompletionDate('')
-      setPlannedMileage('')
-      setServiceProvider('')
-      setPlanNotes('')
-      setPeriodicItems([])
-      setRepairItems([])
+      // Clear autosave interval
+      if (autoSaveInterval) {
+        clearInterval(autoSaveInterval)
+        setAutoSaveInterval(null)
+      }
 
-      alert('План обслуживания сохранен!')
+      alert(`План обслуживания ${editingPlanId ? 'обновлен' : 'сохранен'}!`)
+
+      // Clear form and navigate back to home
+      clearForm()
+      window.location.href = '/'
     } catch (error) {
       console.error('Error saving maintenance plan:', error)
       alert('Ошибка при сохранении плана. Попробуйте еще раз.')
+    }
+  }
+
+  const autoSaveDraft = () => {
+    if (!selectedCarId || !plannedDate) return
+
+    const selectedPeriodicOps = periodicItems.filter(item => item.selected)
+    const selectedRepairOps = repairItems.filter(item => item.selected)
+    
+    if (selectedPeriodicOps.length === 0 && selectedRepairOps.length === 0) return
+
+    const selectedCar = cars.find(c => c.id === selectedCarId)
+    
+    try {
+      const planData: MaintenancePlan = {
+        id: editingPlanId || `draft_${Date.now()}`,
+        carId: selectedCarId,
+        carName: selectedCar?.name || 'Неизвестный автомобиль',
+        plannedDate,
+        plannedCompletionDate,
+        plannedMileage,
+        periodicOperations: selectedPeriodicOps.map(item => ({
+          operation: item.operation,
+          selected: true,
+          priority: item.priority,
+          estimatedCost: item.estimatedCost || 0,
+          notes: item.planNotes || item.notes || ''
+        })),
+        repairOperations: selectedRepairOps.map(item => ({
+          alertId: item.alertId,
+          description: item.description,
+          priority: item.priority,
+          estimatedCost: item.estimatedCost || 0,
+          notes: item.planNotes || item.notes || ''
+        })),
+        totalEstimatedCost: calculateTotalCost(),
+        serviceProvider,
+        notes: planNotes,
+        status: 'draft',
+        createdAt: editingPlanId 
+          ? savedPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()
+          : new Date().toISOString()
+      }
+
+      let updatedPlans
+      if (editingPlanId || savedPlans.find(p => p.id === planData.id)) {
+        // Update existing plan (including drafts)
+        updatedPlans = savedPlans.map(plan => 
+          plan.id === planData.id ? planData : plan
+        )
+      } else {
+        // Create new draft
+        updatedPlans = [...savedPlans, planData]
+        setEditingPlanId(planData.id)
+      }
+      
+      setSavedPlans(updatedPlans)
+      localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
+      
+      console.log('Draft auto-saved')
+    } catch (error) {
+      console.error('Error auto-saving draft:', error)
     }
   }
 
@@ -409,15 +586,11 @@ export default function MaintenancePlanning() {
       setSavedPlans(updatedPlans)
       localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
 
-      // Clear form after successful save
-      setSelectedCarId('')
-      setPlannedDate('')
-      setPlannedCompletionDate('')
-      setPlannedMileage('')
-      setServiceProvider('')
-      setPlanNotes('')
-      setPeriodicItems([])
-      setRepairItems([])
+      // Clear autosave interval
+      if (autoSaveInterval) {
+        clearInterval(autoSaveInterval)
+        setAutoSaveInterval(null)
+      }
 
       // Close dialogs
       setIsConfirmMaintenanceOpen(false)
@@ -427,6 +600,10 @@ export default function MaintenancePlanning() {
       window.dispatchEvent(new CustomEvent('maintenanceStatusChanged'))
 
       alert('Автомобиль отправлен на обслуживание!')
+
+      // Clear form and navigate back to home
+      clearForm()
+      window.location.href = '/'
     } catch (error) {
       console.error('Error sending to maintenance:', error)
       alert('Ошибка при отправке на обслуживание. Попробуйте еще раз.')
@@ -452,9 +629,11 @@ export default function MaintenancePlanning() {
             <div>
               <h1 className="text-lg font-bold text-gray-900 flex items-center">
                 <Calendar className="h-5 w-5 mr-2 text-blue-600" />
-                Планирование ТО
+                {editingPlanId ? 'Редактирование плана ТО' : 'Планирование ТО'}
               </h1>
-              <p className="text-sm text-gray-600">Составление плана периодического и ремонтного обслуживания</p>
+              <p className="text-sm text-gray-600">
+                {editingPlanId ? 'Редактирование существующего плана обслуживания' : 'Составление плана периодического и ремонтного обслуживания'}
+              </p>
             </div>
           </div>
         </div>
@@ -756,12 +935,22 @@ export default function MaintenancePlanning() {
                   savedPlans.map((plan) => (
                     <div key={plan.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-medium">{plan.carName}</h4>
                           <p className="text-sm text-gray-600">Начало: {plan.plannedDate}</p>
                           <p className="text-sm text-gray-600">Завершение: {plan.plannedCompletionDate}</p>
                         </div>
-                        <Badge>{plan.status === 'draft' ? 'Черновик' : 'Запланировано'}</Badge>
+                        <div className="flex items-center space-x-2">
+                          <Badge>{plan.status === 'draft' ? 'Черновик' : 'Запланировано'}</Badge>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => loadPlanForEditing(plan)}
+                            className="text-xs"
+                          >
+                            Редактировать
+                          </Button>
+                        </div>
                       </div>
                       <div className="text-sm">
                         <p>Операций: {plan.periodicOperations.length + plan.repairOperations.length}</p>
@@ -780,7 +969,7 @@ export default function MaintenancePlanning() {
             disabled={!selectedCarId || !plannedDate || !plannedCompletionDate || (selectedPeriodicCount === 0 && selectedRepairCount === 0)}
           >
             <Save className="h-4 w-4 mr-2" />
-            Сохранить план
+            {editingPlanId ? 'Обновить план' : 'Сохранить план'}
           </Button>
           <Button 
             onClick={sendToMaintenance} 

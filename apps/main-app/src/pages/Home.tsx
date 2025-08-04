@@ -6,7 +6,9 @@ import { Link } from 'react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
-// NavigationService and APP_CONFIG imports removed - using direct URLs for debugging
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
+import { DataService, Car as CarType, MaintenancePlan } from '../services/DataService'
+import { CarStatusService, CarStatusInfo } from '../services/CarStatusService'
 import { 
   Car, 
   Plus, 
@@ -21,47 +23,59 @@ import {
 
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState('fleet')
-  const [activeAlertsCount, setActiveAlertsCount] = useState(0)
-  const [inMaintenanceCount, setInMaintenanceCount] = useState(0)
+  const [isPlansDialogOpen, setIsPlansDialogOpen] = useState(false)
+  const [cars, setCars] = useState<CarType[]>([])
+  const [carStatusMap, setCarStatusMap] = useState<Map<string, CarStatusInfo>>(new Map())
+  const [savedPlans, setSavedPlans] = useState<MaintenancePlan[]>([])
+  const [fleetStats, setFleetStats] = useState({
+    totalCars: 0,
+    activeCars: 0,
+    carsInMaintenance: 0,
+    carsWithProblems: 0,
+    totalActiveAlerts: 0,
+    totalCriticalAlerts: 0
+  })
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Load counts from localStorage and listen for changes
-  const loadCounts = () => {
-    const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
-    const activeAlerts = savedAlerts.filter((alert: any) => alert.status === 'active')
-    setActiveAlertsCount(activeAlerts.length)
+  // Load all dashboard data
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
 
-    const maintenanceList = JSON.parse(localStorage.getItem('in-maintenance') || '[]')
-    setInMaintenanceCount(maintenanceList.length)
-  }
+      // Load cars and plans
+      const [carsData, plansData] = await Promise.all([
+        DataService.getCars(),
+        DataService.getMaintenancePlans()
+      ])
 
-  // Function to get dynamic car status based on maintenance and alerts
-  const getCarStatus = (carId: string | number) => {
-    const maintenanceList = JSON.parse(localStorage.getItem('in-maintenance') || '[]')
-    const isInMaintenance = maintenanceList.some((entry: any) => entry.carId === carId.toString())
-    
-    if (isInMaintenance) {
-      return 'maintenance'
+      setCars(carsData)
+      setSavedPlans(plansData)
+
+      // Load car status information
+      const carIds = carsData.map(car => car.id)
+      const statusMap = await CarStatusService.getMultipleCarStatusInfo(carIds)
+      setCarStatusMap(statusMap)
+
+      // Load fleet statistics
+      const stats = await CarStatusService.getFleetStats()
+      setFleetStats(stats)
+
+    } catch (error) {
+      console.error('Error loading dashboard data:', error)
+      setError('Ошибка загрузки данных. Попробуйте обновить страницу.')
+    } finally {
+      setIsLoading(false)
     }
-
-    const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
-    const carAlerts = savedAlerts.filter((alert: any) => 
-      alert.carId === carId.toString() && alert.status === 'active'
-    )
-    
-    const hasCriticalAlerts = carAlerts.some((alert: any) => alert.priority === 'critical')
-    if (hasCriticalAlerts) {
-      return 'problem'
-    }
-
-    return 'active'
   }
 
   useEffect(() => {
-    loadCounts()
+    loadDashboardData()
 
     // Listen for maintenance status changes
     const handleMaintenanceChange = () => {
-      loadCounts()
+      loadDashboardData()
     }
 
     window.addEventListener('maintenanceStatusChanged', handleMaintenanceChange)
@@ -71,33 +85,17 @@ export default function Home() {
     }
   }, [])
 
-  // Mock data for demonstration
-  const cars = [
-    {
-      id: 1,
-      name: 'Транспорт #1',
-      brand: 'Toyota',
-      model: 'Camry',
-      year: 2020,
-      mileage: 85000,
-      status: 'active',
-      lastService: '2024-07-15',
-      nextService: '2024-09-15',
-      image: 'https://pub-cdn.sider.ai/u/U0GVH7028Y5/web-coder/689049900cd2d7c5a2675d8b/resource/2c6f2845-9f8d-4c49-b85a-014eadfa4238.jpg'
-    },
-    {
-      id: 2,
-      name: 'Грузовик #2',
-      brand: 'Mercedes',
-      model: 'Sprinter',
-      year: 2019,
-      mileage: 120000,
-      status: 'maintenance',
-      lastService: '2024-06-20',
-      nextService: '2024-08-20',
-      image: 'https://pub-cdn.sider.ai/u/U0GVH7028Y5/web-coder/689049900cd2d7c5a2675d8b/resource/fa1dad86-c2d8-43aa-aee5-1a3e010f4480.jpg'
+  // Helper function to get car status info
+  const getCarStatusInfo = (carId: string): CarStatusInfo => {
+    return carStatusMap.get(carId) || {
+      status: 'inactive',
+      statusText: 'Неизвестно',
+      statusColor: 'bg-gray-100 text-gray-800',
+      alertCount: 0,
+      criticalAlertCount: 0,
+      isInMaintenance: false
     }
-  ]
+  }
 
   const recentActivities = [
     { type: 'service', message: 'Замена масла - Toyota Camry', date: '2024-07-15', priority: 'low' },
@@ -105,27 +103,7 @@ export default function Home() {
     { type: 'maintenance', message: 'Плановое ТО - Toyota Camry', date: '2024-07-10', priority: 'medium' }
   ]
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800'
-      case 'maintenance': return 'bg-orange-100 text-orange-800'
-      case 'problem': return 'bg-red-100 text-red-800'
-      case 'scheduled': return 'bg-blue-100 text-blue-800'
-      case 'inactive': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return 'Готов к работе'
-      case 'maintenance': return 'На обслуживании'
-      case 'problem': return 'Требует внимания'
-      case 'scheduled': return 'Запланировано ТО'
-      case 'inactive': return 'Неактивен'
-      default: return 'Неизвестно'
-    }
-  }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -153,6 +131,34 @@ export default function Home() {
     
     // Simple direct navigation to test
     window.location.href = 'http://localhost:3000/'
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка данных...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Ошибка загрузки</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={loadDashboardData}>
+            Попробовать снова
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -189,7 +195,7 @@ export default function Home() {
               <div className="flex items-center space-x-2">
                 <Car className="h-8 w-8 text-blue-600" />
                 <div>
-                  <p className="text-2xl font-bold">{cars.length - inMaintenanceCount}</p>
+                  <p className="text-2xl font-bold">{fleetStats.activeCars}</p>
                   <p className="text-sm text-gray-600">Автомобили готовые к работе</p>
                 </div>
               </div>
@@ -202,7 +208,7 @@ export default function Home() {
                 <div className="flex items-center space-x-2">
                   <Wrench className="h-8 w-8 text-orange-600" />
                   <div>
-                    <p className="text-2xl font-bold">{inMaintenanceCount}</p>
+                    <p className="text-2xl font-bold">{fleetStats.carsInMaintenance}</p>
                     <p className="text-sm text-gray-600">Автомобили на сервисе</p>
                   </div>
                 </div>
@@ -216,7 +222,7 @@ export default function Home() {
                 <div className="flex items-center space-x-2">
                   <AlertTriangle className="h-8 w-8 text-red-600" />
                   <div>
-                    <p className="text-2xl font-bold">1</p>
+                    <p className="text-2xl font-bold">{fleetStats.totalActiveAlerts}</p>
                     <p className="text-sm text-gray-600">Проблемы</p>
                   </div>
                 </div>
@@ -224,19 +230,81 @@ export default function Home() {
             </Card>
           </Link>
           
-          <Link to="/maintenance-planning">
-            <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-8 w-8 text-orange-600" />
-                  <div>
-                    <p className="text-2xl font-bold">2</p>
-                    <p className="text-sm text-gray-600">Планов ТО</p>
+          <Dialog open={isPlansDialogOpen} onOpenChange={setIsPlansDialogOpen}>
+            <DialogTrigger asChild>
+              <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-8 w-8 text-orange-600" />
+                    <div>
+                      <p className="text-2xl font-bold">{savedPlans.length}</p>
+                      <p className="text-sm text-gray-600">Планов ТО</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Планы обслуживания</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {savedPlans.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    <p>Нет сохраненных планов</p>
+                    <div className="mt-4">
+                      <Link to="/maintenance-planning">
+                        <Button onClick={() => setIsPlansDialogOpen(false)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Создать план ТО
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-gray-600">Всего планов: {savedPlans.length}</p>
+                      <Link to="/maintenance-planning">
+                        <Button onClick={() => setIsPlansDialogOpen(false)} size="sm">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Создать новый план
+                        </Button>
+                      </Link>
+                    </div>
+                    {savedPlans.map((plan) => (
+                      <div key={plan.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <h4 className="font-medium">{plan.carName}</h4>
+                            <p className="text-sm text-gray-600">Начало: {plan.plannedDate}</p>
+                            <p className="text-sm text-gray-600">Завершение: {plan.plannedCompletionDate}</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge>{plan.status === 'draft' ? 'Черновик' : 'Запланировано'}</Badge>
+                            <Link to="/maintenance-planning">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setIsPlansDialogOpen(false)}
+                                className="text-xs"
+                              >
+                                Редактировать
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                        <div className="text-sm">
+                          <p>Операций: {plan.periodicOperations.length + plan.repairOperations.length}</p>
+                          <p>Стоимость: {plan.totalEstimatedCost.toLocaleString()} ₽</p>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
       
@@ -247,32 +315,56 @@ export default function Home() {
             <CardTitle className="text-lg">Мой автопарк</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {cars.map((car) => (
-                <Link key={car.id} to={`/car/${car.id}`}>
-                  <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center space-x-4">
-                      <img 
-                        src={car.image} 
-                        alt={`${car.brand} ${car.model}`}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-semibold">{car.name}</h3>
-                          <Badge className={getStatusColor(getCarStatus(car.id))}>
-                            {getStatusText(getCarStatus(car.id))}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600">{car.brand} {car.model} ({car.year})</p>
-                        <p className="text-xs text-gray-500">Пробег: {car.mileage.toLocaleString()} км</p>
-                        <p className="text-xs text-gray-500">Следующее ТО: {car.nextService}</p>
-                      </div>
-                    </div>
-                  </div>
+            {cars.length === 0 ? (
+              <div className="text-center py-8">
+                <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 mb-4">У вас пока нет добавленных автомобилей</p>
+                <Link to="/add-car">
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Добавить первый автомобиль
+                  </Button>
                 </Link>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cars.map((car) => {
+                  const statusInfo = getCarStatusInfo(car.id)
+                  return (
+                    <Link key={car.id} to={`/car/${car.id}`}>
+                      <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-4">
+                          <img 
+                            src={car.image || '/img/car-by-deault.png'} 
+                            alt={`${car.brand} ${car.model}`}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <h3 className="font-semibold">{car.name}</h3>
+                              <Badge className={statusInfo.statusColor}>
+                                {statusInfo.statusText}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-600">{car.brand} {car.model} ({car.year})</p>
+                            <p className="text-xs text-gray-500">Пробег: {car.mileage.toLocaleString()} км</p>
+                            {car.nextService && (
+                              <p className="text-xs text-gray-500">Следующее ТО: {car.nextService}</p>
+                            )}
+                            {statusInfo.alertCount > 0 && (
+                              <p className="text-xs text-orange-600">
+                                Активных уведомлений: {statusInfo.alertCount}
+                                {statusInfo.criticalAlertCount > 0 && ` (критичных: ${statusInfo.criticalAlertCount})`}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
