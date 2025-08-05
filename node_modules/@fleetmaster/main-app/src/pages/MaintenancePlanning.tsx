@@ -24,7 +24,12 @@ import {
   FileText,
   Car as CarIcon,
   Settings,
-  CheckCircle
+  CheckCircle,
+  Store,
+  Trash2,
+  Edit,
+  Star,
+  X
 } from 'lucide-react'
 
 // Maintenance regulations from reglament.json
@@ -103,6 +108,14 @@ const maintenanceRegulations = [
   }
 ]
 
+interface ServiceShop {
+  id: string
+  name: string
+  contacts: string
+  rating: number
+  createdAt: string
+}
+
 interface MaintenancePlan {
   id: string
   carId: string
@@ -149,6 +162,17 @@ export default function MaintenancePlanning() {
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
   const [autoSaveInterval, setAutoSaveInterval] = useState<NodeJS.Timeout | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Service shops state
+  const [serviceShops, setServiceShops] = useState<ServiceShop[]>([])
+  const [isServiceShopsOpen, setIsServiceShopsOpen] = useState(false)
+  const [isAddEditShopOpen, setIsAddEditShopOpen] = useState(false)
+  const [editingShopId, setEditingShopId] = useState<string | null>(null)
+  const [shopName, setShopName] = useState('')
+  const [shopContacts, setShopContacts] = useState('')
+  const [shopRating, setShopRating] = useState(5)
+  const [isDeleteShopOpen, setIsDeleteShopOpen] = useState(false)
+  const [shopToDelete, setShopToDelete] = useState<ServiceShop | null>(null)
 
   // Cars are now loaded from DataService
 
@@ -170,6 +194,10 @@ export default function MaintenancePlanning() {
       const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
       const activeAlerts = savedAlerts.filter((alert: any) => alert.status === 'active')
       setUserAlerts(activeAlerts)
+
+      // Load service shops
+      const savedShops = JSON.parse(localStorage.getItem('service-shops') || '[]')
+      setServiceShops(savedShops)
 
     } catch (error) {
       console.error('Error loading data:', error)
@@ -629,6 +657,80 @@ export default function MaintenancePlanning() {
     }
   }
 
+  // Service shops CRUD operations
+  const openAddShopDialog = () => {
+    setEditingShopId(null)
+    setShopName('')
+    setShopContacts('')
+    setShopRating(5)
+    setIsAddEditShopOpen(true)
+  }
+
+  const openEditShopDialog = (shop: ServiceShop) => {
+    setEditingShopId(shop.id)
+    setShopName(shop.name)
+    setShopContacts(shop.contacts)
+    setShopRating(shop.rating)
+    setIsAddEditShopOpen(true)
+  }
+
+  const saveServiceShop = () => {
+    if (!shopName.trim() || !shopContacts.trim()) {
+      alert('Заполните название и контакты сервиса')
+      return
+    }
+
+    const shopData: ServiceShop = {
+      id: editingShopId || Date.now().toString(),
+      name: shopName.trim(),
+      contacts: shopContacts.trim(),
+      rating: shopRating,
+      createdAt: editingShopId 
+        ? serviceShops.find(s => s.id === editingShopId)?.createdAt || new Date().toISOString()
+        : new Date().toISOString()
+    }
+
+    let updatedShops
+    if (editingShopId) {
+      updatedShops = serviceShops.map(shop => 
+        shop.id === editingShopId ? shopData : shop
+      )
+    } else {
+      updatedShops = [...serviceShops, shopData]
+    }
+
+    setServiceShops(updatedShops)
+    localStorage.setItem('service-shops', JSON.stringify(updatedShops))
+    setIsAddEditShopOpen(false)
+    
+    // Reset form
+    setEditingShopId(null)
+    setShopName('')
+    setShopContacts('')
+    setShopRating(5)
+  }
+
+  const openDeleteShopDialog = (shop: ServiceShop) => {
+    setShopToDelete(shop)
+    setIsDeleteShopOpen(true)
+  }
+
+  const confirmDeleteShop = () => {
+    if (!shopToDelete) return
+
+    const updatedShops = serviceShops.filter(shop => shop.id !== shopToDelete.id)
+    setServiceShops(updatedShops)
+    localStorage.setItem('service-shops', JSON.stringify(updatedShops))
+    
+    // If this shop was selected as service provider, clear it
+    if (serviceProvider === shopToDelete.name) {
+      setServiceProvider('')
+    }
+    
+    setIsDeleteShopOpen(false)
+    setShopToDelete(null)
+  }
+
   const selectedCar = cars.find(c => c.id === selectedCarId)
   const selectedPeriodicCount = periodicItems.filter(item => item.selected).length
   const selectedRepairCount = repairItems.filter(item => item.selected).length
@@ -650,21 +752,32 @@ export default function MaintenancePlanning() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="px-4 py-3">
-          <div className="flex items-center space-x-3">
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900 flex items-center">
-                <Calendar className="h-5 w-5 mr-2 text-blue-600" />
-                {editingPlanId ? 'Редактирование плана ТО' : 'Планирование ТО'}
-              </h1>
-              <p className="text-sm text-gray-600">
-                {editingPlanId ? 'Редактирование существующего плана обслуживания' : 'Составление плана периодического и ремонтного обслуживания'}
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Link to="/">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 flex items-center">
+                  <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+                  {editingPlanId ? 'Редактирование плана ТО' : 'Планирование ТО'}
+                </h1>
+                <p className="text-sm text-gray-600">
+                  {editingPlanId ? 'Редактирование существующего плана обслуживания' : 'Составление плана периодического и ремонтного обслуживания'}
+                </p>
+              </div>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsServiceShopsOpen(true)}
+              className="flex items-center space-x-2"
+            >
+              <Store className="h-4 w-4" />
+              <span className="hidden sm:inline">Сервисы</span>
+            </Button>
           </div>
         </div>
       </header>
@@ -757,12 +870,90 @@ export default function MaintenancePlanning() {
 
             <div>
               <Label htmlFor="serviceProvider">Планируемый исполнитель</Label>
-              <Input
-                id="serviceProvider"
-                value={serviceProvider}
-                onChange={(e) => setServiceProvider(e.target.value)}
-                placeholder="Название автосервиса..."
-              />
+              {serviceShops.length === 0 ? (
+                <div className="border rounded-md p-3 bg-gray-50 text-center">
+                  <p className="text-sm text-gray-600 mb-2">Нет сохраненных сервисов</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsServiceShopsOpen(true)}
+                    className="text-xs"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Добавить сервис
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Select 
+                    value={serviceProvider} 
+                    onValueChange={(shopName) => {
+                      setServiceProvider(shopName)
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите сервис из списка..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {serviceShops.map((shop) => (
+                        <SelectItem key={shop.id} value={shop.name}>
+                          <div className="flex items-center justify-between w-full">
+                            <span>{shop.name}</span>
+                            <div className="flex items-center ml-2">
+                              {[...Array(5)].map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={`h-3 w-3 ${i < shop.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {(() => {
+                    const selectedShop = serviceProvider ? serviceShops.find(shop => shop.name === serviceProvider) : null
+                    return selectedShop ? (
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h4 className="font-medium text-blue-900">{selectedShop.name}</h4>
+                              <div className="flex items-center">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star 
+                                    key={i} 
+                                    className={`h-4 w-4 ${i < selectedShop.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                                  />
+                                ))}
+                                <span className="ml-1 text-sm text-gray-600">({selectedShop.rating}/5)</span>
+                              </div>
+                            </div>
+                            <p className="text-sm text-blue-800 mb-1">
+                              <strong>Контакты:</strong> {selectedShop.contacts}
+                            </p>
+                            <p className="text-xs text-blue-600">
+                              Добавлен: {new Date(selectedShop.createdAt).toLocaleDateString('ru-RU')}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
+                            onClick={() => setServiceProvider('')}
+                            title="Очистить выбор"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null
+                  })()}
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -1040,6 +1231,179 @@ export default function MaintenancePlanning() {
                 </Button>
                 <Button onClick={confirmSendToMaintenance} disabled={isSendingToMaintenance} className="bg-orange-600 hover:bg-orange-700">
                   {isSendingToMaintenance ? 'Отправка...' : 'Да, отправить на обслуживание'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Service Shops List Dialog */}
+        <Dialog open={isServiceShopsOpen} onOpenChange={setIsServiceShopsOpen}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <div className="flex items-center justify-between">
+                <DialogTitle className="flex items-center">
+                  <Store className="h-5 w-5 mr-2" />
+                  Управление сервисами ({serviceShops.length})
+                </DialogTitle>
+                <Button onClick={openAddShopDialog} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Добавить сервис
+                </Button>
+              </div>
+            </DialogHeader>
+            <div className="space-y-4">
+              {serviceShops.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Store className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>Нет сохраненных сервисов</p>
+                  <p className="text-sm">Добавьте автосервисы для быстрого выбора при планировании ТО</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {serviceShops.map((shop) => (
+                    <div key={shop.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h4 className="font-medium text-lg">{shop.name}</h4>
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={`h-4 w-4 ${i < shop.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                                />
+                              ))}
+                              <span className="ml-1 text-sm text-gray-600">({shop.rating}/5)</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{shop.contacts}</p>
+                          <p className="text-xs text-gray-500">
+                            Добавлен: {new Date(shop.createdAt).toLocaleDateString('ru-RU')}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => openEditShopDialog(shop)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => openDeleteShopDialog(shop)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add/Edit Service Shop Dialog */}
+        <Dialog open={isAddEditShopOpen} onOpenChange={setIsAddEditShopOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editingShopId ? 'Редактирование сервиса' : 'Добавление нового сервиса'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="shopName">Название сервиса *</Label>
+                <Input
+                  id="shopName"
+                  value={shopName}
+                  onChange={(e) => setShopName(e.target.value)}
+                  placeholder="Название автосервиса..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="shopContacts">Контактная информация *</Label>
+                <Textarea
+                  id="shopContacts"
+                  value={shopContacts}
+                  onChange={(e) => setShopContacts(e.target.value)}
+                  placeholder="Телефон, адрес, email..."
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="shopRating">Рейтинг</Label>
+                <div className="flex items-center space-x-2">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => setShopRating(rating)}
+                      className="focus:outline-none"
+                    >
+                      <Star 
+                        className={`h-6 w-6 cursor-pointer transition-colors ${
+                          rating <= shopRating ? 'text-yellow-400 fill-current' : 'text-gray-300 hover:text-yellow-200'
+                        }`} 
+                      />
+                    </button>
+                  ))}
+                  <span className="ml-2 text-sm text-gray-600">({shopRating}/5)</span>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setIsAddEditShopOpen(false)}>
+                  Отмена
+                </Button>
+                <Button onClick={saveServiceShop}>
+                  {editingShopId ? 'Обновить' : 'Добавить'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Service Shop Confirmation Dialog */}
+        <Dialog open={isDeleteShopOpen} onOpenChange={setIsDeleteShopOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Подтверждение удаления</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="h-8 w-8 text-red-500" />
+                <div>
+                  <p className="font-medium">Удалить сервис?</p>
+                  <p className="text-sm text-gray-600">
+                    Сервис "{shopToDelete?.name}" будет удален навсегда
+                  </p>
+                </div>
+              </div>
+              {shopToDelete && (
+                <div className="bg-gray-50 p-3 rounded">
+                  <p className="text-sm font-medium mb-1">{shopToDelete.name}</p>
+                  <p className="text-xs text-gray-600">{shopToDelete.contacts}</p>
+                  <div className="flex items-center mt-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`h-3 w-3 ${i < shopToDelete.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsDeleteShopOpen(false)}>
+                  Отмена
+                </Button>
+                <Button onClick={confirmDeleteShop} className="bg-red-600 hover:bg-red-700">
+                  Да, удалить
                 </Button>
               </div>
             </div>
