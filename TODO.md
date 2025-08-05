@@ -11,14 +11,14 @@ OK READY There is a car inconsistency through all pages. Pls analyse it and fix 
 ## FEAT IT! ##
 
 1. Create a ready-to-work cars list
-2. Add car editing capability
+
 3. maintenance-planning: Collapse Периодическое обслуживание to 4 first due-out and due-soon entries, and add View all capability to expand all entries
 OK READY Add a service-shops feature:
     4.1 Create a service-shops list. Columns: Name, Contacts, Rating, Actions (Edit, Delete for whole entry). Attach to table the Add-new functionality
     4.2 Create a button to service-shops list in maintenance-planning header
     4.3 Pull entries from the service-shops list to Планируемый исполнитель
     4.4 All change state operations - with standard project-style confirmation
-5.maintenance-planning: add export-to-pdf funcionality.
+OK READY maintenance-planning: add export-to-pdf funcionality.
     5.1 Add html2pdf.js to project
     5.2 Add export button in maintenance-planning between Сохранить план и Отправить на обслуживание
     5.3 When export, save the pdf localy via standart system window
