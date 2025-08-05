@@ -97,6 +97,12 @@ export default function Home() {
     }
   }, [])
 
+  useEffect(() => {
+    if (isPlansDialogOpen) {
+      DataService.getMaintenancePlans().then(setSavedPlans)
+    }
+  }, [isPlansDialogOpen])
+
   // Helper function to get car status info
   const getCarStatusInfo = (carId: string): CarStatusInfo => {
     return carStatusMap.get(carId) || {
@@ -294,7 +300,7 @@ export default function Home() {
                           </div>
                           <div className="flex items-center space-x-2">
                             <Badge>{plan.status === 'draft' ? 'Черновик' : 'Запланировано'}</Badge>
-                            <Link to="/maintenance-planning">
+                            <Link to={`/maintenance-planning/${plan.id}`}>
                               <Button 
                                 size="sm" 
                                 variant="outline"

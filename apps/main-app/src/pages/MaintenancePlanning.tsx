@@ -2,7 +2,7 @@
  * Maintenance planning and scheduling page combining periodical and repair work
  */
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
@@ -121,6 +121,7 @@ interface ServiceShop {
 
 
 export default function MaintenancePlanning() {
+  const { planId } = useParams()
   const [selectedCarId, setSelectedCarId] = useState('')
   const [plannedDate, setPlannedDate] = useState('')
   const [plannedCompletionDate, setPlannedCompletionDate] = useState('')
@@ -197,6 +198,18 @@ export default function MaintenancePlanning() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (planId && savedPlans.length > 0 && cars.length > 0) {
+      const planToLoad = savedPlans.find(p => p.id === planId)
+      if (planToLoad) {
+        loadPlanForEditing(planToLoad)
+      } else {
+        console.warn(`Plan with ID ${planId} not found.`)
+        alert(`План с ID ${planId} не найден. Возможно, он был удален.`)
+      }
+    }
+  }, [planId, savedPlans, cars])
 
   useEffect(() => {
     // Reset autosave interval when form data changes
@@ -299,18 +312,18 @@ export default function MaintenancePlanning() {
     // Load periodic operations
     const selectedCar = cars.find(c => c.id === plan.carId)
     if (selectedCar) {
-              const neededMaintenance = maintenanceRegulations.map(regulation => {
-          const planOperation = plan.periodicOperations.find(op => op.operation === regulation.operation)
-          const intervalMileage = parseInt(regulation.mileage)
-          const intervalMonths = parseInt(regulation.period)
-          
-          const mileageSinceLastService = selectedCar.mileage % intervalMileage
-          const mileageUntilNext = intervalMileage - mileageSinceLastService
-          
-          const lastServiceDate = selectedCar.lastService ? new Date(selectedCar.lastService) : new Date(selectedCar.createdAt)
-          const monthsSinceService = Math.floor((Date.now() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
-          const monthsUntilNext = intervalMonths - (monthsSinceService % intervalMonths)
+      const neededMaintenance = maintenanceRegulations.map(regulation => {
+        const planOperation = plan.periodicOperations.find(op => op.operation === regulation.operation)
+        const intervalMileage = parseInt(regulation.mileage)
+        const intervalMonths = parseInt(regulation.period)
         
+        const mileageSinceLastService = selectedCar.mileage % intervalMileage
+        const mileageUntilNext = intervalMileage - mileageSinceLastService
+        
+        const lastServiceDate = selectedCar.lastService ? new Date(selectedCar.lastService) : new Date(selectedCar.createdAt)
+        const monthsSinceService = Math.floor((Date.now() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
+        const monthsUntilNext = intervalMonths - (monthsSinceService % intervalMonths)
+      
         let priority: 'high' | 'medium' | 'low' = 'low'
         if (mileageUntilNext <= 2000 || monthsUntilNext <= 1) {
           priority = 'high'
@@ -332,6 +345,11 @@ export default function MaintenancePlanning() {
         }
       })
       setPeriodicItems(neededMaintenance)
+    } else {
+      // If car is not found in current cars list, show a warning
+      console.warn(`Car with ID ${plan.carId} not found in current cars list`)
+      alert(`Автомобиль "${plan.carName}" не найден в текущем списке. Возможно, он был удален.`)
+      return
     }
 
     // Load repair operations
@@ -400,8 +418,7 @@ export default function MaintenancePlanning() {
     const selectedCar = cars.find(c => c.id === selectedCarId)
     
     try {
-      const planData: MaintenancePlan = {
-        id: editingPlanId || Date.now().toString(),
+      const planData = {
         carId: selectedCarId,
         carName: selectedCar?.name || 'Неизвестный автомобиль',
         plannedDate,
@@ -424,37 +441,50 @@ export default function MaintenancePlanning() {
         totalEstimatedCost: calculateTotalCost(),
         serviceProvider,
         notes: planNotes,
-        status: 'draft',
-        createdAt: editingPlanId 
-          ? savedPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()
-          : new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        status: 'draft' as const
       }
 
-      let updatedPlans
+      // Use DataService to save or update the plan
       if (editingPlanId) {
         // Update existing plan
-        updatedPlans = savedPlans.map(plan => 
-          plan.id === editingPlanId ? planData : plan
-        )
+        DataService.updateMaintenancePlan(editingPlanId, planData).then((updatedPlan) => {
+          const updatedPlans = savedPlans.map(plan => 
+            plan.id === editingPlanId ? updatedPlan : plan
+          )
+          setSavedPlans(updatedPlans)
+
+          // Clear autosave interval
+          if (autoSaveInterval) {
+            clearInterval(autoSaveInterval)
+            setAutoSaveInterval(null)
+          }
+
+          alert('План обслуживания обновлен!')
+        }).catch((error) => {
+          console.error('Error updating maintenance plan:', error)
+          alert('Ошибка при обновлении плана. Попробуйте еще раз.')
+        })
       } else {
         // Create new plan
-        updatedPlans = [...savedPlans, planData]
-      }
-      
-      setSavedPlans(updatedPlans)
-      localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
+        DataService.saveMaintenancePlan(planData).then((savedPlan) => {
+          const updatedPlans = [...savedPlans, savedPlan]
+          setSavedPlans(updatedPlans)
 
-      // Clear autosave interval
-      if (autoSaveInterval) {
-        clearInterval(autoSaveInterval)
-        setAutoSaveInterval(null)
-      }
+          // Clear autosave interval
+          if (autoSaveInterval) {
+            clearInterval(autoSaveInterval)
+            setAutoSaveInterval(null)
+          }
 
-      alert(`План обслуживания ${editingPlanId ? 'обновлен' : 'сохранен'}!`)
+          alert('План обслуживания сохранен!')
+        }).catch((error) => {
+          console.error('Error saving maintenance plan:', error)
+          alert('Ошибка при сохранении плана. Попробуйте еще раз.')
+        })
+      }
     } catch (error) {
-      console.error('Error saving maintenance plan:', error)
-      alert('Ошибка при сохранении плана. Попробуйте еще раз.')
+      console.error('Error preparing maintenance plan:', error)
+      alert('Ошибка при подготовке плана. Попробуйте еще раз.')
     }
   }
 
@@ -489,8 +519,7 @@ export default function MaintenancePlanning() {
     const selectedCar = cars.find(c => c.id === selectedCarId)
     
     try {
-      const planData: MaintenancePlan = {
-        id: editingPlanId || Date.now().toString(),
+      const planData = {
         carId: selectedCarId,
         carName: selectedCar?.name || 'Неизвестный автомобиль',
         plannedDate,
@@ -513,37 +542,54 @@ export default function MaintenancePlanning() {
         totalEstimatedCost: calculateTotalCost(),
         serviceProvider,
         notes: planNotes,
-        status: 'draft',
-        createdAt: editingPlanId 
-          ? savedPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()
-          : new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        status: 'draft' as const
       }
 
-      let updatedPlans
+      // Use DataService to save or update the plan
       if (editingPlanId) {
-        updatedPlans = savedPlans.map(plan => 
-          plan.id === editingPlanId ? planData : plan
-        )
+        // Update existing plan
+        DataService.updateMaintenancePlan(editingPlanId, planData).then((updatedPlan) => {
+          const updatedPlans = savedPlans.map(plan => 
+            plan.id === editingPlanId ? updatedPlan : plan
+          )
+          setSavedPlans(updatedPlans)
+
+          if (autoSaveInterval) {
+            clearInterval(autoSaveInterval)
+            setAutoSaveInterval(null)
+          }
+
+          alert('План обслуживания обновлен!')
+          
+          // Close after saving
+          handleCloseWithoutSaving()
+        }).catch((error) => {
+          console.error('Error updating maintenance plan:', error)
+          alert('Ошибка при обновлении плана. Попробуйте еще раз.')
+        })
       } else {
-        updatedPlans = [...savedPlans, planData]
-      }
-      
-      setSavedPlans(updatedPlans)
-      localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
+        // Create new plan
+        DataService.saveMaintenancePlan(planData).then((savedPlan) => {
+          const updatedPlans = [...savedPlans, savedPlan]
+          setSavedPlans(updatedPlans)
 
-      if (autoSaveInterval) {
-        clearInterval(autoSaveInterval)
-        setAutoSaveInterval(null)
-      }
+          if (autoSaveInterval) {
+            clearInterval(autoSaveInterval)
+            setAutoSaveInterval(null)
+          }
 
-      alert(`План обслуживания ${editingPlanId ? 'обновлен' : 'сохранен'}!`)
-      
-      // Close after saving
-      handleCloseWithoutSaving()
+          alert('План обслуживания сохранен!')
+          
+          // Close after saving
+          handleCloseWithoutSaving()
+        }).catch((error) => {
+          console.error('Error saving maintenance plan:', error)
+          alert('Ошибка при сохранении плана. Попробуйте еще раз.')
+        })
+      }
     } catch (error) {
-      console.error('Error saving maintenance plan:', error)
-      alert('Ошибка при сохранении плана. Попробуйте еще раз.')
+      console.error('Error preparing maintenance plan:', error)
+      alert('Ошибка при подготовке плана. Попробуйте еще раз.')
     }
   }
 
@@ -564,8 +610,7 @@ export default function MaintenancePlanning() {
     const selectedCar = cars.find(c => c.id === selectedCarId)
     
     try {
-      const planData: MaintenancePlan = {
-        id: editingPlanId || `draft_${Date.now()}`,
+      const planData = {
         carId: selectedCarId,
         carName: selectedCar?.name || 'Неизвестный автомобиль',
         plannedDate,
@@ -588,31 +633,34 @@ export default function MaintenancePlanning() {
         totalEstimatedCost: calculateTotalCost(),
         serviceProvider,
         notes: planNotes,
-        status: 'draft',
-        createdAt: editingPlanId 
-          ? savedPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()
-          : new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        status: 'draft' as const
       }
 
-      let updatedPlans
-      if (editingPlanId || savedPlans.find(p => p.id === planData.id)) {
-        // Update existing plan (including drafts)
-        updatedPlans = savedPlans.map(plan => 
-          plan.id === planData.id ? planData : plan
-        )
+      // Use DataService to save or update the draft
+      if (editingPlanId) {
+        // Update existing draft
+        DataService.updateMaintenancePlan(editingPlanId, planData).then((updatedPlan) => {
+          const updatedPlans = savedPlans.map(plan => 
+            plan.id === editingPlanId ? updatedPlan : plan
+          )
+          setSavedPlans(updatedPlans)
+          console.log('Draft auto-updated')
+        }).catch((error) => {
+          console.error('Error auto-updating draft:', error)
+        })
       } else {
         // Create new draft
-        updatedPlans = [...savedPlans, planData]
-        setEditingPlanId(planData.id)
+        DataService.saveMaintenancePlan(planData).then((savedPlan) => {
+          const updatedPlans = [...savedPlans, savedPlan]
+          setSavedPlans(updatedPlans)
+          setEditingPlanId(savedPlan.id)
+          console.log('Draft auto-saved')
+        }).catch((error) => {
+          console.error('Error auto-saving draft:', error)
+        })
       }
-      
-      setSavedPlans(updatedPlans)
-      localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
-      
-      console.log('Draft auto-saved')
     } catch (error) {
-      console.error('Error auto-saving draft:', error)
+      console.error('Error preparing draft data:', error)
     }
   }
 
@@ -681,9 +729,8 @@ export default function MaintenancePlanning() {
       const updatedMaintenance = [...existingMaintenance, maintenanceEntry]
       localStorage.setItem('in-maintenance', JSON.stringify(updatedMaintenance))
 
-      // Save the plan as well
-      const newPlan: MaintenancePlan = {
-        id: maintenancePlan.id,
+      // Save the plan as well using DataService
+      const planData = {
         carId: selectedCarId,
         carName: selectedCar?.name || 'Неизвестный автомобиль',
         plannedDate,
@@ -694,14 +741,15 @@ export default function MaintenancePlanning() {
         totalEstimatedCost: maintenancePlan.totalEstimatedCost,
         serviceProvider,
         notes: planNotes,
-        status: 'scheduled',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        status: 'scheduled' as const
       }
 
-      const updatedPlans = [...savedPlans, newPlan]
-      setSavedPlans(updatedPlans)
-      localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
+      DataService.saveMaintenancePlan(planData).then((savedPlan) => {
+        const updatedPlans = [...savedPlans, savedPlan]
+        setSavedPlans(updatedPlans)
+      }).catch((error) => {
+        console.error('Error saving maintenance plan:', error)
+      })
 
       // Clear autosave interval
       if (autoSaveInterval) {
@@ -803,50 +851,6 @@ export default function MaintenancePlanning() {
   }
 
   const exportToPDF = async () => {
-    console.log('=== PDF EXPORT DEBUG START ===')
-    console.log('selectedCarId:', selectedCarId)
-    console.log('cars array:', cars)
-    console.log('periodicItems:', periodicItems)
-    console.log('repairItems:', repairItems)
-    
-    // First, let's try to create a very simple test element
-    try {
-      const testElement = document.createElement('div')
-      testElement.innerHTML = 'TEST CONTENT - This should be visible'
-      testElement.style.cssText = `
-        position: fixed;
-        top: 100px;
-        left: 100px;
-        width: 300px;
-        height: 200px;
-        background: red;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        padding: 20px;
-        z-index: 99999;
-        border: 5px solid yellow;
-      `
-      
-      document.body.appendChild(testElement)
-      console.log('Test element added to DOM')
-      
-      const testConfirm = confirm('Do you see a red box with yellow border and "TEST CONTENT"? This tests basic DOM manipulation.')
-      
-      document.body.removeChild(testElement)
-      
-      if (!testConfirm) {
-        alert('Basic DOM test failed. There might be a browser or styling issue.')
-        return
-      }
-      
-    } catch (error) {
-      console.error('Basic DOM test failed:', error)
-      alert('Basic DOM test failed: ' + error.message)
-      return
-    }
-
-    // Now let's check the data
     if (!selectedCarId) {
       alert('Выберите автомобиль для экспорта плана')
       return
@@ -861,48 +865,41 @@ export default function MaintenancePlanning() {
     const selectedPeriodicOps = periodicItems.filter(item => item.selected)
     const selectedRepairOps = repairItems.filter(item => item.selected)
     
-    console.log('selectedCar:', selectedCar)
-    console.log('selectedPeriodicOps:', selectedPeriodicOps)
-    console.log('selectedRepairOps:', selectedRepairOps)
-    
     if (selectedPeriodicOps.length === 0 && selectedRepairOps.length === 0) {
       alert('Выберите хотя бы одну операцию для экспорта')
       return
     }
 
-    // Create content step by step
     try {
-      console.log('Creating PDF content element...')
-      
       const pdfElement = document.createElement('div')
       pdfElement.id = 'pdf-export-content'
       
-      // Very simple, highly visible styling
+      // Clean styling for PDF
       pdfElement.style.cssText = `
-        position: fixed !important;
-        top: 50px !important;
-        left: 50px !important;
-        width: 600px !important;
-        height: auto !important;
-        background: white !important;
-        color: black !important;
-        font-family: Arial, sans-serif !important;
-        font-size: 14px !important;
-        padding: 20px !important;
-        border: 5px solid red !important;
-        z-index: 999999 !important;
-        overflow: visible !important;
+        width: 210mm;
+        min-height: 297mm;
+        background: white;
+        color: black;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        padding: 10mm;
+        margin: 0;
+        box-sizing: border-box;
       `
       
-      // Build content string step by step
-      let contentHTML = '<div style="background: white; color: black; padding: 10px;">'
-      contentHTML += '<h1 style="color: black;">План технического обслуживания</h1>'
-      contentHTML += `<h2 style="color: black;">${selectedCar.name} - ${selectedCar.brand} ${selectedCar.model}</h2>`
+      // Build content
+      let contentHTML = '<div style="background: white; color: black;">'
+      contentHTML += '<h1 style="color: black; margin-bottom: 20px;">План технического обслуживания</h1>'
+      contentHTML += `<h2 style="color: black; margin-bottom: 15px;">${selectedCar.name} - ${selectedCar.brand} ${selectedCar.model}</h2>`
       
       contentHTML += '<div style="border: 1px solid black; padding: 10px; margin: 10px 0; background: white;">'
       contentHTML += '<h3 style="color: black;">Основная информация</h3>'
       contentHTML += `<p style="color: black;">Дата начала: ${plannedDate || 'Не указана'}</p>`
       contentHTML += `<p style="color: black;">Дата завершения: ${plannedCompletionDate || 'Не указана'}</p>`
+      contentHTML += `<p style="color: black;">Плановый пробег: ${plannedMileage || 'Не указан'} км</p>`
+      if (serviceProvider) {
+        contentHTML += `<p style="color: black;">Сервис: ${serviceProvider}</p>`
+      }
       contentHTML += '</div>'
       
       if (selectedPeriodicOps.length > 0) {
@@ -911,6 +908,12 @@ export default function MaintenancePlanning() {
           contentHTML += `<div style="border: 1px solid gray; padding: 8px; margin: 5px 0; background: #f9f9f9;">`
           contentHTML += `<strong style="color: black;">${index + 1}. ${item.operation || 'Неизвестная операция'}</strong><br/>`
           contentHTML += `<span style="color: black;">Приоритет: ${item.priority || 'Не указан'}</span>`
+          if (item.estimatedCost > 0) {
+            contentHTML += `<br/><span style="color: black;">Стоимость: ${item.estimatedCost.toLocaleString()} ₽</span>`
+          }
+          if (item.planNotes) {
+            contentHTML += `<br/><span style="color: black;">Примечания: ${item.planNotes}</span>`
+          }
           contentHTML += '</div>'
         })
       }
@@ -921,167 +924,61 @@ export default function MaintenancePlanning() {
           contentHTML += `<div style="border: 1px solid gray; padding: 8px; margin: 5px 0; background: #f9f9f9;">`
           contentHTML += `<strong style="color: black;">${index + 1}. ${item.description || 'Неизвестная работа'}</strong><br/>`
           contentHTML += `<span style="color: black;">Приоритет: ${item.priority || 'Не указан'}</span>`
+          if (item.estimatedCost > 0) {
+            contentHTML += `<br/><span style="color: black;">Стоимость: ${item.estimatedCost.toLocaleString()} ₽</span>`
+          }
+          if (item.planNotes) {
+            contentHTML += `<br/><span style="color: black;">Примечания: ${item.planNotes}</span>`
+          }
           contentHTML += '</div>'
         })
       }
       
-      contentHTML += '</div>'
-      
-      console.log('Content HTML length:', contentHTML.length)
-      console.log('Content preview:', contentHTML.substring(0, 200))
-      
-      pdfElement.innerHTML = contentHTML
-      
-      console.log('Adding element to DOM...')
-      document.body.appendChild(pdfElement)
-      
-      console.log('Element added. Checking if visible...')
-      console.log('Element offsetWidth:', pdfElement.offsetWidth)
-      console.log('Element offsetHeight:', pdfElement.offsetHeight)
-      console.log('Element style:', pdfElement.style.cssText)
-      
-      // Wait a moment
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const userConfirm = confirm('Now do you see the red-bordered content box with maintenance plan data?')
-      
-      if (!userConfirm) {
-        console.log('User still cannot see content. Cleaning up...')
-        document.body.removeChild(pdfElement)
-        alert('Content generation failed. Check browser console for details.')
-        return
+      if (planNotes) {
+        contentHTML += '<div style="border: 1px solid black; padding: 10px; margin: 10px 0; background: white;">'
+        contentHTML += '<h3 style="color: black;">Дополнительные заметки</h3>'
+        contentHTML += `<p style="color: black;">${planNotes}</p>`
+        contentHTML += '</div>'
       }
       
-      // If user can see it, proceed with PDF generation
-      alert('Great! Content is visible. Now trying PDF generation...')
+      const totalCost = calculateTotalCost()
+      if (totalCost > 0) {
+        contentHTML += '<div style="border: 2px solid green; padding: 10px; margin: 10px 0; background: #f0fff0;">'
+        contentHTML += '<h3 style="color: black;">Сводка по стоимости</h3>'
+        contentHTML += `<p style="color: black;"><strong>Общая стоимость: ${totalCost.toLocaleString()} ₽</strong></p>`
+        contentHTML += '</div>'
+      }
       
-      // Move element to a better position for PDF capture
-      pdfElement.style.cssText = `
-        position: static !important;
-        width: 800px !important;
-        height: auto !important;
-        background: white !important;
-        color: black !important;
-        font-family: Arial, sans-serif !important;
-        font-size: 14px !important;
-        padding: 20px !important;
-        margin: 0 !important;
-        border: none !important;
-        z-index: 1 !important;
-        visibility: visible !important;
-        display: block !important;
-      `
+      contentHTML += '</div>'
       
-      // Wait for reflow
-      await new Promise(resolve => setTimeout(resolve, 500))
+      pdfElement.innerHTML = contentHTML
+      document.body.appendChild(pdfElement)
       
-      console.log('Element repositioned for PDF capture')
-      console.log('New element dimensions:', pdfElement.offsetWidth, 'x', pdfElement.offsetHeight)
-      
-      // Try multiple PDF generation approaches
-      try {
-        console.log('Attempting PDF generation method 1...')
-        
       const options = {
-          margin: [10, 10, 10, 10],
+        margin: 10,
         filename: `План_ТО_${selectedCar.name.replace(/[^a-zA-Z0-9а-яА-Я\s]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
-          image: { 
-            type: 'jpeg', 
-            quality: 1.0 
-          },
+        image: { type: 'png', quality: 0.98 },
         html2canvas: { 
-            scale: 2,
+          scale: 1,
           backgroundColor: '#ffffff',
-          logging: true,
-            useCORS: true,
-            allowTaint: true,
-            scrollX: 0,
-            scrollY: 0,
-            width: pdfElement.offsetWidth,
-            height: pdfElement.offsetHeight
+          logging: false
         },
         jsPDF: { 
-            unit: 'mm', 
+          unit: 'mm', 
           format: 'a4', 
           orientation: 'portrait'
         }
       }
 
-        // Generate PDF with detailed logging
-        const worker = html2pdf().set(options).from(pdfElement)
-        
-        const pdf = await worker.toPdf().get('pdf')
-        console.log('PDF generated successfully')
-        console.log('PDF page count:', pdf.internal.pages.length - 1)
-        console.log('PDF page dimensions:', pdf.internal.pageSize.getWidth(), 'x', pdf.internal.pageSize.getHeight())
-        
-        // Check if PDF has content
-        const pdfData = pdf.output('datauristring')
-        console.log('PDF data length:', pdfData.length)
-        
-        if (pdfData.length < 10000) {
-          throw new Error('PDF appears to be empty (too small data size)')
-        }
-        
-        // Save the PDF
-        await worker.save()
-        console.log('PDF saved successfully')
-        
-      } catch (pdfError) {
-        console.error('PDF generation method 1 failed:', pdfError)
-        
-        // Try alternative method - create a new clean element
-        console.log('Trying PDF generation method 2...')
-        
-        const cleanElement = document.createElement('div')
-        cleanElement.innerHTML = pdfElement.innerHTML
-        cleanElement.style.cssText = `
-          width: 210mm;
-          min-height: 297mm;
-          background: white;
-          color: black;
-          font-family: Arial, sans-serif;
-          font-size: 12px;
-          padding: 10mm;
-          margin: 0;
-          box-sizing: border-box;
-        `
-        
-        // Replace current element
-        document.body.removeChild(pdfElement)
-        document.body.appendChild(cleanElement)
-        
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        const simpleOptions = {
-          margin: 10,
-          filename: `План_ТО_${new Date().toISOString().split('T')[0]}.pdf`,
-          image: { type: 'png', quality: 0.98 },
-          html2canvas: { 
-            scale: 1,
-            backgroundColor: '#ffffff',
-            logging: false
-          },
-          jsPDF: { 
-            unit: 'mm', 
-            format: 'a4', 
-            orientation: 'portrait'
-          }
-        }
-        
-        await html2pdf().set(simpleOptions).from(cleanElement).save()
-        document.body.removeChild(cleanElement)
-        console.log('PDF method 2 completed')
-        return // Exit successfully
-      }
+      await html2pdf().set(options).from(pdfElement).save()
       
       // Cleanup
       document.body.removeChild(pdfElement)
-      console.log('PDF export completed')
       
     } catch (error) {
       console.error('Error in PDF export:', error)
-      alert(`Error: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      alert(`Ошибка при экспорте PDF: ${errorMessage}`)
       
       // Cleanup
       const tempElement = document.getElementById('pdf-export-content')
@@ -1089,8 +986,6 @@ export default function MaintenancePlanning() {
         tempElement.parentNode.removeChild(tempElement)
       }
     }
-    
-    console.log('=== PDF EXPORT DEBUG END ===')
   }
 
   const selectedCar = cars.find(c => c.id === selectedCarId)

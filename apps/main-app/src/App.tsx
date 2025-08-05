@@ -28,6 +28,7 @@ export default function App() {
           <Route path="/add-service-record" element={<AddServiceRecord />} />
           <Route path="/service-history" element={<ServiceHistory />} />
           <Route path="/maintenance-planning" element={<MaintenancePlanning />} />
+          <Route path="/maintenance-planning/:planId" element={<MaintenancePlanning />} />
           <Route path="/in-maintenance" element={<InMaintenance />} />
         </Routes>
       </HashRouter>
