@@ -12,7 +12,8 @@ import { Textarea } from '../components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 import { Checkbox } from '../components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
-import { DataService, Car } from '../services/DataService'
+import { DataService, Car, MaintenancePlan } from '../services/DataService'
+import html2pdf from 'html2pdf.js'
 import { 
   ArrowLeft, 
   Calendar, 
@@ -29,7 +30,8 @@ import {
   Trash2,
   Edit,
   Star,
-  X
+  X,
+  Download
 } from 'lucide-react'
 
 // Maintenance regulations from reglament.json
@@ -116,33 +118,7 @@ interface ServiceShop {
   createdAt: string
 }
 
-interface MaintenancePlan {
-  id: string
-  carId: string
-  carName: string
-  plannedDate: string
-  plannedCompletionDate: string
-  plannedMileage: string
-  periodicOperations: Array<{
-    operation: string
-    selected: boolean
-    priority: 'high' | 'medium' | 'low'
-    estimatedCost: number
-    notes: string
-  }>
-  repairOperations: Array<{
-    alertId: string
-    description: string
-    priority: string
-    estimatedCost: number
-    notes: string
-  }>
-  totalEstimatedCost: number
-  serviceProvider: string
-  notes: string
-  status: 'draft' | 'scheduled' | 'completed'
-  createdAt: string
-}
+
 
 export default function MaintenancePlanning() {
   const [selectedCarId, setSelectedCarId] = useState('')
@@ -172,6 +148,7 @@ export default function MaintenancePlanning() {
   const [shopContacts, setShopContacts] = useState('')
   const [shopRating, setShopRating] = useState(5)
   const [isDeleteShopOpen, setIsDeleteShopOpen] = useState(false)
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false)
   const [shopToDelete, setShopToDelete] = useState<ServiceShop | null>(null)
 
   // Cars are now loaded from DataService
@@ -315,9 +292,9 @@ export default function MaintenancePlanning() {
     setSelectedCarId(plan.carId)
     setPlannedDate(plan.plannedDate)
     setPlannedCompletionDate(plan.plannedCompletionDate)
-    setPlannedMileage(plan.plannedMileage)
-    setServiceProvider(plan.serviceProvider)
-    setPlanNotes(plan.notes)
+    setPlannedMileage(plan.plannedMileage || '')
+    setServiceProvider(plan.serviceProvider || '')
+    setPlanNotes(plan.notes || '')
     
     // Load periodic operations
     const selectedCar = cars.find(c => c.id === plan.carId)
@@ -450,7 +427,8 @@ export default function MaintenancePlanning() {
         status: 'draft',
         createdAt: editingPlanId 
           ? savedPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()
-          : new Date().toISOString()
+          : new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
 
       let updatedPlans
@@ -474,14 +452,105 @@ export default function MaintenancePlanning() {
       }
 
       alert(`План обслуживания ${editingPlanId ? 'обновлен' : 'сохранен'}!`)
-
-      // Clear form and navigate back to home
-      clearForm()
-      window.location.href = '/'
     } catch (error) {
       console.error('Error saving maintenance plan:', error)
       alert('Ошибка при сохранении плана. Попробуйте еще раз.')
     }
+  }
+
+  const handleClose = () => {
+    // Check if there are unsaved changes
+    const hasUnsavedChanges = selectedCarId || plannedDate || plannedCompletionDate || 
+      plannedMileage || serviceProvider || planNotes || 
+      periodicItems.some(item => item.selected) || repairItems.some(item => item.selected)
+    
+    if (hasUnsavedChanges) {
+      setIsCloseConfirmOpen(true)
+    } else {
+      handleCloseWithoutSaving()
+    }
+  }
+
+  const handleSaveAndClose = () => {
+    if (!selectedCarId || !plannedDate || !plannedCompletionDate) {
+      alert('Выберите автомобиль и укажите даты начала и завершения обслуживания')
+      return
+    }
+
+    const selectedPeriodicOps = periodicItems.filter(item => item.selected)
+    const selectedRepairOps = repairItems.filter(item => item.selected)
+    
+    if (selectedPeriodicOps.length === 0 && selectedRepairOps.length === 0) {
+      alert('Выберите хотя бы одну операцию для планирования')
+      return
+    }
+
+    // Save the plan first
+    const selectedCar = cars.find(c => c.id === selectedCarId)
+    
+    try {
+      const planData: MaintenancePlan = {
+        id: editingPlanId || Date.now().toString(),
+        carId: selectedCarId,
+        carName: selectedCar?.name || 'Неизвестный автомобиль',
+        plannedDate,
+        plannedCompletionDate,
+        plannedMileage,
+        periodicOperations: selectedPeriodicOps.map(item => ({
+          operation: item.operation,
+          selected: true,
+          priority: item.priority,
+          estimatedCost: item.estimatedCost || 0,
+          notes: item.planNotes || item.notes || ''
+        })),
+        repairOperations: selectedRepairOps.map(item => ({
+          alertId: item.alertId,
+          description: item.description,
+          priority: item.priority,
+          estimatedCost: item.estimatedCost || 0,
+          notes: item.planNotes || item.notes || ''
+        })),
+        totalEstimatedCost: calculateTotalCost(),
+        serviceProvider,
+        notes: planNotes,
+        status: 'draft',
+        createdAt: editingPlanId 
+          ? savedPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()
+          : new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+
+      let updatedPlans
+      if (editingPlanId) {
+        updatedPlans = savedPlans.map(plan => 
+          plan.id === editingPlanId ? planData : plan
+        )
+      } else {
+        updatedPlans = [...savedPlans, planData]
+      }
+      
+      setSavedPlans(updatedPlans)
+      localStorage.setItem('maintenance-plans', JSON.stringify(updatedPlans))
+
+      if (autoSaveInterval) {
+        clearInterval(autoSaveInterval)
+        setAutoSaveInterval(null)
+      }
+
+      alert(`План обслуживания ${editingPlanId ? 'обновлен' : 'сохранен'}!`)
+      
+      // Close after saving
+      handleCloseWithoutSaving()
+    } catch (error) {
+      console.error('Error saving maintenance plan:', error)
+      alert('Ошибка при сохранении плана. Попробуйте еще раз.')
+    }
+  }
+
+  const handleCloseWithoutSaving = () => {
+    clearForm()
+    setIsCloseConfirmOpen(false)
+    window.location.href = '/'
   }
 
   const autoSaveDraft = () => {
@@ -522,7 +591,8 @@ export default function MaintenancePlanning() {
         status: 'draft',
         createdAt: editingPlanId 
           ? savedPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()
-          : new Date().toISOString()
+          : new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
 
       let updatedPlans
@@ -625,7 +695,8 @@ export default function MaintenancePlanning() {
         serviceProvider,
         notes: planNotes,
         status: 'scheduled',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
 
       const updatedPlans = [...savedPlans, newPlan]
@@ -729,6 +800,297 @@ export default function MaintenancePlanning() {
     
     setIsDeleteShopOpen(false)
     setShopToDelete(null)
+  }
+
+  const exportToPDF = async () => {
+    console.log('=== PDF EXPORT DEBUG START ===')
+    console.log('selectedCarId:', selectedCarId)
+    console.log('cars array:', cars)
+    console.log('periodicItems:', periodicItems)
+    console.log('repairItems:', repairItems)
+    
+    // First, let's try to create a very simple test element
+    try {
+      const testElement = document.createElement('div')
+      testElement.innerHTML = 'TEST CONTENT - This should be visible'
+      testElement.style.cssText = `
+        position: fixed;
+        top: 100px;
+        left: 100px;
+        width: 300px;
+        height: 200px;
+        background: red;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        padding: 20px;
+        z-index: 99999;
+        border: 5px solid yellow;
+      `
+      
+      document.body.appendChild(testElement)
+      console.log('Test element added to DOM')
+      
+      const testConfirm = confirm('Do you see a red box with yellow border and "TEST CONTENT"? This tests basic DOM manipulation.')
+      
+      document.body.removeChild(testElement)
+      
+      if (!testConfirm) {
+        alert('Basic DOM test failed. There might be a browser or styling issue.')
+        return
+      }
+      
+    } catch (error) {
+      console.error('Basic DOM test failed:', error)
+      alert('Basic DOM test failed: ' + error.message)
+      return
+    }
+
+    // Now let's check the data
+    if (!selectedCarId) {
+      alert('Выберите автомобиль для экспорта плана')
+      return
+    }
+
+    const selectedCar = cars.find(c => c.id === selectedCarId)
+    if (!selectedCar) {
+      alert('Автомобиль не найден')
+      return
+    }
+
+    const selectedPeriodicOps = periodicItems.filter(item => item.selected)
+    const selectedRepairOps = repairItems.filter(item => item.selected)
+    
+    console.log('selectedCar:', selectedCar)
+    console.log('selectedPeriodicOps:', selectedPeriodicOps)
+    console.log('selectedRepairOps:', selectedRepairOps)
+    
+    if (selectedPeriodicOps.length === 0 && selectedRepairOps.length === 0) {
+      alert('Выберите хотя бы одну операцию для экспорта')
+      return
+    }
+
+    // Create content step by step
+    try {
+      console.log('Creating PDF content element...')
+      
+      const pdfElement = document.createElement('div')
+      pdfElement.id = 'pdf-export-content'
+      
+      // Very simple, highly visible styling
+      pdfElement.style.cssText = `
+        position: fixed !important;
+        top: 50px !important;
+        left: 50px !important;
+        width: 600px !important;
+        height: auto !important;
+        background: white !important;
+        color: black !important;
+        font-family: Arial, sans-serif !important;
+        font-size: 14px !important;
+        padding: 20px !important;
+        border: 5px solid red !important;
+        z-index: 999999 !important;
+        overflow: visible !important;
+      `
+      
+      // Build content string step by step
+      let contentHTML = '<div style="background: white; color: black; padding: 10px;">'
+      contentHTML += '<h1 style="color: black;">План технического обслуживания</h1>'
+      contentHTML += `<h2 style="color: black;">${selectedCar.name} - ${selectedCar.brand} ${selectedCar.model}</h2>`
+      
+      contentHTML += '<div style="border: 1px solid black; padding: 10px; margin: 10px 0; background: white;">'
+      contentHTML += '<h3 style="color: black;">Основная информация</h3>'
+      contentHTML += `<p style="color: black;">Дата начала: ${plannedDate || 'Не указана'}</p>`
+      contentHTML += `<p style="color: black;">Дата завершения: ${plannedCompletionDate || 'Не указана'}</p>`
+      contentHTML += '</div>'
+      
+      if (selectedPeriodicOps.length > 0) {
+        contentHTML += `<h3 style="color: black;">Периодическое обслуживание (${selectedPeriodicOps.length})</h3>`
+        selectedPeriodicOps.forEach((item, index) => {
+          contentHTML += `<div style="border: 1px solid gray; padding: 8px; margin: 5px 0; background: #f9f9f9;">`
+          contentHTML += `<strong style="color: black;">${index + 1}. ${item.operation || 'Неизвестная операция'}</strong><br/>`
+          contentHTML += `<span style="color: black;">Приоритет: ${item.priority || 'Не указан'}</span>`
+          contentHTML += '</div>'
+        })
+      }
+      
+      if (selectedRepairOps.length > 0) {
+        contentHTML += `<h3 style="color: black;">Ремонтные работы (${selectedRepairOps.length})</h3>`
+        selectedRepairOps.forEach((item, index) => {
+          contentHTML += `<div style="border: 1px solid gray; padding: 8px; margin: 5px 0; background: #f9f9f9;">`
+          contentHTML += `<strong style="color: black;">${index + 1}. ${item.description || 'Неизвестная работа'}</strong><br/>`
+          contentHTML += `<span style="color: black;">Приоритет: ${item.priority || 'Не указан'}</span>`
+          contentHTML += '</div>'
+        })
+      }
+      
+      contentHTML += '</div>'
+      
+      console.log('Content HTML length:', contentHTML.length)
+      console.log('Content preview:', contentHTML.substring(0, 200))
+      
+      pdfElement.innerHTML = contentHTML
+      
+      console.log('Adding element to DOM...')
+      document.body.appendChild(pdfElement)
+      
+      console.log('Element added. Checking if visible...')
+      console.log('Element offsetWidth:', pdfElement.offsetWidth)
+      console.log('Element offsetHeight:', pdfElement.offsetHeight)
+      console.log('Element style:', pdfElement.style.cssText)
+      
+      // Wait a moment
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const userConfirm = confirm('Now do you see the red-bordered content box with maintenance plan data?')
+      
+      if (!userConfirm) {
+        console.log('User still cannot see content. Cleaning up...')
+        document.body.removeChild(pdfElement)
+        alert('Content generation failed. Check browser console for details.')
+        return
+      }
+      
+      // If user can see it, proceed with PDF generation
+      alert('Great! Content is visible. Now trying PDF generation...')
+      
+      // Move element to a better position for PDF capture
+      pdfElement.style.cssText = `
+        position: static !important;
+        width: 800px !important;
+        height: auto !important;
+        background: white !important;
+        color: black !important;
+        font-family: Arial, sans-serif !important;
+        font-size: 14px !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        border: none !important;
+        z-index: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+      `
+      
+      // Wait for reflow
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      console.log('Element repositioned for PDF capture')
+      console.log('New element dimensions:', pdfElement.offsetWidth, 'x', pdfElement.offsetHeight)
+      
+      // Try multiple PDF generation approaches
+      try {
+        console.log('Attempting PDF generation method 1...')
+        
+      const options = {
+          margin: [10, 10, 10, 10],
+        filename: `План_ТО_${selectedCar.name.replace(/[^a-zA-Z0-9а-яА-Я\s]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
+          image: { 
+            type: 'jpeg', 
+            quality: 1.0 
+          },
+        html2canvas: { 
+            scale: 2,
+          backgroundColor: '#ffffff',
+          logging: true,
+            useCORS: true,
+            allowTaint: true,
+            scrollX: 0,
+            scrollY: 0,
+            width: pdfElement.offsetWidth,
+            height: pdfElement.offsetHeight
+        },
+        jsPDF: { 
+            unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait'
+        }
+      }
+
+        // Generate PDF with detailed logging
+        const worker = html2pdf().set(options).from(pdfElement)
+        
+        const pdf = await worker.toPdf().get('pdf')
+        console.log('PDF generated successfully')
+        console.log('PDF page count:', pdf.internal.pages.length - 1)
+        console.log('PDF page dimensions:', pdf.internal.pageSize.getWidth(), 'x', pdf.internal.pageSize.getHeight())
+        
+        // Check if PDF has content
+        const pdfData = pdf.output('datauristring')
+        console.log('PDF data length:', pdfData.length)
+        
+        if (pdfData.length < 10000) {
+          throw new Error('PDF appears to be empty (too small data size)')
+        }
+        
+        // Save the PDF
+        await worker.save()
+        console.log('PDF saved successfully')
+        
+      } catch (pdfError) {
+        console.error('PDF generation method 1 failed:', pdfError)
+        
+        // Try alternative method - create a new clean element
+        console.log('Trying PDF generation method 2...')
+        
+        const cleanElement = document.createElement('div')
+        cleanElement.innerHTML = pdfElement.innerHTML
+        cleanElement.style.cssText = `
+          width: 210mm;
+          min-height: 297mm;
+          background: white;
+          color: black;
+          font-family: Arial, sans-serif;
+          font-size: 12px;
+          padding: 10mm;
+          margin: 0;
+          box-sizing: border-box;
+        `
+        
+        // Replace current element
+        document.body.removeChild(pdfElement)
+        document.body.appendChild(cleanElement)
+        
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        const simpleOptions = {
+          margin: 10,
+          filename: `План_ТО_${new Date().toISOString().split('T')[0]}.pdf`,
+          image: { type: 'png', quality: 0.98 },
+          html2canvas: { 
+            scale: 1,
+            backgroundColor: '#ffffff',
+            logging: false
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait'
+          }
+        }
+        
+        await html2pdf().set(simpleOptions).from(cleanElement).save()
+        document.body.removeChild(cleanElement)
+        console.log('PDF method 2 completed')
+        return // Exit successfully
+      }
+      
+      // Cleanup
+      document.body.removeChild(pdfElement)
+      console.log('PDF export completed')
+      
+    } catch (error) {
+      console.error('Error in PDF export:', error)
+      alert(`Error: ${error.message}`)
+      
+      // Cleanup
+      const tempElement = document.getElementById('pdf-export-content')
+      if (tempElement && tempElement.parentNode) {
+        tempElement.parentNode.removeChild(tempElement)
+      }
+    }
+    
+    console.log('=== PDF EXPORT DEBUG END ===')
   }
 
   const selectedCar = cars.find(c => c.id === selectedCarId)
@@ -1133,11 +1495,14 @@ export default function MaintenancePlanning() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link to="/" className="flex-1">
-            <Button variant="outline" className="w-full">
-              Отмена
-            </Button>
-          </Link>
+          <Button 
+            onClick={handleClose}
+            variant="outline" 
+            className="flex-1"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Закрыть
+          </Button>
           <Dialog open={isViewPlansOpen} onOpenChange={setIsViewPlansOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex-1">
@@ -1191,6 +1556,16 @@ export default function MaintenancePlanning() {
           >
             <Save className="h-4 w-4 mr-2" />
             {editingPlanId ? 'Обновить план' : 'Сохранить план'}
+          </Button>
+          <Button 
+            onClick={exportToPDF} 
+            variant="outline"
+            className="flex-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700 hover:text-green-800" 
+            disabled={!selectedCarId || (selectedPeriodicCount === 0 && selectedRepairCount === 0)}
+            title="Экспорт плана в PDF"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Экспорт в PDF
           </Button>
           <Button 
             onClick={sendToMaintenance} 
@@ -1404,6 +1779,36 @@ export default function MaintenancePlanning() {
                 </Button>
                 <Button onClick={confirmDeleteShop} className="bg-red-600 hover:bg-red-700">
                   Да, удалить
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Close Confirmation Dialog */}
+        <Dialog open={isCloseConfirmOpen} onOpenChange={setIsCloseConfirmOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Закрыть план обслуживания</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="h-8 w-8 text-amber-500" />
+                <div>
+                  <p className="font-medium">У вас есть несохраненные изменения</p>
+                  <p className="text-sm text-gray-600">Что вы хотите сделать?</p>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsCloseConfirmOpen(false)}>
+                  Отмена
+                </Button>
+                <Button variant="outline" onClick={handleCloseWithoutSaving}>
+                  Закрыть без сохранения
+                </Button>
+                <Button onClick={handleSaveAndClose} className="bg-blue-600 hover:bg-blue-700">
+                  <Save className="h-4 w-4 mr-2" />
+                  Сохранить и закрыть
                 </Button>
               </div>
             </div>

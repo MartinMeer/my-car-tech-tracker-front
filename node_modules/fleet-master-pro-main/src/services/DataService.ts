@@ -68,9 +68,12 @@ export interface MaintenancePlan {
   status: 'draft' | 'scheduled' | 'in-progress' | 'completed';
   plannedDate: string;
   plannedCompletionDate: string;
+  plannedMileage?: string;
   periodicOperations: any[];
   repairOperations: any[];
   totalEstimatedCost: number;
+  serviceProvider?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
