@@ -4,6 +4,9 @@ PAY YOUR ATTENTION: there must be a clear separation between dev mode with furth
 ## FIX IT! ##
 OK READY There is a car inconsistency through all pages. Pls analyse it and fix it. Note: there is a two mock hardcoded cars. I mean, that they are not needed, for demo using let user add your own mock cars
 
+1. В плане button:
+    1.1 There is 2 entry point to Сохраненные планы обслуживания: one from Home and one from MainntenancePlanning. Make entry point from Home. Are there duplicates in flow code? 
+
 ## REFACTOR IT! ##
 
 
