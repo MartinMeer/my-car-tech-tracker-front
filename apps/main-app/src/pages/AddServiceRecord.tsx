@@ -23,12 +23,22 @@ import {
   Car,
   FileText,
   Settings,
-  CheckCircle
+  CheckCircle,
+  Store,
+  Star
 } from 'lucide-react'
 import { DataService } from '../services/DataService'
 import { IdGenerator } from '../services/IdGenerator'
 import type { Car } from '../services/DataService'
 import { dateUtils } from '../lib/utils'
+
+interface ServiceShop {
+  id: string
+  name: string
+  contacts: string
+  rating: number
+  createdAt: string
+}
 
 interface ServiceOperation {
   id: string
@@ -85,6 +95,9 @@ export default function AddServiceRecord() {
   const [cars, setCars] = useState<Car[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  // Service shops state
+  const [serviceShops, setServiceShops] = useState<ServiceShop[]>([])
+
   const periodicOperations = [
     'Замена моторного масла',
     'Замена масляного фильтра', 
@@ -100,20 +113,42 @@ export default function AddServiceRecord() {
     'Другое'
   ]
 
+  // Load cars on component mount
+  useEffect(() => {
+    const loadCars = async () => {
+      try {
+        setIsLoading(true)
+        const carsData = await DataService.getCars()
+        setCars(carsData)
+      } catch (error) {
+        console.error('Error loading cars:', error)
+        alert('Ошибка загрузки списка автомобилей')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadCars()
+  }, [])
+
   useEffect(() => {
     // Load user alerts for repair operations
     const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
     const activeAlerts = savedAlerts.filter((alert: any) => alert.status === 'active')
     setUserAlerts(activeAlerts)
 
+    // Load service shops
+    const savedShops = JSON.parse(localStorage.getItem('service-shops') || '[]')
+    setServiceShops(savedShops)
+
     // Auto-fill mileage if car is selected
     if (formData.carId) {
       const selectedCar = cars.find(c => c.id === formData.carId)
       if (selectedCar && !formData.mileage) {
-        setFormData(prev => ({ ...prev, mileage: selectedCar.currentMileage.toString() }))
+        setFormData(prev => ({ ...prev, mileage: selectedCar.mileage.toString() }))
       }
     }
-  }, [formData.carId])
+  }, [formData.carId, cars])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -291,6 +326,7 @@ export default function AddServiceRecord() {
 
   const selectedCar = cars.find(c => c.id === formData.carId)
   const carAlerts = userAlerts.filter(alert => alert.carId === formData.carId)
+  const selectedShop = formData.serviceProvider ? serviceShops.find(shop => shop.name === formData.serviceProvider) : null
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -388,12 +424,68 @@ export default function AddServiceRecord() {
 
               <div>
                 <Label htmlFor="serviceProvider">Исполнитель работ</Label>
-                <Input
-                  id="serviceProvider"
-                  placeholder="Название автосервиса или мастера"
-                  value={formData.serviceProvider}
-                  onChange={(e) => handleInputChange('serviceProvider', e.target.value)}
-                />
+                {serviceShops.length === 0 ? (
+                  <div className="border rounded-md p-3 bg-gray-50 text-center">
+                    <p className="text-sm text-gray-600 mb-2">Нет сохраненных сервисов</p>
+                    <p className="text-xs text-gray-500">Добавьте сервисы в разделе "Планирование ТО"</p>
+                  </div>
+                ) : (
+                  <>
+                    <Select 
+                      value={formData.serviceProvider} 
+                      onValueChange={(shopName) => {
+                        handleInputChange('serviceProvider', shopName)
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите сервис из списка..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {serviceShops.map((shop) => (
+                          <SelectItem key={shop.id} value={shop.name}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{shop.name}</span>
+                              <div className="flex items-center ml-2">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star 
+                                    key={i} 
+                                    className={`h-3 w-3 ${i < shop.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedShop && (
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h4 className="font-medium text-blue-900">{selectedShop.name}</h4>
+                              <div className="flex items-center">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star 
+                                    key={i} 
+                                    className={`h-4 w-4 ${i < selectedShop.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                                  />
+                                ))}
+                                <span className="ml-1 text-sm text-gray-600">({selectedShop.rating}/5)</span>
+                              </div>
+                            </div>
+                            <p className="text-sm text-blue-800 mb-1">
+                              <strong>Контакты:</strong> {selectedShop.contacts}
+                            </p>
+                            <p className="text-xs text-blue-600">
+                              Добавлен: {new Date(selectedShop.createdAt).toLocaleDateString('ru-RU')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

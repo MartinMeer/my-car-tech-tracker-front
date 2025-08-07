@@ -2,10 +2,10 @@
 PAY YOUR ATTENTION: there must be a clear separation between dev mode with further Java backend and demo abilities, working with localStorage
 
 ## FIX IT! ##
-OK READY There is a car inconsistency through all pages. Pls analyse it and fix it. Note: there is a two mock hardcoded cars. I mean, that they are not needed, for demo using let user add your own mock cars
+1. 
 
-1. В плане button:
-    1.1 There is 2 entry point to Сохраненные планы обслуживания: one from Home and one from MainntenancePlanning. Make entry point from Home. Are there duplicates in flow code? 
+
+1. add-service-record: is not available selecting car. Investigate this issue for future backend integration and current demo implementation
 
 ## REFACTOR IT! ##
 
@@ -32,6 +32,8 @@ OK READY  Add car-edit feature:
     6.2 On click, open the add-car page for editing
     6.4 All change state operations - with standard project-style confirmation
 7. Add a Refrences (Справочник) funtionality for car (Periodical maintenance guide, Volumes of consumables)
+
+8. Alerts: When alert was send to archve, add to each entry in archved alerts a field with date aws sent (using current date in moment to archivation)
 
 
 8. FINALLY! Add car-delete feature. 

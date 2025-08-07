@@ -308,7 +308,7 @@ export default function Home() {
                                 onClick={() => setIsPlansDialogOpen(false)}
                                 className="text-xs"
                               >
-                                Редактировать
+                                Просмотреть
                               </Button>
                             </Link>
                           </div>

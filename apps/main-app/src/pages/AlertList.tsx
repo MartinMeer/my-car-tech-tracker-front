@@ -23,20 +23,6 @@ import {
   Car
 } from 'lucide-react'
 
-interface Alert {
-  id: string
-  carId: string
-  carName: string
-  date: string
-  mileage: string
-  system: string
-  location: string
-  priority: string
-  description: string
-  createdAt: string
-  status: 'active' | 'archived'
-}
-
 export default function AlertList() {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [showArchived, setShowArchived] = useState(false)
@@ -47,17 +33,19 @@ export default function AlertList() {
     mileage: ''
   })
 
-  // Load alerts from localStorage on component mount
+  // Load alerts using DataService on component mount
   useEffect(() => {
-    const savedAlerts = JSON.parse(localStorage.getItem('fleet-alerts') || '[]')
-    setAlerts(savedAlerts)
-  }, [])
+    const loadAlerts = async () => {
+      try {
+        const alertsData = await AlertService.getAlerts()
+        setAlerts(alertsData)
+      } catch (error) {
+        console.error('Error loading alerts:', error)
+      }
+    }
 
-  // Save alerts to localStorage whenever alerts change
-  const saveAlerts = (updatedAlerts: Alert[]) => {
-    setAlerts(updatedAlerts)
-    localStorage.setItem('fleet-alerts', JSON.stringify(updatedAlerts))
-  }
+    loadAlerts()
+  }, [])
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -86,18 +74,26 @@ export default function AlertList() {
     }
   }
 
-  const handleArchive = (alertId: string) => {
-    const updatedAlerts = alerts.map(alert =>
-      alert.id === alertId ? { ...alert, status: 'archived' as const } : alert
-    )
-    saveAlerts(updatedAlerts)
+  const handleArchive = async (alertId: string) => {
+    try {
+      await AlertService.archiveAlert(alertId)
+      // Reload alerts to get updated data
+      const updatedAlerts = await AlertService.getAlerts()
+      setAlerts(updatedAlerts)
+    } catch (error) {
+      console.error('Error archiving alert:', error)
+    }
   }
 
-  const handleRestore = (alertId: string) => {
-    const updatedAlerts = alerts.map(alert =>
-      alert.id === alertId ? { ...alert, status: 'active' as const } : alert
-    )
-    saveAlerts(updatedAlerts)
+  const handleRestore = async (alertId: string) => {
+    try {
+      await AlertService.restoreAlert(alertId)
+      // Reload alerts to get updated data
+      const updatedAlerts = await AlertService.getAlerts()
+      setAlerts(updatedAlerts)
+    } catch (error) {
+      console.error('Error restoring alert:', error)
+    }
   }
 
   const handleEditClick = (alert: Alert) => {
@@ -105,25 +101,27 @@ export default function AlertList() {
     setEditForm({
       description: alert.description,
       location: alert.location,
-      mileage: alert.mileage
+      mileage: alert.mileage.toString()
     })
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingAlert) return
 
-    const updatedAlerts = alerts.map(alert =>
-      alert.id === editingAlert.id 
-        ? { 
-            ...alert, 
-            description: editForm.description,
-            location: editForm.location,
-            mileage: editForm.mileage
-          }
-        : alert
-    )
-    saveAlerts(updatedAlerts)
-    setEditingAlert(null)
+    try {
+      await AlertService.updateAlert(editingAlert.id, {
+        description: editForm.description,
+        location: editForm.location,
+        mileage: parseInt(editForm.mileage) || 0
+      })
+      
+      // Reload alerts to get updated data
+      const updatedAlerts = await AlertService.getAlerts()
+      setAlerts(updatedAlerts)
+      setEditingAlert(null)
+    } catch (error) {
+      console.error('Error updating alert:', error)
+    }
   }
 
   const activeAlerts = alerts.filter(alert => alert.status === 'active')
@@ -137,216 +135,124 @@ export default function AlertList() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              {showArchived ? (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setShowArchived(false)}
-                >
+              <Link to="/">
+                <Button variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-              ) : (
-                <Link to="/">
-                  <Button variant="ghost" size="sm">
-                    <ArrowLeft className="h-4 w-4" />
-                  </Button>
-                </Link>
-              )}
+              </Link>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 flex items-center">
-                  {showArchived ? (
-                    <>
-                      <Archive className="h-5 w-5 mr-2 text-gray-600" />
-                      Архив проблем
-                    </>
-                  ) : (
-                    <>
-                      <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
-                      У нас проблемы!
-                    </>
-                  )}
+                  <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
+                  Список проблем
                 </h1>
+                <p className="text-sm text-gray-600">
+                  {showArchived ? 'Архивные проблемы' : 'Активные проблемы'}
+                </p>
               </div>
             </div>
-            
-            {!showArchived && (
-              <div className="flex items-center space-x-2">
-                <Link to="/user-alert">
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700">
-                    <AlertTriangle className="h-4 w-4 mr-2" />
-                    Сообщить о проблеме
-                  </Button>
-                </Link>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowArchived(true)}
-                >
-                  <Archive className="h-4 w-4 mr-2" />
-                  Архив
-                </Button>
-              </div>
-            )}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant={showArchived ? "outline" : "default"}
+                size="sm"
+                onClick={() => setShowArchived(false)}
+              >
+                Активные ({activeAlerts.length})
+              </Button>
+              <Button
+                variant={showArchived ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowArchived(true)}
+              >
+                Архив ({archivedAlerts.length})
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="px-4 py-6">
-        {!showArchived && (
-          <div className="mb-6 text-center">
-            <p className="text-sm text-gray-600 mb-4">
-              Список всех обнаруженных проблем по автомобилям
-            </p>
-          </div>
-        )}
-
         {displayAlerts.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
-              {showArchived ? (
-                <>
-                  <Archive className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Архив пуст</h3>
-                  <p className="text-gray-600">Нет архивированных проблем</p>
-                </>
-              ) : (
-                <>
-                  <div className="text-4xl mb-4">✅</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Проблем нет!</h3>
-                  <p className="text-gray-600 mb-4">Все ваши автомобили в отличном состоянии</p>
-                  <Link to="/user-alert">
-                    <Button className="bg-red-600 hover:bg-red-700">
-                      <AlertTriangle className="h-4 w-4 mr-2" />
-                      Сообщить о проблеме
-                    </Button>
-                  </Link>
-                </>
-              )}
+              <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {showArchived ? 'Архив пуст' : 'Проблем не найдено'}
+              </h3>
+              <p className="text-gray-600">
+                {showArchived 
+                  ? 'В архиве пока нет проблем'
+                  : 'Создайте первую проблему, чтобы начать отслеживание'
+                }
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
             {displayAlerts.map((alert) => (
-              <Card key={alert.id}>
+              <Card key={alert.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{getPriorityIcon(alert.priority)}</span>
-                      <Badge className={getPriorityColor(alert.priority)}>
-                        {getPriorityText(alert.priority)}
-                      </Badge>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-lg">{getPriorityIcon(alert.priority)}</span>
+                        <Badge className={getPriorityColor(alert.priority)}>
+                          {getPriorityText(alert.priority)}
+                        </Badge>
+                        {alert.type === 'recommendation' && (
+                          <Badge variant="secondary">Рекомендация</Badge>
+                        )}
+                      </div>
+                      
+                      <h3 className="font-medium text-gray-900 mb-2">
+                        {alert.carName}
+                      </h3>
+                      
+                      <p className="text-gray-700 mb-3">{alert.description}</p>
+                      
+                      <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>{new Date(alert.reportedAt).toLocaleDateString('ru-RU')}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Car className="h-4 w-4" />
+                          <span>{alert.mileage.toLocaleString()} км</span>
+                        </div>
+                        {alert.location && (
+                          <span className="text-gray-500">{alert.location}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Dialog 
-                        open={editingAlert?.id === alert.id} 
-                        onOpenChange={(open) => !open && setEditingAlert(null)}
-                      >
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="ghost" 
+                    
+                    <div className="flex items-center space-x-2 ml-4">
+                      {!showArchived ? (
+                        <>
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => handleEditClick(alert)}
                           >
                             <Edit3 className="h-4 w-4" />
                           </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Редактировать проблему</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <label className="text-sm font-medium">Место неисправности</label>
-                              <Input
-                                value={editForm.location}
-                                onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
-                                placeholder="Укажите место..."
-                              />
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium">Пробег (км)</label>
-                              <Input
-                                type="number"
-                                value={editForm.mileage}
-                                onChange={(e) => setEditForm(prev => ({ ...prev, mileage: e.target.value }))}
-                                placeholder="85000"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium">Описание</label>
-                              <Textarea
-                                value={editForm.description}
-                                onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
-                                placeholder="Описание проблемы..."
-                                rows={3}
-                              />
-                            </div>
-                            <div className="flex justify-end space-x-2">
-                              <Button variant="outline" onClick={() => setEditingAlert(null)}>
-                                <X className="h-4 w-4 mr-2" />
-                                Отмена
-                              </Button>
-                              <Button onClick={handleSaveEdit}>
-                                <Save className="h-4 w-4 mr-2" />
-                                Сохранить
-                              </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-
-                      {showArchived ? (
-                        <Button 
-                          variant="ghost" 
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleArchive(alert.id)}
+                          >
+                            <Archive className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => handleRestore(alert.id)}
                         >
                           <ArchiveRestore className="h-4 w-4" />
                         </Button>
-                      ) : (
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleArchive(alert.id)}
-                        >
-                          <Archive className="h-4 w-4" />
-                        </Button>
                       )}
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-4 text-sm">
-                      <div className="flex items-center space-x-1">
-                        <Car className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">{alert.carName}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4 text-gray-500" />
-                        <span>{alert.date}</span>
-                      </div>
-                      {alert.mileage && (
-                        <div className="text-gray-600">
-                          {parseInt(alert.mileage).toLocaleString()} км
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="text-sm">
-                      <p className="font-medium text-gray-900">{alert.system}</p>
-                      {alert.location && (
-                        <p className="text-gray-600">{alert.location}</p>
-                      )}
-                    </div>
-
-                    <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                      {alert.description}
-                    </p>
-
-                    <p className="text-xs text-gray-500">
-                      Создано: {new Date(alert.createdAt).toLocaleDateString('ru-RU')} в {new Date(alert.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -354,6 +260,51 @@ export default function AlertList() {
           </div>
         )}
       </main>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingAlert} onOpenChange={() => setEditingAlert(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Редактировать проблему</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Описание</label>
+              <Textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Место</label>
+              <Input
+                value={editForm.location}
+                onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Пробег (км)</label>
+              <Input
+                type="number"
+                value={editForm.mileage}
+                onChange={(e) => setEditForm(prev => ({ ...prev, mileage: e.target.value }))}
+                className="mt-1"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setEditingAlert(null)}>
+                Отмена
+              </Button>
+              <Button onClick={handleSaveEdit}>
+                <Save className="h-4 w-4 mr-2" />
+                Сохранить
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
