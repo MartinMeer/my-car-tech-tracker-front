@@ -159,7 +159,7 @@ export class DataService {
     } else {
       // Return mock data for development
       const stored = this.getFromStorage<Car[]>('cars', []);
-      if (stored.length === 0) {
+      /*if (stored.length === 0) {
         // Return default mock cars
         return [
           {
@@ -187,7 +187,7 @@ export class DataService {
             createdAt: new Date().toISOString()
           }
         ];
-      }
+      }*/
       return stored;
     }
   }

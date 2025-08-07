@@ -20,6 +20,7 @@ import {
   LogOut,
   FileText
 } from 'lucide-react'
+import { NavigationService } from '../services/NavigationService'
 
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState('fleet')
@@ -134,7 +135,7 @@ export default function Home() {
 
   const handleAccountClick = () => {
     // Navigate directly to account page  
-    window.location.href = 'http://localhost:3000/#/account'
+    NavigationService.navigateToMarketing('/')
   }
 
   const handleLogoutClick = () => {
@@ -147,8 +148,8 @@ export default function Home() {
     
     console.log('Auth data cleared, navigating to marketing site...')
     
-    // Simple direct navigation to test
-    window.location.href = 'http://localhost:3000/'
+    // Navigate to marketing site
+    NavigationService.navigateToMarketing('/')
   }
 
   // Loading state
@@ -329,8 +330,14 @@ export default function Home() {
 
         {/* Fleet Overview */}
         <Card className="mb-6">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">Мой автопарк</CardTitle>
+            <Link to="/add-car">
+                <Button variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Добавить авто
+                </Button>
+              </Link>
           </CardHeader>
           <CardContent>
             {cars.length === 0 ? (
@@ -393,12 +400,12 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <Link to="/add-car">
+              {/*<Link to="/add-car">
                 <Button className="w-full" variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
                   Добавить авто
                 </Button>
-              </Link>
+              </Link>*/}
               <Link to="/add-service-record">
                 <Button className="w-full" variant="outline">
                   <Wrench className="h-4 w-4 mr-2" />
@@ -424,7 +431,7 @@ export default function Home() {
         {/* Recent Activities */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Последние события</CardTitle>
+            <CardTitle className="text-lg">Последние события (раздел в разработке)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
