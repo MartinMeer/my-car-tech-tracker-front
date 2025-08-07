@@ -2,10 +2,7 @@
 PAY YOUR ATTENTION: there must be a clear separation between dev mode with further Java backend and demo abilities, working with localStorage
 
 ## FIX IT! ##
-1. 
 
-
-1. add-service-record: is not available selecting car. Investigate this issue for future backend integration and current demo implementation
 
 ## REFACTOR IT! ##
 
@@ -13,9 +10,6 @@ PAY YOUR ATTENTION: there must be a clear separation between dev mode with furth
 
 ## FEAT IT! ##
 
-1. Create a ready-to-work cars list
-
-3. maintenance-planning: Collapse Периодическое обслуживание to 4 first due-out and due-soon entries, and add View all capability to expand all entries
 OK READY Add a service-shops feature:
     4.1 Create a service-shops list. Columns: Name, Contacts, Rating, Actions (Edit, Delete for whole entry). Attach to table the Add-new functionality
     4.2 Create a button to service-shops list in maintenance-planning header
@@ -32,15 +26,19 @@ OK READY  Add car-edit feature:
     6.2 On click, open the add-car page for editing
     6.4 All change state operations - with standard project-style confirmation
 
-7. Add a Refrences (Справочник) funtionality for car (Periodical maintenance guide, Volumes of consumables)
+OK READY  Let's start implementation of Periodical maintenance guide (PMG)
+Overview: the PMG is a list of maintenance orerations, based on reglament by car manufacturer. It is related to concrete car in fleet. Each entry from PMG must be shows: a. on maintanence plan page as a source for list of periodical operations according to selected car. b. in add-service-record page, a name of operation only.
+Current implementation: I see that on maintanence plan page alredy present hardcoded list of operations, and on add-service-record page exist an another hardcoded list.
+
+-------------------------------------------
+
+1. Create a ready-to-work cars list
+
+3. maintenance-planning: Collapse Периодическое обслуживание to 4 first due-out and due-soon entries, and add View all capability to expand all entries
 
 8. Alerts: When alert was send to archve, add to each entry in archved alerts a field with date was sent (using current date in moment to archivation)
 
-9. Let's start implementation of Periodical maintenance guide (PMG)
-Overview: the PMG is a list of maintenance orerations, based on reglament by car manufacturer. It is related to concrete car in fleet. Each entry from PMG must be shows: a. on maintanence plan page as a source for list of periodical operations according to selected car. b. in add-service-record page, a name of operation only.
-Current implementation: I see that on maintanence plan page alredy present hardcoded list of operations, and on add-service-record page exist an another hardcoded list.
-Task:
-1. Make full comprehensive analyse for curent situation
+7. Add a Refrences (Справочник) funtionality for car (Periodical maintenance guide, Volumes of consumables)
 
 
 
