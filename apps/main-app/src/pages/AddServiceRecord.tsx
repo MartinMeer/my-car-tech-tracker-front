@@ -31,6 +31,7 @@ import { DataService } from '../services/DataService'
 import { IdGenerator } from '../services/IdGenerator'
 import type { Car } from '../services/DataService'
 import { dateUtils } from '../lib/utils'
+import { PMGService } from '../services/PMGService';
 
 interface ServiceShop {
   id: string
@@ -98,20 +99,34 @@ export default function AddServiceRecord() {
   // Service shops state
   const [serviceShops, setServiceShops] = useState<ServiceShop[]>([])
 
-  const periodicOperations = [
-    'Замена моторного масла',
-    'Замена масляного фильтра', 
-    'Замена воздушного фильтра',
-    'Замена топливного фильтра',
-    'Замена свечей зажигания',
-    'Замена ремня ГРМ',
-    'Замена тормозных колодок',
-    'Замена тормозной жидкости',
-    'Замена охлаждающей жидкости',
-    'Развал-схождение',
-    'Замена амортизаторов',
-    'Другое'
-  ]
+  const [maintenanceOperations, setMaintenanceOperations] = useState<string[]>([]);
+  const [isLoadingOperations, setIsLoadingOperations] = useState(true);
+
+  // Load maintenance operations for the selected car
+  useEffect(() => {
+    const loadMaintenanceOperations = async () => {
+      if (!formData.carId) {
+        setMaintenanceOperations([]);
+        setIsLoadingOperations(false);
+        return;
+      }
+
+      try {
+        setIsLoadingOperations(true);
+        const operations = await PMGService.getServiceRecordOperations(formData.carId);
+        setMaintenanceOperations(operations);
+      } catch (error) {
+        console.error('Error loading maintenance operations:', error);
+      } finally {
+        setIsLoadingOperations(false);
+      }
+    };
+
+    loadMaintenanceOperations();
+  }, [formData.carId]);
+
+  // Use dynamic operations instead of hardcoded array
+  const periodicOperations = maintenanceOperations;
 
   // Load cars on component mount
   useEffect(() => {

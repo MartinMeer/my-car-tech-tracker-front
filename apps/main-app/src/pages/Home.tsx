@@ -356,36 +356,54 @@ export default function Home() {
                 {cars.map((car) => {
                   const statusInfo = getCarStatusInfo(car.id)
                   return (
-                    <Link key={car.id} to={`/car/${car.id}`}>
-                      <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center space-x-4">
-                          <img 
-                            src={car.image || '/img/car-by-deault.png'} 
-                            alt={`${car.brand} ${car.model}`}
-                            className="w-16 h-16 rounded-lg object-cover"
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <h3 className="font-semibold">{car.name}</h3>
-                              <Badge className={statusInfo.statusColor}>
-                                {statusInfo.statusText}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-600">{car.brand} {car.model} ({car.year})</p>
-                            <p className="text-xs text-gray-500">Пробег: {car.mileage.toLocaleString()} км</p>
-                            {car.nextService && (
-                              <p className="text-xs text-gray-500">Следующее ТО: {car.nextService}</p>
-                            )}
-                            {statusInfo.alertCount > 0 && (
-                              <p className="text-xs text-orange-600">
-                                Активных уведомлений: {statusInfo.alertCount}
-                                {statusInfo.criticalAlertCount > 0 && ` (критичных: ${statusInfo.criticalAlertCount})`}
-                              </p>
-                            )}
+                    <div key={car.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center space-x-4">
+                        <img 
+                          src={car.image || '/img/car-by-deault.png'} 
+                          alt={`${car.brand} ${car.model}`}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="font-semibold">{car.name}</h3>
+                            <Badge className={statusInfo.statusColor}>
+                              {statusInfo.statusText}
+                            </Badge>
                           </div>
+                          <p className="text-sm text-gray-600">{car.brand} {car.model} ({car.year})</p>
+                          <p className="text-xs text-gray-500">Пробег: {car.mileage.toLocaleString()} км</p>
+                          {car.nextService && (
+                            <p className="text-xs text-gray-500">Следующее ТО: {car.nextService}</p>
+                          )}
+                          {statusInfo.alertCount > 0 && (
+                            <p className="text-xs text-orange-600">
+                              Активных уведомлений: {statusInfo.alertCount}
+                              {statusInfo.criticalAlertCount > 0 && ` (критичных: ${statusInfo.criticalAlertCount})`}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-col space-y-2">
+                          <Link to={`/car/${car.id}`}>
+                            <Button size="sm" variant="outline">
+                              <Car className="h-4 w-4 mr-1" />
+                              Обзор
+                            </Button>
+                          </Link>
+                          <Link to={`/periodical-maintenance-guide/${car.id}`}>
+                            <Button size="sm" variant="outline">
+                              <Settings className="h-4 w-4 mr-1" />
+                              ТО
+                            </Button>
+                          </Link>
+                          <Link to={`/maintenance-planning?carId=${car.id}`}>
+                            <Button size="sm" variant="outline">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              План
+                            </Button>
+                          </Link>
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   )
                 })}
               </div>

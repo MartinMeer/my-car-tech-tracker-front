@@ -13,6 +13,7 @@ import AddServiceRecord from './pages/AddServiceRecord'
 import ServiceHistory from './pages/ServiceHistory'
 import MaintenancePlanning from './pages/MaintenancePlanning'
 import InMaintenance from './pages/InMaintenance'
+import PeriodicalMaintenanceGuide from './pages/PeriodicalMaintenanceGuide'
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/maintenance-planning" element={<MaintenancePlanning />} />
           <Route path="/maintenance-planning/:planId" element={<MaintenancePlanning />} />
           <Route path="/in-maintenance" element={<InMaintenance />} />
+          <Route path="/periodical-maintenance-guide/:carId?" element={<PeriodicalMaintenanceGuide />} />
         </Routes>
       </HashRouter>
       

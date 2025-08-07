@@ -36,82 +36,27 @@ import {
   X,
   Download
 } from 'lucide-react'
+import { PMGService } from '../services/PMGService';
 
-// Maintenance regulations from reglament.json
-const maintenanceRegulations = [
-  {
-    "operation": "Замена моторного масла и фильтра",
-    "mileage": "10000",
-    "period": "6",
-    "notes": "Обязательно масло 0W-20/5W-30. При тяжёлых условиях - сократить до 8000 км"
-  },
-  {
-    "operation": "Диагностика цепи ГРМ и натяжителя",
-    "mileage": "60000",
-    "period": "48",
-    "notes": "Проверка натяжения цепи, износ направляющих и натяжителя. Обязательно при появлении шумов"
-  },
-  {
-    "operation": "Замена воздушного фильтра двигателя",
-    "mileage": "30000",
-    "period": "24",
-    "notes": "Критично для K24A1 из-за прямого забора воздуха"
-  },
-  {
-    "operation": "Промывка системы VTEC",
-    "mileage": "50000",
-    "period": "36",
-    "notes": "Чистка соленоида VTEC и сетки фильтра (характерная проблема K24)"
-  },
-  {
-    "operation": "Замена свечей зажигания",
-    "mileage": "100000",
-    "period": "60",
-    "notes": "NGK IZFR6K11. Обязательная замена по регламенту"
-  },
-  {
-    "operation": "Замена тормозной жидкости",
-    "mileage": "30000",
-    "period": "24",
-    "notes": "DOT 3/4. Гигроскопичность влияет на ABS"
-  },
-  {
-    "operation": "Замена жидкости АКПП",
-    "mileage": "60000",
-    "period": "48",
-    "notes": "Только Honda ATF DW-1."
-  },
-  {
-    "operation": "Замена охлаждающей жидкости",
-    "mileage": "100000",
-    "period": "60",
-    "notes": "Honda Type 2 (синяя). Не смешивать с другими типами!"
-  },
-  {
-    "operation": "Регулировка клапанов",
-    "mileage": "40000",
-    "period": "36",
-    "notes": "Требует специнструмента"
-  },
-  {
-    "operation": "Замена ремня генератора",
-    "mileage": "80000",
-    "period": "60",
-    "notes": "Контроль натяжителя и обводных роликов"
-  },
-  {
-    "operation": "Чистка дроссельной заслонки",
-    "mileage": "50000",
-    "period": "36",
-    "notes": "Характерная проблема K24 - нестабильные холостые обороты"
-  },
-  {
-    "operation": "Диагностика подвески",
-    "mileage": "20000",
-    "period": "12",
-    "notes": "Особое внимание задним рычагам (отзывная кампания HMC-2004-32)"
-  }
-]
+export interface MaintenanceRegulation {
+  operation: string;
+  mileage: string;
+  period: string;
+  notes: string;
+}
+
+export interface MaintenanceOperation {
+  operation: string;
+  mileage: number;
+  period: number;
+  notes: string;
+  mileageUntilNext: number;
+  monthsUntilNext: number;
+  priority: 'high' | 'medium' | 'low';
+  isDue: boolean;
+}
+
+// Remove the hardcoded maintenanceRegulations array (lines 38-122)
 
 interface ServiceShop {
   id: string
@@ -159,6 +104,8 @@ export default function MaintenancePlanning() {
   const [shopToDelete, setShopToDelete] = useState<ServiceShop | null>(null)
 
   // Cars are now loaded from DataService
+  const [maintenanceOperations, setMaintenanceOperations] = useState<MaintenanceOperation[]>([]);
+  const [isLoadingOperations, setIsLoadingOperations] = useState(true);
 
   // Load initial data
   const loadData = async () => {
@@ -243,45 +190,24 @@ export default function MaintenancePlanning() {
     }
   }, [selectedCarId, plannedDate, plannedCompletionDate, plannedMileage, serviceProvider, planNotes, periodicItems, repairItems, planId])
 
+  // Update the useEffect that calculates maintenance due
   useEffect(() => {
-    if (selectedCarId && !isLoadingPlan) {
+    if (selectedCarId && !isLoadingPlan && !isLoadingOperations) {
       const selectedCar = cars.find(c => c.id === selectedCarId)
       if (selectedCar) {
-        // Calculate needed periodic maintenance based on current mileage
-        const neededMaintenance = maintenanceRegulations.map(regulation => {
-          const intervalMileage = parseInt(regulation.mileage)
-          const intervalMonths = parseInt(regulation.period)
-          
-          // Calculate if maintenance is due based on mileage
-          const mileageSinceLastService = selectedCar.mileage % intervalMileage
-          const mileageUntilNext = intervalMileage - mileageSinceLastService
-          
-          // Calculate if maintenance is due based on time
-          const lastServiceDate = selectedCar.lastService ? new Date(selectedCar.lastService) : new Date(selectedCar.createdAt)
-          const monthsSinceService = Math.floor((Date.now() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
-          const monthsUntilNext = intervalMonths - (monthsSinceService % intervalMonths)
-          
-          // Determine priority based on how close to due date
-          let priority: 'high' | 'medium' | 'low' = 'low'
-          if (mileageUntilNext <= 2000 || monthsUntilNext <= 1) {
-            priority = 'high'
-          } else if (mileageUntilNext <= 5000 || monthsUntilNext <= 3) {
-            priority = 'medium'
-          }
-
-          return {
-            operation: regulation.operation,
-            notes: regulation.notes,
-            mileageInterval: intervalMileage,
-            timeInterval: intervalMonths,
-            mileageUntilNext,
-            monthsUntilNext,
-            priority,
-            selected: priority === 'high',
-            estimatedCost: 0,
-            planNotes: ''
-          }
-        })
+        // Use the PMG operations to calculate needed maintenance
+        const neededMaintenance = maintenanceOperations.map(item => ({
+          operation: item.operation,
+          notes: item.notes,
+          mileageInterval: item.mileage,
+          timeInterval: item.period,
+          mileageUntilNext: item.mileageUntilNext,
+          monthsUntilNext: item.monthsUntilNext,
+          priority: item.priority,
+          selected: item.isDue || item.priority === 'high',
+          estimatedCost: 0,
+          planNotes: ''
+        }))
 
         setPeriodicItems(neededMaintenance)
 
@@ -302,7 +228,30 @@ export default function MaintenancePlanning() {
         setPlannedMileage(selectedCar.mileage.toString())
       }
     }
-  }, [selectedCarId, userAlerts, cars, isLoadingPlan])
+  }, [selectedCarId, userAlerts, cars, isLoadingPlan, isLoadingOperations, maintenanceOperations])
+
+  // Load PMG operations when car is selected
+  useEffect(() => {
+    const loadMaintenanceOperations = async () => {
+      if (!selectedCarId) {
+        setMaintenanceOperations([])
+        setIsLoadingOperations(false)
+        return
+      }
+
+      try {
+        setIsLoadingOperations(true)
+        const operations = await PMGService.calculateMaintenanceDue(selectedCarId)
+        setMaintenanceOperations(operations)
+      } catch (error) {
+        console.error('Error loading maintenance operations:', error)
+      } finally {
+        setIsLoadingOperations(false)
+      }
+    }
+
+    loadMaintenanceOperations()
+  }, [selectedCarId])
 
   const updatePeriodicItem = (index: number, field: string, value: any) => {
     if (planId) return // Prevent changes when viewing a saved plan
@@ -337,43 +286,43 @@ export default function MaintenancePlanning() {
       console.log('Found selected car:', selectedCar)
       console.log('Plan periodic operations:', plan.periodicOperations)
       
-      const neededMaintenance = maintenanceRegulations.map(regulation => {
-        // Find the saved operation that matches this regulation
-        const planOperation = plan.periodicOperations.find(op => op.operation === regulation.operation)
-        console.log(`Regulation: ${regulation.operation}, Found in plan:`, !!planOperation, planOperation)
+      // const neededMaintenance = maintenanceRegulations.map(regulation => {
+      //   // Find the saved operation that matches this regulation
+      //   const planOperation = plan.periodicOperations.find(op => op.operation === regulation.operation)
+      //   console.log(`Regulation: ${regulation.operation}, Found in plan:`, !!planOperation, planOperation)
         
-        const intervalMileage = parseInt(regulation.mileage)
-        const intervalMonths = parseInt(regulation.period)
+      //   const intervalMileage = parseInt(regulation.mileage)
+      //   const intervalMonths = parseInt(regulation.period)
         
-        const mileageSinceLastService = selectedCar.mileage % intervalMileage
-        const mileageUntilNext = intervalMileage - mileageSinceLastService
+      //   const mileageSinceLastService = selectedCar.mileage % intervalMileage
+      //   const mileageUntilNext = intervalMileage - mileageSinceLastService
         
-        const lastServiceDate = selectedCar.lastService ? new Date(selectedCar.lastService) : new Date(selectedCar.createdAt)
-        const monthsSinceService = Math.floor((Date.now() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
-        const monthsUntilNext = intervalMonths - (monthsSinceService % intervalMonths)
+      //   const lastServiceDate = selectedCar.lastService ? new Date(selectedCar.lastService) : new Date(selectedCar.createdAt)
+      //   const monthsSinceService = Math.floor((Date.now() - lastServiceDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
+      //   const monthsUntilNext = intervalMonths - (monthsSinceService % intervalMonths)
       
-        let priority: 'high' | 'medium' | 'low' = 'low'
-        if (mileageUntilNext <= 2000 || monthsUntilNext <= 1) {
-          priority = 'high'
-        } else if (mileageUntilNext <= 5000 || monthsUntilNext <= 3) {
-          priority = 'medium'
-        }
+      //   let priority: 'high' | 'medium' | 'low' = 'low'
+      //   if (mileageUntilNext <= 2000 || monthsUntilNext <= 1) {
+      //     priority = 'high'
+      //   } else if (mileageUntilNext <= 5000 || monthsUntilNext <= 3) {
+      //     priority = 'medium'
+      //   }
 
-        return {
-          operation: regulation.operation,
-          notes: regulation.notes,
-          mileageInterval: intervalMileage,
-          timeInterval: intervalMonths,
-          mileageUntilNext,
-          monthsUntilNext,
-          priority: planOperation?.priority || priority,
-          selected: !!planOperation, // This is the key fix - use the saved operation's selected state
-          estimatedCost: planOperation?.estimatedCost || 0,
-          planNotes: planOperation?.notes || ''
-        }
-      })
-      console.log('Loaded periodic items:', neededMaintenance.filter(item => item.selected))
-      setPeriodicItems(neededMaintenance)
+      //   return {
+      //     operation: regulation.operation,
+      //     notes: regulation.notes,
+      //     mileageInterval: intervalMileage,
+      //     timeInterval: intervalMonths,
+      //     mileageUntilNext,
+      //     monthsUntilNext,
+      //     priority: planOperation?.priority || priority,
+      //     selected: !!planOperation, // This is the key fix - use the saved operation's selected state
+      //     estimatedCost: planOperation?.estimatedCost || 0,
+      //     planNotes: planOperation?.notes || ''
+      //   }
+      // })
+      // console.log('Loaded periodic items:', neededMaintenance.filter(item => item.selected))
+      // setPeriodicItems(neededMaintenance)
     } else {
       // If car is not found in current cars list, show a warning
       console.warn(`Car with ID ${plan.carId} not found in current cars list`)
@@ -977,15 +926,25 @@ export default function MaintenancePlanning() {
                 </p>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setIsServiceShopsOpen(true)}
-              className="flex items-center space-x-2"
-            >
-              <Store className="h-4 w-4" />
-              <span className="hidden sm:inline">Сервисы</span>
-            </Button>
+            <div className="flex items-center space-x-2">
+              {selectedCarId && (
+                <Link to={`/periodical-maintenance-guide/${selectedCarId}`}>
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Настроить ТО
+                  </Button>
+                </Link>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsServiceShopsOpen(true)}
+                className="flex items-center space-x-2"
+              >
+                <Store className="h-4 w-4" />
+                <span className="hidden sm:inline">Сервисы</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
