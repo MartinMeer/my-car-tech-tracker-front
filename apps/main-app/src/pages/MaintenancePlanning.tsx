@@ -143,6 +143,8 @@ export default function MaintenancePlanning() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingPlan, setIsLoadingPlan] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [lastAutoSave, setLastAutoSave] = useState<number>(0)
+  const [formChanged, setFormChanged] = useState(false)
   
   // Service shops state
   const [serviceShops, setServiceShops] = useState<ServiceShop[]>([])
@@ -216,15 +218,21 @@ export default function MaintenancePlanning() {
   }, [planId, savedPlans, cars])
 
   useEffect(() => {
-    // Reset autosave interval when form data changes
+    // Clear existing interval
     if (autoSaveInterval) {
       clearInterval(autoSaveInterval)
+      setAutoSaveInterval(null)
     }
     
-    // Don't set up auto-save when viewing a saved plan
-    if (!planId) {
+    // Don't set up auto-save when viewing a saved plan or when no car is selected
+    if (!planId && selectedCarId) {
       const interval = setInterval(autoSaveDraft, 30000)
       setAutoSaveInterval(interval)
+    }
+
+    // Set form changed flag when form data changes (but not on initial load)
+    if (selectedCarId && !isLoading) {
+      setFormChanged(true)
     }
 
     // Cleanup on unmount or when dependencies change
@@ -314,7 +322,8 @@ export default function MaintenancePlanning() {
     console.log('Loading plan for viewing:', plan)
     setIsLoadingPlan(true) // Prevent useEffect from overriding saved data
     
-    // Don't set editingPlanId - this prevents saving/updating
+    // Set editingPlanId to enable updating the plan
+    setEditingPlanId(plan.id)
     setSelectedCarId(plan.carId)
     setPlannedDate(plan.plannedDate)
     setPlannedCompletionDate(plan.plannedCompletionDate)
@@ -390,6 +399,7 @@ export default function MaintenancePlanning() {
     // Reset the flag after a short delay to allow state updates to complete
     setTimeout(() => {
       setIsLoadingPlan(false)
+      setFormChanged(false) // Reset form changed flag when plan is loaded
       console.log('Plan loading completed, isLoadingPlan reset to false')
     }, 100)
   }
@@ -405,6 +415,7 @@ export default function MaintenancePlanning() {
     setPeriodicItems([])
     setRepairItems([])
     setIsLoadingPlan(false) // Reset the loading flag
+    setFormChanged(false) // Reset form changed flag
   }
 
   const calculateTotalCost = () => {
@@ -478,9 +489,16 @@ export default function MaintenancePlanning() {
 
       // Use DataService to save or update the plan
       if (editingPlanId) {
-        // Prevent updating existing plans
-        alert('Редактирование существующих планов обслуживания не поддерживается.')
-        return false
+        // Update existing plan
+        const updatedPlan = await DataService.updateMaintenancePlan(editingPlanId, planData)
+        const updatedPlans = savedPlans.map(plan => 
+          plan.id === editingPlanId ? updatedPlan : plan
+        )
+        setSavedPlans(updatedPlans)
+        
+        if (!isAutoSave) {
+          alert('План обслуживания обновлен!')
+        }
       } else {
         // Create new plan
         const savedPlan = await DataService.saveMaintenancePlan(planData)
@@ -488,9 +506,7 @@ export default function MaintenancePlanning() {
         setSavedPlans(updatedPlans)
         
         // Set editingPlanId for auto-save to work properly
-        if (isAutoSave) {
-          setEditingPlanId(savedPlan.id)
-        }
+        setEditingPlanId(savedPlan.id)
 
         // Clear autosave interval only for manual saves
         if (!isAutoSave && autoSaveInterval) {
@@ -523,7 +539,14 @@ export default function MaintenancePlanning() {
     
     setIsSaving(true)
     try {
-      await savePlanData(false, false) // Don't close after save, not auto-save
+      const success = await savePlanData(false, false) // Don't close after save, not auto-save
+      if (success) {
+        // Clear auto-save interval after successful manual save
+        if (autoSaveInterval) {
+          clearInterval(autoSaveInterval)
+          setAutoSaveInterval(null)
+        }
+      }
     } finally {
       setIsSaving(false)
     }
@@ -547,7 +570,14 @@ export default function MaintenancePlanning() {
     
     setIsSaving(true)
     try {
-      await savePlanData(true, false) // Close after save, not auto-save
+      const success = await savePlanData(true, false) // Close after save, not auto-save
+      if (success) {
+        // Clear auto-save interval after successful manual save
+        if (autoSaveInterval) {
+          clearInterval(autoSaveInterval)
+          setAutoSaveInterval(null)
+        }
+      }
     } finally {
       setIsSaving(false)
     }
@@ -560,16 +590,29 @@ export default function MaintenancePlanning() {
   }
 
   const autoSaveDraft = async () => {
-    if (!selectedCarId || !plannedDate || planId) return // Don't auto-save when viewing a saved plan
+    // Don't auto-save when viewing a saved plan (planId exists) or when no car is selected
+    if (!selectedCarId || !plannedDate || planId) return
 
     const selectedPeriodicOps = periodicItems.filter(item => item.selected)
     const selectedRepairOps = repairItems.filter(item => item.selected)
     
     if (selectedPeriodicOps.length === 0 && selectedRepairOps.length === 0) return
 
+    // Prevent auto-save if already saving
+    if (isSaving) return
+
+    // Only auto-save if form has changed and not currently loading
+    if (!formChanged || isLoadingPlan) return
+
+    // Debounce auto-save to prevent rapid saves (minimum 10 seconds between auto-saves)
+    const now = Date.now()
+    if (now - lastAutoSave < 10000) return
+
     // Use the shared savePlanData function for auto-saving
     try {
       await savePlanData(false, true) // Don't close after auto-save, is auto-save
+      setLastAutoSave(now)
+      setFormChanged(false) // Reset form changed flag after successful save
       console.log('Draft auto-saved')
     } catch (error) {
       console.error('Error auto-saving draft:', error)

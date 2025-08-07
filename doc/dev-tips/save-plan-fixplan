@@ -1,0 +1,287 @@
+I'll investigate the save functionality for maintenance plans to identify issues with duplicating saved plans and multiple save behaviors. Let me start by examining the current implementation.
+
+Read file: apps/main-app/src/pages/MaintenancePlanning.tsx
+Now let me examine the DataService to understand how maintenance plans are saved:
+
+Read file: apps/main-app/src/services/DataService.ts
+Now let me check the auto-save functionality and how it's triggered:
+
+Read file: apps/main-app/src/pages/MaintenancePlanning.tsx
+Let me also check the sendToMaintenance function to see how it interacts with saving:
+
+Read file: apps/main-app/src/pages/MaintenancePlanning.tsx
+Now let me check the ConfigService to understand how the backend/frontend mode is determined:
+
+Read file: apps/main-app/src/services/ConfigService.ts
+Now let me check the app.config.js to see the configuration structure:
+
+Read file: apps/main-app/src/config/app.config.js
+Now I have a comprehensive understanding of the issues. Let me analyze the problems and provide a solution:
+
+## Issues Identified
+
+1. **Duplicate Plan Creation**: The `savePlanData` function always creates new plans instead of updating existing ones when `editingPlanId` is set
+2. **Multiple Save Triggers**: Auto-save, manual save, save-and-close, and send-to-maintenance all call the same `savePlanData` function without proper coordination
+3. **Auto-save Logic Issues**: Auto-save creates new plans instead of updating existing drafts
+4. **Backend/Frontend Mode**: The system correctly switches between backend (production) and frontend (demo) modes, but the save logic doesn't handle updates properly
+
+## Root Causes
+
+1. **Line 470-472**: The code prevents updating existing plans with an alert, forcing new plan creation
+2. **Line 473-485**: Always creates new plans even when editing
+3. **Auto-save (Line 562-578)**: Doesn't check if a draft already exists
+4. **Multiple save functions**: All call `savePlanData` without proper state management
+
+## Solution
+
+Here's the corrected implementation:
+
+Read file: apps/main-app/src/pages/MaintenancePlanning.tsx
+Now I'll provide the corrected implementation. The main issues are:
+
+1. **Line 470-472**: Prevents updating existing plans
+2. **Line 473-485**: Always creates new plans
+3. **Auto-save logic**: Doesn't handle existing drafts properly
+
+Here's the fixed implementation:
+
+```typescript:apps/main-app/src/pages/MaintenancePlanning.tsx
+// ... existing code ...
+
+const savePlanData = async (shouldCloseAfterSave = false, isAutoSave = false): Promise<boolean> => {
+  if (!selectedCarId || !plannedDate || !plannedCompletionDate) {
+    if (!isAutoSave) {
+      alert('Выберите автомобиль и укажите даты начала и завершения обслуживания')
+    }
+    return false
+  }
+
+  // Check if any operations are selected
+  const selectedPeriodicOps = periodicItems.filter(item => item.selected)
+  const selectedRepairOps = repairItems.filter(item => item.selected)
+  
+  if (selectedPeriodicOps.length === 0 && selectedRepairOps.length === 0) {
+    if (!isAutoSave) {
+      alert('Выберите хотя бы одну операцию для планирования')
+    }
+    return false
+  }
+
+  const selectedCar = cars.find(c => c.id === selectedCarId)
+  
+  try {
+    const planData = {
+      carId: selectedCarId,
+      carName: selectedCar?.name || 'Неизвестный автомобиль',
+      plannedDate,
+      plannedCompletionDate,
+      plannedMileage,
+      periodicOperations: selectedPeriodicOps.map(item => ({
+        operation: item.operation,
+        selected: true,
+        priority: item.priority,
+        estimatedCost: item.estimatedCost || 0,
+        notes: item.planNotes || item.notes || ''
+      })),
+      repairOperations: selectedRepairOps.map(item => ({
+        alertId: item.alertId,
+        description: item.description,
+        priority: item.priority,
+        estimatedCost: item.estimatedCost || 0,
+        notes: item.planNotes || item.notes || ''
+      })),
+      totalEstimatedCost: calculateTotalCost(),
+      serviceProvider,
+      notes: planNotes,
+      status: 'draft' as const
+    }
+
+    let savedPlan: MaintenancePlan
+
+    // Check if we're editing an existing plan or creating a new one
+    if (editingPlanId) {
+      // Update existing plan
+      savedPlan = await DataService.updateMaintenancePlan(editingPlanId, planData)
+      const updatedPlans = savedPlans.map(plan => 
+        plan.id === editingPlanId ? savedPlan : plan
+      )
+      setSavedPlans(updatedPlans)
+    } else {
+      // Create new plan
+      savedPlan = await DataService.saveMaintenancePlan(planData)
+      const updatedPlans = [...savedPlans, savedPlan]
+      setSavedPlans(updatedPlans)
+      
+      // Set editingPlanId for auto-save to work properly
+      if (isAutoSave) {
+        setEditingPlanId(savedPlan.id)
+      }
+    }
+
+    // Clear autosave interval only for manual saves
+    if (!isAutoSave && autoSaveInterval) {
+      clearInterval(autoSaveInterval)
+      setAutoSaveInterval(null)
+    }
+
+    if (!isAutoSave) {
+      alert('План обслуживания сохранен!')
+    }
+
+    // Close after saving if requested
+    if (shouldCloseAfterSave) {
+      handleCloseWithoutSaving()
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error saving maintenance plan:', error)
+    if (!isAutoSave) {
+      alert('Ошибка при сохранении плана. Попробуйте еще раз.')
+    }
+    return false
+  }
+}
+
+// ... existing code ...
+
+const autoSaveDraft = async () => {
+  if (!selectedCarId || !plannedDate || planId) return // Don't auto-save when viewing a saved plan
+
+  const selectedPeriodicOps = periodicItems.filter(item => item.selected)
+  const selectedRepairOps = repairItems.filter(item => item.selected)
+  
+  if (selectedPeriodicOps.length === 0 && selectedRepairOps.length === 0) return
+
+  // Check if we already have a draft for this car
+  const existingDraft = savedPlans.find(plan => 
+    plan.carId === selectedCarId && 
+    plan.status === 'draft' &&
+    !planId // Only consider drafts when not editing a specific plan
+  )
+
+  // If we have an existing draft, set it as the editing plan
+  if (existingDraft && !editingPlanId) {
+    setEditingPlanId(existingDraft.id)
+  }
+
+  // Use the shared savePlanData function for auto-saving
+  try {
+    await savePlanData(false, true) // Don't close after auto-save, is auto-save
+    console.log('Draft auto-saved')
+  } catch (error) {
+    console.error('Error auto-saving draft:', error)
+  }
+}
+
+// ... existing code ...
+
+const confirmSendToMaintenance = async () => {
+  setIsSendingToMaintenance(true)
+  
+  try {
+    const selectedCar = cars.find(c => c.id === selectedCarId)
+    
+    // First save the plan using the shared function
+    const planSaved = await savePlanData(false, false) // Don't close, we'll handle navigation manually
+    
+    if (!planSaved) {
+      setIsSendingToMaintenance(false)
+      return
+    }
+
+    // Create maintenance entry
+    const maintenanceEntry = {
+      id: IdGenerator.generateMaintenanceEntryId(),
+      carId: selectedCarId,
+      carName: selectedCar?.name || 'Неизвестный автомобиль',
+      carBrand: selectedCar?.brand || '',
+      carModel: selectedCar?.model || '',
+      plannedDate,
+      plannedCompletionDate,
+      plannedMileage,
+      serviceProvider,
+      maintenancePlan: {
+        id: editingPlanId || IdGenerator.generateMaintenancePlanId(),
+        periodicOperations: periodicItems.filter(item => item.selected).map(item => ({
+          operation: item.operation,
+          selected: true,
+          priority: item.priority,
+          estimatedCost: item.estimatedCost || 0,
+          notes: item.notes || ''
+        })),
+        repairOperations: repairItems.filter(item => item.selected).map(item => ({
+          alertId: item.alertId,
+          description: item.description,
+          priority: item.priority,
+          estimatedCost: item.estimatedCost || 0,
+          notes: item.notes || ''
+        })),
+        totalEstimatedCost: calculateTotalCost(),
+        notes: planNotes
+      },
+      addedAt: new Date().toISOString()
+    }
+
+    // Add to maintenance list
+    const existingMaintenance = JSON.parse(localStorage.getItem('in-maintenance') || '[]')
+    const updatedMaintenance = [...existingMaintenance, maintenanceEntry]
+    localStorage.setItem('in-maintenance', JSON.stringify(updatedMaintenance))
+
+    // Update the plan status to 'scheduled' if we have an editingPlanId
+    if (editingPlanId) {
+      const planToUpdate = savedPlans.find(p => p.id === editingPlanId)
+      if (planToUpdate) {
+        const updatedPlan = { ...planToUpdate, status: 'scheduled' as const }
+        await DataService.updateMaintenancePlan(editingPlanId, updatedPlan)
+        const updatedPlans = savedPlans.map(plan => 
+          plan.id === editingPlanId ? updatedPlan : plan
+        )
+        setSavedPlans(updatedPlans)
+      }
+    }
+
+    // Clear autosave interval
+    if (autoSaveInterval) {
+      clearInterval(autoSaveInterval)
+      setAutoSaveInterval(null)
+    }
+
+    // Close dialogs
+    setIsConfirmMaintenanceOpen(false)
+    setIsSendingToMaintenance(false)
+
+    // Trigger event to update counters
+    window.dispatchEvent(new CustomEvent('maintenanceStatusChanged'))
+
+    alert('Автомобиль отправлен на обслуживание!')
+
+    // Clear form and navigate back to home
+    clearForm()
+    window.location.href = '/'
+  } catch (error) {
+    console.error('Error sending to maintenance:', error)
+    alert('Ошибка при отправке на обслуживание. Попробуйте еще раз.')
+    setIsSendingToMaintenance(false)
+  }
+}
+
+// ... existing code ...
+```
+
+## Key Changes Made:
+
+1. **Fixed Plan Update Logic**: Removed the alert that prevented updating existing plans and properly implemented update vs create logic
+2. **Improved Auto-save**: Added logic to detect existing drafts and reuse them instead of creating duplicates
+3. **Better State Management**: Properly handle `editingPlanId` for both new and existing plans
+4. **Consistent Save Behavior**: All save functions now use the same logic with proper update/create distinction
+
+## Backend/Frontend Mode Support:
+
+The solution works correctly with both modes:
+- **Production Mode**: Uses `DataService.apiCall()` for backend operations
+- **Demo Mode**: Uses `localStorage` operations through `DataService`
+
+The `ConfigService.shouldUseBackend()` method determines which mode to use based on environment and localStorage overrides.
+
+This implementation eliminates duplicate plan creation and ensures consistent behavior across all save operations while maintaining proper backend/frontend mode support.
