@@ -12,7 +12,6 @@ import { Textarea } from '../components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
 import { DateInput } from '../components/ui/date-input'
 import { DataService, Car } from '../services/DataService'
-import { PMGService, MaintenanceOperation } from '../services/PMGService'
 import { 
   ArrowLeft, 
   Edit3, 
@@ -38,8 +37,6 @@ export default function CarOverview() {
   const [mileageDate, setMileageDate] = useState(dateUtils.getCurrentRussianDate())
   const [mileageNotes, setMileageNotes] = useState('')
   const [refreshStatus, setRefreshStatus] = useState(0)
-  const [pmgOperations, setPmgOperations] = useState<any[]>([])
-  const [isPmgOpen, setIsPmgOpen] = useState(false)
 
   // Function to get dynamic car status based on maintenance and alerts
   const getCarStatus = (carId: string | number) => {
@@ -129,21 +126,6 @@ export default function CarOverview() {
       window.removeEventListener('maintenanceStatusChanged', handleMaintenanceChange)
     }
   }, [])
-
-  // Load PMG operations for this car
-  useEffect(() => {
-    if (car) {
-      const loadPmgOperations = async () => {
-        try {
-          const operations = await PMGService.calculateMaintenanceDue(car.id)
-          setPmgOperations(operations)
-        } catch (error) {
-          console.error('Error loading PMG operations:', error)
-        }
-      }
-      loadPmgOperations()
-    }
-  }, [car])
 
   // Car data is now loaded via DataService
 
@@ -291,14 +273,8 @@ export default function CarOverview() {
                   Редактировать
                 </Button>
               </Link>
-              <Link to={`/periodical-maintenance-guide/${car.id}`}>
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Руководство по ТО
-                </Button>
-              </Link>
-              <Button variant="ghost" size="sm" onClick={() => setIsPmgOpen(true)}>
-                <Calendar className="h-4 w-4" />
+              <Button variant="ghost" size="sm">
+                <Settings className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -483,84 +459,6 @@ export default function CarOverview() {
           </CardContent>
         </Card>
       </main>
-
-      {/* Add PMG button to header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <Link to="/">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Назад
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">{car?.name}</h1>
-            <p className="text-gray-600">{car?.brand} {car?.model} {car?.year}</p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <Button onClick={() => setIsPmgOpen(true)}>
-            <Settings className="h-4 w-4 mr-2" />
-            Руководство по ТО
-          </Button>
-          <Link to={`/maintenance-planning?carId=${car?.id}`}>
-            <Button variant="outline">
-              <Calendar className="h-4 w-4 mr-2" />
-              Планирование ТО
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* PMG Dialog */}
-      <Dialog open={isPmgOpen} onOpenChange={setIsPmgOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Руководство по ТО - {car?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-600">
-                Текущий пробег: {car?.mileage.toLocaleString()} км
-              </p>
-              <Link to={`/periodical-maintenance-guide/${car?.id}`}>
-                <Button size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Настроить регламент
-                </Button>
-              </Link>
-            </div>
-            
-            {pmgOperations.map((operation, index) => (
-              <div key={index} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium">{operation.operation}</h4>
-                  <Badge className={getPriorityColor(operation.priority)}>
-                    {operation.priority === 'high' ? 'Срочно' :
-                     operation.priority === 'medium' ? 'Скоро' : 'Плановое'}
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-600 mb-2">{operation.notes}</p>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="font-medium">Интервал:</p>
-                    <p>{operation.mileage.toLocaleString()} км / {operation.period} мес</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">До следующего ТО:</p>
-                    <p>{operation.mileageUntilNext.toLocaleString()} км / {operation.monthsUntilNext} мес</p>
-                  </div>
-                </div>
-                {operation.isDue && (
-                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                    <p className="text-sm text-red-700 font-medium">⚠️ Требует срочного обслуживания!</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
