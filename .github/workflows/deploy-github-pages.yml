@@ -41,7 +41,7 @@ jobs:
 
       - name: Build Marketing Site
         working-directory: apps/marketing-site
-        run: NODE_ENV=production npm run build
+        run: npm run build
         env:
           NODE_ENV: production
 
@@ -52,7 +52,7 @@ jobs:
 
       - name: Build Main App
         working-directory: apps/main-app
-        run: NODE_ENV=production npm run build
+        run: npm run build
         env:
           NODE_ENV: production
 

@@ -30,6 +30,9 @@ const esbuildOpts = {
   minify: isProd,
   treeShaking: true,
   jsx: 'automatic',
+  define: {
+    'process.env.NODE_ENV': isProd ? '"production"' : '"development"'
+  },
   loader: {
     '.html': 'copy',
     '.png': 'file',
