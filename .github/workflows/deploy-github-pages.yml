@@ -1,0 +1,87 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+# Sets permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Build Marketing Site
+      - name: Setup Node.js for Marketing Site
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: apps/marketing-site/package-lock.json
+
+      - name: Install Marketing Site dependencies
+        working-directory: apps/marketing-site
+        run: npm ci
+
+      - name: Build Marketing Site
+        working-directory: apps/marketing-site
+        run: npm run build
+
+      # Build Main App
+      - name: Install Main App dependencies
+        working-directory: apps/main-app
+        run: npm ci
+
+      - name: Build Main App
+        working-directory: apps/main-app
+        run: npm run build
+
+      # Prepare deployment directory
+      - name: Prepare GitHub Pages content
+        run: |
+          mkdir -p _site
+          # Copy marketing site to root
+          cp -r apps/marketing-site/dist/* _site/
+          # Copy main app to /app subdirectory
+          mkdir -p _site/app
+          cp -r apps/main-app/dist/* _site/app/
+          # Copy shared assets if needed
+          if [ -d "packages/shared/img" ]; then
+            mkdir -p _site/shared/img
+            cp -r packages/shared/img/* _site/shared/img/
+          fi
+          # Ensure .nojekyll exists
+          touch _site/.nojekyll
+          echo "Deployment structure:"
+          ls -la _site/
+          echo "Main app content:"
+          ls -la _site/app/ || echo "No app directory"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
