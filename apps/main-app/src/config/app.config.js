@@ -13,7 +13,9 @@ export const APP_CONFIG = {
     production: {
       MARKETING_URL: 'https://martinmeer.github.io/my-car-tech-tracker-front',
       MAIN_APP_URL: 'https://martinmeer.github.io/my-car-tech-tracker-front/app',
-      API_URL: 'https://your-api-domain.com/api'  // TODO: Update with actual API URL
+      // DEMO MODE: Keep this placeholder to run in localStorage/demo mode without backend
+      // To use real API: Replace with your actual backend URL (e.g., 'https://api.yourserver.com/api')
+      API_URL: 'https://your-api-domain.com/api'
     }
   },
   

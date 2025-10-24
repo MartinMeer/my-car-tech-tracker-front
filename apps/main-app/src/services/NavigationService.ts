@@ -4,17 +4,18 @@ export class NavigationService {
     private static config = APP_CONFIG.getCurrentConfig();
   
     static navigateToLogin(returnUrl?: string) {
-      const url = new URL('/#/login', this.config.MARKETING_URL);
+      let url = `${this.config.MARKETING_URL}/#/login`;
       if (returnUrl) {
-        url.searchParams.set('return_url', returnUrl);
+        const urlObj = new URL(url);
+        urlObj.searchParams.set('return_url', returnUrl);
+        url = urlObj.toString();
       }
-      window.location.href = url.toString();
+      window.location.href = url;
     }
   
     static navigateToMarketing(page: string = '/') {
       // Handle hash routing - if page doesn't start with #, add it
-      const hashPage = page === '/' ? '/' : (page.startsWith('#') ? page : `/#${page}`);
-      const url = new URL(hashPage, this.config.MARKETING_URL);
-      window.location.href = url.toString();
+      const hashPage = page === '/' ? '' : (page.startsWith('#') ? page : `#${page}`);
+      window.location.href = `${this.config.MARKETING_URL}/${hashPage}`;
     }
   }
