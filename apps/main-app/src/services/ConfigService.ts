@@ -9,7 +9,7 @@ export class ConfigService {
 
   /**
    * Check if the app should use backend API or localStorage
-   * Priority: localStorage override > environment variable > production default
+   * Priority: localStorage override > valid API URL check > environment variable
    */
   static shouldUseBackend(): boolean {
     // Check for manual override in localStorage (for development/testing)
@@ -18,9 +18,15 @@ export class ConfigService {
       return override === 'true';
     }
 
-    // Check environment variable
+    // Check if we have a valid API URL configured
+    const config = APP_CONFIG.getCurrentConfig();
+    const hasValidApiUrl = config.API_URL && 
+                          !config.API_URL.includes('your-api-domain.com') &&
+                          !config.API_URL.includes('localhost');
+
+    // In production, only use backend if we have a valid API URL
     if (process.env.NODE_ENV === 'production') {
-      return true;
+      return hasValidApiUrl;
     }
 
     // Development default - use localStorage
