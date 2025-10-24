@@ -1,22 +1,36 @@
-# Jekyll configuration
+# Jekyll configuration for GitHub Pages
+# This project is a React/Next.js monorepo and shouldn't use Jekyll
+# Consider using .nojekyll file instead
+
 exclude:
-  - node_modules
+  - node_modules/
+  - "*/node_modules/"
+  - "**/node_modules/"
   - package.json
   - package-lock.json
-  - OLD-project-for-reference-only
-  - apps
-  - packages
-  - infrastructure
-  - scripts
+  - "*/package.json"
+  - "*/package-lock.json"
+  - OLD-project-for-reference-only/
+  - apps/
+  - packages/
+  - infrastructure/
+  - scripts/
+  - doc/
   - README.md
   - TODO.md
   - UI-TODO.md
   - MAINTENANCE_PLAN_SAVE_FIXES.md
   - REFACTORING_SUMMARY.md
-  - doc
   - Dockerfile.backend
+  - Dockerfile
   - docker-compose.yml
   - manifest.json
   - tailwind.config.js
   - tsconfig.json
+  - "*.config.js"
+  - "*.config.mjs"
+  - .github/
+  - .gitignore
+  - .eslintrc*
+  - .prettierrc*
 

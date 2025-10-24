@@ -1,0 +1,17 @@
+node_modules/
+package.json
+package-lock.json
+apps/
+packages/
+OLD-project-for-reference-only/
+infrastructure/
+scripts/
+doc/
+.github/
+*.config.js
+*.config.mjs
+tsconfig.json
+tailwind.config.js
+Dockerfile
+docker-compose.yml
+
