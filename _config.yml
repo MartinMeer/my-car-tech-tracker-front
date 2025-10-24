@@ -1,0 +1,22 @@
+# Jekyll configuration
+exclude:
+  - node_modules
+  - package.json
+  - package-lock.json
+  - OLD-project-for-reference-only
+  - apps
+  - packages
+  - infrastructure
+  - scripts
+  - README.md
+  - TODO.md
+  - UI-TODO.md
+  - MAINTENANCE_PLAN_SAVE_FIXES.md
+  - REFACTORING_SUMMARY.md
+  - doc
+  - Dockerfile.backend
+  - docker-compose.yml
+  - manifest.json
+  - tailwind.config.js
+  - tsconfig.json
+
