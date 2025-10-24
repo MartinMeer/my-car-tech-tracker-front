@@ -12,9 +12,9 @@ export const APP_CONFIG = {
       API_URL: ''
     },
     production: {
-      MARKETING_URL: '',
-      MAIN_APP_URL: '',
-      API_URL: ''
+      MARKETING_URL: 'https://martinmeer.github.io/my-car-tech-tracker-front',
+      MAIN_APP_URL: 'https://martinmeer.github.io/my-car-tech-tracker-front/app',
+      API_URL: 'https://your-api-domain.com/api'  // TODO: Update with actual API URL
     }
   },
   

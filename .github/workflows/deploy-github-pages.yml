@@ -41,7 +41,9 @@ jobs:
 
       - name: Build Marketing Site
         working-directory: apps/marketing-site
-        run: npm run build
+        run: NODE_ENV=production npm run build
+        env:
+          NODE_ENV: production
 
       # Build Main App
       - name: Install Main App dependencies
@@ -50,7 +52,9 @@ jobs:
 
       - name: Build Main App
         working-directory: apps/main-app
-        run: npm run build
+        run: NODE_ENV=production npm run build
+        env:
+          NODE_ENV: production
 
       # Prepare deployment directory
       - name: Prepare GitHub Pages content
